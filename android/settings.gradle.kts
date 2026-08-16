@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Matchpoint"
 include(":app")
+include(":feature:home")
+include(":core:ui")
