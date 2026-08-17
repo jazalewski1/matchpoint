@@ -2,7 +2,12 @@ name: CI Android Workflow
 run-name: CI#${{ github.run_number }} - ${{ github.actor }} - branch "${{ github.head_ref }}"
 
 on:
-  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
     paths:
       - 'android/**'
 
