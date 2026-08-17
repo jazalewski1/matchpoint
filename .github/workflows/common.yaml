@@ -1,0 +1,23 @@
+name: CI Common Workflow
+run-name: CI#${{ github.run_number }} - ${{ github.actor }} - branch "${{ github.head_ref }}"
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+jobs:
+  pr-title-validation:
+    name: Validate PR title
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate
+        run: >
+          .github/scripts/validate-pr-title "${{ github.event.pull_request.title }}"
