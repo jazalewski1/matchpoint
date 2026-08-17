@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "dev.jazalewski1.matchpoint.feature.home"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk { version = release(37) }
 
     defaultConfig {
         minSdk = 24
@@ -18,7 +16,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
 }
 
 dependencies {
