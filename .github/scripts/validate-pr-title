@@ -1,1 +1,16 @@
-echo "${1}"
+#! /bin/bash
+
+TITLE="${1}"
+MAX_TITLE_LENGTH=100
+
+if [ "${#TITLE}" -gt "${MAX_TITLE_LENGTH}" ]; then
+    echo >&2 "FAIL: PR title length is greater than ${MAX_TITLE_LENGTH}"
+    exit 1
+fi
+
+TITLE_PATTERN="^(build|ci|docs|feat|fix|perf|refactor|style|test)(\(\w+\))?: .*$"
+
+if ! echo "${TITLE}" | grep -E -q "${TITLE_PATTERN}"; then
+    echo >&2 "FAIL: PR title does not match required pattern"
+    exit 1
+fi
