@@ -9,8 +9,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class HomeScreenTest {
-    @get:Rule
-    val rule = createComposeRule()
+    @get:Rule val rule = createComposeRule()
 
     @Test
     fun displaysLogo() {
@@ -23,8 +22,6 @@ class HomeScreenTest {
     fun displaysButtons() {
         rule.setContent { HomeScreen() }
 
-        rule.onNodeWithText("Start New Match")
-            .assertIsDisplayed()
-            .assertHasClickAction()
+        rule.onNodeWithText("Start New Match").assertIsDisplayed().assertHasClickAction()
     }
 }

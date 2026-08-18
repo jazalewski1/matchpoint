@@ -20,9 +20,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
+        unitTests { isIncludeAndroidResources = true }
         unitTests.all { test ->
             test.testLogging {
                 showStandardStreams = true
@@ -31,7 +29,7 @@ android {
                     TestLogEvent.SKIPPED,
                     TestLogEvent.FAILED,
                     TestLogEvent.STANDARD_OUT,
-                    TestLogEvent.STANDARD_ERROR
+                    TestLogEvent.STANDARD_ERROR,
                 )
                 exceptionFormat = TestExceptionFormat.FULL
                 showCauses = true
