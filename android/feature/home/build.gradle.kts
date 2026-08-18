@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
@@ -16,6 +19,26 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+        unitTests.all { test ->
+            test.testLogging {
+                showStandardStreams = true
+                events(
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.FAILED,
+                    TestLogEvent.STANDARD_OUT,
+                    TestLogEvent.STANDARD_ERROR
+                )
+                exceptionFormat = TestExceptionFormat.FULL
+                showCauses = true
+                showStackTraces = true
+            }
+        }
+    }
 }
 
 dependencies {
@@ -28,7 +51,10 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.ui.tooling)
+
+    testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.core)
+    testImplementation(libs.robolectric)
 }
