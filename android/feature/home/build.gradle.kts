@@ -4,6 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    id("com.autonomousapps.dependency-analysis")
 }
 
 android {
@@ -41,18 +42,24 @@ android {
 
 dependencies {
     implementation(project(":core:ui"))
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.material)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.ui.tooling)
 
+    api(libs.androidx.compose.foundation.layout)
+    api(libs.androidx.compose.runtime)
+
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.ui.tooling.preview)
+
+    testImplementation(libs.androidx.compose.ui.test)
     testImplementation(libs.androidx.compose.ui.test.junit4)
-    testImplementation(libs.junit)
     testImplementation(libs.androidx.junit)
-    testImplementation(libs.androidx.core)
-    testImplementation(libs.robolectric)
+    testImplementation(libs.junit)
+
+    testRuntimeOnly(libs.androidx.core)
+    testRuntimeOnly(libs.robolectric)
 }
