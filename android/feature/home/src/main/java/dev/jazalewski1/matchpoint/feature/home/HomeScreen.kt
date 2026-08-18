@@ -15,9 +15,7 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 fun HomeScreen() {
     Scaffold { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
+            modifier = Modifier.padding(innerPadding).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
@@ -27,19 +25,14 @@ fun HomeScreen() {
             ) {
                 Image(
                     painter = painterResource(R.drawable.logo_full),
-                    contentDescription = "Matchpoint Logo"
+                    contentDescription = "Matchpoint Logo",
                 )
             }
             Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .weight(0.5f),
+                modifier = Modifier.fillMaxWidth(0.7f).weight(0.5f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Button(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
+                Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Start New Match",
                         style = MaterialTheme.typography.bodyLarge,
