@@ -17,10 +17,11 @@ val provider =
 
 val bodyFontFamily = FontFamily(Font(googleFont = GoogleFont("Roboto"), fontProvider = provider))
 
-val displayFontFamily = FontFamily(
-    Font(R.font.inter, weight = FontWeight.Normal),
-    Font(R.font.inter_black, weight = FontWeight.Black),
-)
+val displayFontFamily =
+    FontFamily(
+        Font(R.font.inter, weight = FontWeight.Normal),
+        Font(R.font.inter_black, weight = FontWeight.Black),
+    )
 
 val baseline = Typography()
 
