@@ -1,7 +1,9 @@
 package dev.jazalewski1.matchpoint.core.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import dev.jazalewski1.matchpoint.core.ui.R
@@ -16,7 +18,10 @@ val provider =
 val bodyFontFamily = FontFamily(Font(googleFont = GoogleFont("Roboto"), fontProvider = provider))
 
 val displayFontFamily =
-    FontFamily(Font(googleFont = GoogleFont("DM Sans"), fontProvider = provider))
+    FontFamily(
+        Font(R.font.inter, weight = FontWeight.Normal),
+        Font(R.font.inter_black, weight = FontWeight.Black),
+    )
 
 val baseline = Typography()
 

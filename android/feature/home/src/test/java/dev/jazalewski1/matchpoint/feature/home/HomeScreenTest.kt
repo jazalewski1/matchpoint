@@ -1,5 +1,7 @@
 package dev.jazalewski1.matchpoint.feature.home
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -15,7 +17,10 @@ class HomeScreenTest {
     fun displaysLogo() {
         rule.setContent { HomeScreen() }
 
-        rule.onNodeWithText("Matchpoint").assertIsDisplayed()
+        rule
+            .onNode(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Image))
+            .assertIsDisplayed()
+            .assertContentDescriptionEquals("Matchpoint Logo")
     }
 
     @Test
