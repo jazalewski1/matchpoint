@@ -27,7 +27,7 @@ fun HomeScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "Start new match", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Start New Match", style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
