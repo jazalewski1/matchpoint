@@ -27,6 +27,7 @@ android {
 
 dependencies {
     implementation(project(":core:ui"))
+    implementation(project(":feature:match"))
     implementation(project(":feature:home"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
