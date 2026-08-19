@@ -28,14 +28,10 @@ internal fun MatchScreen() {
     DisposableEffect(Unit) {
         val activity = context as? Activity
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        onDispose {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
+        onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
     Scaffold { innerPadding ->
-        Row(
-            modifier = Modifier.padding(innerPadding).fillMaxWidth(),
-        ) {
+        Row(modifier = Modifier.padding(innerPadding).fillMaxWidth()) {
             PointContainer(
                 playerName = lhsPlayerName,
                 score = scoreState.lhsScore,
@@ -64,14 +60,10 @@ private fun PointContainer(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .clickable(
-                enabled = true,
-                onClick = onClick,
-            )
-            .semantics(properties = {
-                this.contentDescription = contentDescription
-            }),
+        modifier =
+            modifier
+                .clickable(enabled = true, onClick = onClick)
+                .semantics(properties = { this.contentDescription = contentDescription }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -90,6 +82,7 @@ private fun PointContainer(
 private class ScoreState {
     var lhsScore by mutableIntStateOf(0)
         private set
+
     var rhsScore by mutableIntStateOf(0)
         private set
 
@@ -102,8 +95,7 @@ private class ScoreState {
     }
 }
 
-@Composable
-private fun rememberScoreState() = remember { ScoreState() }
+@Composable private fun rememberScoreState() = remember { ScoreState() }
 
 @Preview(
     showBackground = true,

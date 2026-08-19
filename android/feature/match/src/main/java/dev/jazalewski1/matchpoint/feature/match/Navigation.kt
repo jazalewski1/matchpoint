@@ -5,13 +5,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
-@Serializable
-object MatchRoute
+@Serializable object MatchRoute
 
 fun NavGraphBuilder.matchDestination() {
-    composable<MatchRoute> {
-        MatchScreen()
-    }
+    composable<MatchRoute> { MatchScreen() }
 }
 
 fun NavController.navigateToMatchScreen() {

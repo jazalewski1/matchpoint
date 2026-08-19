@@ -24,13 +24,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun App() {
     val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = HomeRoute,
-    ) {
-        homeDestination(onStartClick = {
-            navController.navigateToMatchScreen()
-        })
+    NavHost(navController = navController, startDestination = HomeRoute) {
+        homeDestination(onStartClick = { navController.navigateToMatchScreen() })
         matchDestination()
     }
 }

@@ -5,13 +5,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
-@Serializable
-object HomeRoute
+@Serializable object HomeRoute
 
 fun NavGraphBuilder.homeDestination(onStartClick: () -> Unit) {
-    composable<HomeRoute> {
-        HomeScreen(onStartClick = onStartClick)
-    }
+    composable<HomeRoute> { HomeScreen(onStartClick = onStartClick) }
 }
 
 fun NavController.navigateToHomeScreen() {

@@ -12,9 +12,7 @@ import androidx.compose.ui.unit.dp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
-fun HomeScreen(
-    onStartClick: () -> Unit,
-) {
+fun HomeScreen(onStartClick: () -> Unit) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding).fillMaxSize(),

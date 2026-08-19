@@ -13,15 +13,10 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class HomeScreenTest {
-    @get:Rule
-    val rule = createComposeRule()
+    @get:Rule val rule = createComposeRule()
 
     @Composable
-    private fun SutScreen(
-        onStartClick: () -> Unit = {},
-    ) = HomeScreen(
-        onStartClick = onStartClick,
-    )
+    private fun SutScreen(onStartClick: () -> Unit = {}) = HomeScreen(onStartClick = onStartClick)
 
     @Test
     fun displaysLogo() {
