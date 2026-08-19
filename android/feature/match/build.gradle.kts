@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.jazalewski1.matchpoint.feature.home"
+    namespace = "dev.jazalewski1.matchpoint.feature.match"
     compileSdk { version = release(37) }
 
     defaultConfig {
