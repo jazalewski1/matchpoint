@@ -23,6 +23,8 @@ uiText = "1.12.0"
 uiTextGoogleFonts = "1.12.0"
 uiTooling = "1.12.0"
 uiToolingPreview = "1.12.0"
+navigationCompose = "2.9.8"
+navigationCommonKtx = "2.9.8"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -50,6 +52,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-navigation-common-ktx = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigationCommonKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

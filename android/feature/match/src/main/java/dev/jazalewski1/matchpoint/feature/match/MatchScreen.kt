@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
-fun MatchScreen() {
+internal fun MatchScreen() {
     val context = LocalContext.current
     val scoreState = rememberScoreState()
     val lhsPlayerName = "Player 1"

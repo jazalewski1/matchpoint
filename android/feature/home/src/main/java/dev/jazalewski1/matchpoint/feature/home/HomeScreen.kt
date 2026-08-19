@@ -12,7 +12,9 @@ import androidx.compose.ui.unit.dp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onStartClick: () -> Unit,
+) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
@@ -32,7 +34,7 @@ fun HomeScreen() {
                 modifier = Modifier.fillMaxWidth(0.7f).weight(0.5f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = onStartClick, modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Start New Match",
                         style = MaterialTheme.typography.bodyLarge,
@@ -47,5 +49,5 @@ fun HomeScreen() {
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    AppTheme { HomeScreen() }
+    AppTheme { HomeScreen(onStartClick = {}) }
 }
