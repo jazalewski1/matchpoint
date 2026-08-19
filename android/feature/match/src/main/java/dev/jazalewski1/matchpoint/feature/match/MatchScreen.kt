@@ -11,9 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,8 +22,8 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 fun MatchScreen() {
     val context = LocalContext.current
     val scoreState = rememberScoreState()
-    val lhsPlayerName = "David"
-    val rhsPlayerName = "Goliath"
+    val lhsPlayerName = "Player 1"
+    val rhsPlayerName = "Player 2"
 
     DisposableEffect(Unit) {
         val activity = context as? Activity
@@ -33,54 +32,58 @@ fun MatchScreen() {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
-
     Scaffold { innerPadding ->
         Row(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
+            modifier = Modifier.padding(innerPadding).fillMaxWidth(),
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(0.5f)
-                    .fillMaxHeight()
-                    .clickable(
-                        enabled = true,
-                        onClick = {},
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = lhsPlayerName,
-                    style = MaterialTheme.typography.displaySmall,
-                )
-                BasicText(
-                    text = scoreState.lhsScore.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .weight(0.5f)
-                    .fillMaxHeight()
-                    .clickable(
-                        enabled = true,
-                        onClick = {},
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = rhsPlayerName,
-                    style = MaterialTheme.typography.displaySmall,
-                )
-                BasicText(
-                    text = scoreState.rhsScore.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
-                )
-            }
+            PointContainer(
+                playerName = lhsPlayerName,
+                score = scoreState.lhsScore,
+                onClick = scoreState::increaseLhs,
+                contentDescription = "Left Score",
+                modifier = Modifier.weight(0.5f).fillMaxHeight(),
+            )
+            VerticalDivider(thickness = 2.dp)
+            PointContainer(
+                playerName = rhsPlayerName,
+                score = scoreState.rhsScore,
+                onClick = scoreState::increaseRhs,
+                contentDescription = "Right Score",
+                modifier = Modifier.weight(0.5f).fillMaxHeight(),
+            )
         }
+    }
+}
+
+@Composable
+private fun PointContainer(
+    playerName: String,
+    score: Int,
+    onClick: () -> Unit,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clickable(
+                enabled = true,
+                onClick = onClick,
+            )
+            .semantics(properties = {
+                this.contentDescription = contentDescription
+            }),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = playerName,
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        BasicText(
+            text = score.toString(),
+            style = MaterialTheme.typography.titleLarge,
+            autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
+        )
     }
 }
 
@@ -89,6 +92,14 @@ private class ScoreState {
         private set
     var rhsScore by mutableIntStateOf(0)
         private set
+
+    fun increaseLhs() {
+        lhsScore += 1
+    }
+
+    fun increaseRhs() {
+        rhsScore += 1
+    }
 }
 
 @Composable
