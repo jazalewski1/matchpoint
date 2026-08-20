@@ -198,7 +198,7 @@ private fun NameInputField(
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 imeAction = imeAction,
-                capitalization = KeyboardCapitalization.Sentences,
+                capitalization = KeyboardCapitalization.Words,
             ),
             modifier = Modifier
                 .fillMaxWidth()
