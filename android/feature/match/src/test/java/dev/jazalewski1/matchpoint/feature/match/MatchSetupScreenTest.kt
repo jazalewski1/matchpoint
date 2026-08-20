@@ -30,13 +30,17 @@ class MatchSetupScreenTest {
     fun `displays input fields for player names`() {
         rule.setContent { MatchSetupScreen() }
 
+        rule.onNodeWithText("Player 1").assertIsDisplayed()
         rule.onNodeWithContentDescription("Player 1 Name")
             .assertIsDisplayed()
             .assert(hasText(""))
 
+        rule.onNodeWithText("Player 2").assertIsDisplayed()
         rule.onNodeWithContentDescription("Player 2 Name")
             .assertIsDisplayed()
             .assert(hasText(""))
+
+        rule.onAllNodesWithText("0 / 24").assertCountEquals(2)
     }
 
     @Test

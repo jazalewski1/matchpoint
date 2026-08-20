@@ -1,6 +1,7 @@
 package dev.jazalewski1.matchpoint.feature.match
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -173,11 +174,19 @@ private fun NameInputField(
     imeAction: ImeAction,
 ) {
     Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(8.dp),
-        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Text(
+                text = "${value.length} / $MAX_NAME_LENGTH",
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
