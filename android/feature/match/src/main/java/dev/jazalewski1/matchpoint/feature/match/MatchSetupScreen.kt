@@ -1,7 +1,6 @@
 package dev.jazalewski1.matchpoint.feature.match
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -55,60 +54,92 @@ private fun Screen(
                 .consumeWindowInsets(innerPadding)
                 .imePadding(),
         ) {
-            Text(
-                text = "New Match",
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-            )
-            Spacer(Modifier.height(24.dp))
+            Header()
+            Spacer(Modifier.height(16.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                TextField(
+                NameInputField(
                     value = player1Name,
+                    label = "Player 1",
                     onValueChange = onPlayer1NameChanged,
-                    modifier = Modifier.fillMaxWidth().semantics(properties = {
-                        this.contentDescription = "Player 1 Name"
-                    }),
-                    label = { Text("Player 1", style = MaterialTheme.typography.labelMedium) },
                 )
-                TextField(
+                NameInputField(
                     value = player2Name,
+                    label = "Player 2",
                     onValueChange = onPlayer2NameChanged,
-                    modifier = Modifier.fillMaxWidth().semantics(properties = {
-                        this.contentDescription = "Player 2 Name"
-                    }),
-                    label = { Text("Player 2", style = MaterialTheme.typography.labelMedium) },
                 )
             }
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                Button(
-                    onClick = {},
-                    enabled = true,
-                    modifier = Modifier.fillMaxWidth(0.7f).semantics(properties = {
-                        this.contentDescription = "Starts new match"
-                    }),
-                ) {
-                    Text(
-                        text = "Start",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(8.dp),
-                    )
-                }
+                StartButton(onClick = {}, enabled = true)
             }
         }
+    }
+}
+
+@Composable
+private fun Header() {
+    Text(
+        text = "New Match",
+        style = MaterialTheme.typography.displayMedium,
+        fontWeight = FontWeight.Black,
+        color = MaterialTheme.colorScheme.primary,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+    )
+}
+
+@Composable
+private fun NameInputField(
+    value: String,
+    label: String,
+    onValueChange: (String) -> Unit,
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(8.dp),
+        )
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics(properties = {
+                    this.contentDescription = "$label Name"
+                }),
+        )
+    }
+}
+
+@Composable
+private fun StartButton(onClick: () -> Unit, enabled: Boolean) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth(0.7f)
+            .semantics(properties = {
+                this.contentDescription = "Starts new match"
+            }),
+    ) {
+        Text(
+            text = "Start",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(8.dp),
+        )
     }
 }
 
