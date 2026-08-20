@@ -178,7 +178,7 @@ private fun NameInputField(
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(8.dp),
         )
-        TextField(
+        OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             isError = !isValid,
