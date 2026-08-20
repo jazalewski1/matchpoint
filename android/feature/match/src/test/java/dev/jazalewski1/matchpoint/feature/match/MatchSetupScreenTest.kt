@@ -55,6 +55,37 @@ class MatchSetupScreenTest {
     }
 
     @Test
+    fun `when first player name field clicked done then moves to second field`() {
+        rule.setContent { MatchSetupScreen() }
+
+        rule.onNodeWithContentDescription("Player 1 Name").apply {
+            performClick()
+            performTextReplacement("Name")
+            assertIsFocused()
+            performImeAction()
+        }
+
+        rule.onNodeWithContentDescription("Player 1 Name").assertIsNotFocused()
+        rule.onNodeWithContentDescription("Player 2 Name").assertIsFocused()
+    }
+
+    @Test
+    fun `when second player name field clicked done then keep focus`() {
+        rule.setContent { MatchSetupScreen() }
+
+        rule.onNodeWithContentDescription("Player 2 Name").apply {
+            performClick()
+            performTextReplacement("Name")
+            assertIsFocused()
+            performImeAction()
+        }
+        rule.onNodeWithContentDescription("Player 1 Name").assertIsNotFocused()
+        // Unexpectedly seems like this is Android behavior -
+        // input stays in focus after pressing Done action
+        rule.onNodeWithContentDescription("Player 2 Name").assertIsFocused()
+    }
+
+    @Test
     fun `displays start button`() {
         rule.setContent { MatchSetupScreen() }
 

@@ -1,12 +1,15 @@
 package dev.jazalewski1.matchpoint.feature.match
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,11 +70,13 @@ private fun Screen(
                     value = player1Name,
                     label = "Player 1",
                     onValueChange = onPlayer1NameChanged,
+                    imeAction = ImeAction.Next,
                 )
                 NameInputField(
                     value = player2Name,
                     label = "Player 2",
                     onValueChange = onPlayer2NameChanged,
+                    imeAction = ImeAction.Done,
                 )
             }
             Row(
@@ -105,6 +110,7 @@ private fun NameInputField(
     value: String,
     label: String,
     onValueChange: (String) -> Unit,
+    imeAction: ImeAction,
 ) {
     Column {
         Text(
@@ -115,6 +121,11 @@ private fun NameInputField(
         TextField(
             value = value,
             onValueChange = onValueChange,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = imeAction,
+                capitalization = KeyboardCapitalization.Sentences,
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics(properties = {
