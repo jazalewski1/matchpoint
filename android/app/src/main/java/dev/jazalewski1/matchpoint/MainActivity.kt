@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.feature.home.HomeRoute
 import dev.jazalewski1.matchpoint.feature.home.homeDestination
+import dev.jazalewski1.matchpoint.feature.match.MatchSetupScreen
 import dev.jazalewski1.matchpoint.feature.match.matchDestination
 import dev.jazalewski1.matchpoint.feature.match.navigateToMatchScreen
 
@@ -17,7 +18,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { AppTheme { App() } }
+//        setContent { AppTheme { App() } }
+        setContent { AppTheme { MatchSetupScreen() } } // TODO: remove
     }
 }
 
