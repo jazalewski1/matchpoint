@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
@@ -74,13 +76,17 @@ private fun Screen(
                 TextField(
                     value = player1Name,
                     onValueChange = onPlayer1NameChanged,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().semantics(properties = {
+                        this.contentDescription = "Player 1 Name"
+                    }),
                     label = { Text("Player 1", style = MaterialTheme.typography.labelMedium) },
                 )
                 TextField(
                     value = player2Name,
                     onValueChange = onPlayer2NameChanged,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().semantics(properties = {
+                        this.contentDescription = "Player 2 Name"
+                    }),
                     label = { Text("Player 2", style = MaterialTheme.typography.labelMedium) },
                 )
             }
@@ -91,7 +97,9 @@ private fun Screen(
                 Button(
                     onClick = {},
                     enabled = true,
-                    modifier = Modifier.fillMaxWidth(0.7f),
+                    modifier = Modifier.fillMaxWidth(0.7f).semantics(properties = {
+                        this.contentDescription = "Starts new match"
+                    }),
                 ) {
                     Text(
                         text = "Start",
