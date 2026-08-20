@@ -1,10 +1,12 @@
 package dev.jazalewski1.matchpoint.feature.match
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,17 +20,24 @@ fun isError() = SemanticsMatcher.keyIsDefined(SemanticsProperties.Error)
 class MatchSetupScreenTest {
     @get:Rule
     val rule = createComposeRule()
+    
+    @Composable
+    private fun SutScreen(
+        onStart: (String, String) -> Unit = { p1, p2 -> },
+    ) = MatchSetupScreen(
+        onStart = onStart,
+    )
 
     @Test
     fun `display header`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithText("New Match").assertIsDisplayed()
     }
 
     @Test
     fun `displays input fields for player names`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithText("Player 1").assertIsDisplayed()
         rule.onNodeWithContentDescription("Player 1 Name")
@@ -45,7 +54,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `receives player names`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithContentDescription("Player 1 Name").apply {
             val newName = "Roger"
@@ -62,7 +71,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when first player name field clicked done then moves to second field`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithContentDescription("Player 1 Name").apply {
             performClick()
@@ -77,7 +86,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when second player name field clicked done then keep focus`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithContentDescription("Player 2 Name").apply {
             performClick()
@@ -93,7 +102,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when player name field is blank then error is displayed`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         fun test(contentDescription: String) {
             rule.onNodeWithContentDescription(contentDescription).apply {
@@ -112,7 +121,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when player name field is too long then error is displayed`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         fun test(contentDescription: String) {
             rule.onNodeWithContentDescription(contentDescription).apply {
@@ -130,7 +139,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `displays disabled start button`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithContentDescription("Starts new match")
             .assertIsDisplayed()
@@ -140,7 +149,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when names are present then start button is enabled`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement("Roger")
         rule.onNodeWithContentDescription("Player 2 Name").performTextReplacement("Novak")
@@ -150,7 +159,7 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when there are input errors then start button is disabled`() {
-        rule.setContent { MatchSetupScreen() }
+        rule.setContent { SutScreen() }
 
         rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement("a".repeat(200))
 
@@ -158,5 +167,22 @@ class MatchSetupScreenTest {
             .assertIsDisplayed()
             .assert(hasText("Start"))
             .assertIsNotEnabled()
+    }
+
+    @Test
+    fun `when start button is clicked then callback with input names is triggered`() {
+        var names: Pair<String, String>? = null
+        rule.setContent { SutScreen(
+            onStart = { n1, n2 -> names = Pair(n1, n2) }
+        ) }
+
+        val name1 = "Roger"
+        rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement(name1)
+        val name2 = "Rafael"
+        rule.onNodeWithContentDescription("Player 2 Name").performTextReplacement(name2)
+        rule.onNodeWithContentDescription("Starts new match")
+            .performClick()
+
+        assertEquals(Pair(name1, name2), names)
     }
 }

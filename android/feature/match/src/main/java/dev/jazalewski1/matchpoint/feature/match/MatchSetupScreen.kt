@@ -20,7 +20,9 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 private const val MAX_NAME_LENGTH = 24
 
 @Composable
-fun MatchSetupScreen() { // TODO: make internal
+internal fun MatchSetupScreen(
+    onStart: (String, String) -> Unit,
+) {
     val player1NameInput = rememberNameInputState()
     val player2NameInput = rememberNameInputState()
     val errors by remember {
@@ -43,6 +45,7 @@ fun MatchSetupScreen() { // TODO: make internal
         onPlayer2NameChanged = player2NameInput::change,
         isPlayer2NameValid = player2NameInput.errors.isEmpty(),
         isInputValid = isInputValid,
+        onStartClick = { onStart(player1NameInput.text, player2NameInput.text) },
         errors = errors,
     )
 }
@@ -102,6 +105,7 @@ private fun Screen(
     onPlayer2NameChanged: (String) -> Unit,
     isPlayer2NameValid: Boolean,
     isInputValid: Boolean,
+    onStartClick: () -> Unit,
     errors: List<String>,
 ) {
     Scaffold { innerPadding ->
@@ -145,7 +149,7 @@ private fun Screen(
                     .padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                StartButton(onClick = {}, enabled = isInputValid)
+                StartButton(onClick = onStartClick, enabled = isInputValid)
             }
         }
     }
@@ -264,6 +268,7 @@ private fun ScreenPreviewBase(
     isPlayer2NameValid = isPlayer2NameValid,
     onPlayer2NameChanged = {},
     isInputValid = isInputValid,
+    onStartClick = {},
     errors = errors,
 )
 
