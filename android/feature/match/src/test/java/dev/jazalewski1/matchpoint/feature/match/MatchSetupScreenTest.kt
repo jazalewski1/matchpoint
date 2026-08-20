@@ -12,6 +12,8 @@ import org.junit.runner.RunWith
 private fun hasEditableText(expected: String) =
     SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString(expected))
 
+fun isError() = SemanticsMatcher.keyIsDefined(SemanticsProperties.Error)
+
 @RunWith(AndroidJUnit4::class)
 class MatchSetupScreenTest {
     @get:Rule
@@ -86,11 +88,71 @@ class MatchSetupScreenTest {
     }
 
     @Test
-    fun `displays start button`() {
+    fun `when player name field is blank then error is displayed`() {
+        rule.setContent { MatchSetupScreen() }
+
+        fun test(contentDescription: String) {
+            rule.onNodeWithContentDescription(contentDescription).apply {
+                performTextReplacement("Name")
+                performTextClearance()
+
+                assert(isError())
+            }
+
+            rule.onNodeWithText("Name cannot be empty.").assertIsDisplayed()
+        }
+
+        test("Player 1 Name")
+        test("Player 2 Name")
+    }
+
+    @Test
+    fun `when player name field is too long then error is displayed`() {
+        rule.setContent { MatchSetupScreen() }
+
+        fun test(contentDescription: String) {
+            rule.onNodeWithContentDescription(contentDescription).apply {
+                performTextReplacement("a".repeat(200))
+
+                assert(isError())
+            }
+
+            rule.onNodeWithText("Name cannot be longer than 24 characters.").assertIsDisplayed()
+        }
+
+        test("Player 1 Name")
+        test("Player 2 Name")
+    }
+
+    @Test
+    fun `displays disabled start button`() {
         rule.setContent { MatchSetupScreen() }
 
         rule.onNodeWithContentDescription("Starts new match")
             .assertIsDisplayed()
             .assert(hasText("Start"))
+            .assertIsNotEnabled()
+    }
+
+    @Test
+    fun `when names are present then start button is enabled`() {
+        rule.setContent { MatchSetupScreen() }
+
+        rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement("Roger")
+        rule.onNodeWithContentDescription("Player 2 Name").performTextReplacement("Novak")
+
+        rule.onNodeWithContentDescription("Starts new match").assertIsEnabled()
+    }
+
+    @Test
+    fun `when there are input errors then start button is disabled`() {
+        rule.setContent { MatchSetupScreen() }
+
+        rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement("a".repeat(200))
+
+        rule.onNodeWithContentDescription("Starts new match")
+            .assertIsDisplayed()
+            .assert(hasText("Start"))
+            .assertIsNotEnabled()
     }
 }
