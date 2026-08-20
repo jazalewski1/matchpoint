@@ -19,7 +19,7 @@ class HomeScreenTest {
     private fun SutScreen(onStartClick: () -> Unit = {}) = HomeScreen(onStartClick = onStartClick)
 
     @Test
-    fun displaysLogo() {
+    fun `displays logo`() {
         rule.setContent { SutScreen() }
 
         rule
@@ -29,14 +29,14 @@ class HomeScreenTest {
     }
 
     @Test
-    fun displaysButtons() {
+    fun `displays buttons`() {
         rule.setContent { SutScreen() }
 
         rule.onNodeWithText("Start New Match").assertIsDisplayed().assertHasClickAction()
     }
 
     @Test
-    fun whenStartButtonClickedThenCallbackIsTriggered() {
+    fun `when start button is clicked then callback is triggered`() {
         var triggered = false
         rule.setContent { SutScreen(onStartClick = { triggered = true }) }
 
