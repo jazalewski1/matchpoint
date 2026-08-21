@@ -1,11 +1,14 @@
 package dev.jazalewski1.matchpoint.feature.match
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -15,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 private const val MAX_NAME_LENGTH = 24
@@ -180,15 +184,17 @@ private fun NameInputField(
     Column {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
             )
             Text(
                 text = "${value.length} / $MAX_NAME_LENGTH",
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
             )
         }
         OutlinedTextField(
@@ -200,6 +206,13 @@ private fun NameInputField(
                 imeAction = imeAction,
                 capitalization = KeyboardCapitalization.Words,
             ),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+                cursorColor = MaterialTheme.colorScheme.secondary,
+            ),
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics(properties = {
@@ -235,11 +248,28 @@ private fun InputErrorCard(errors: List<String>) {
 
 @Composable
 private fun StartButton(onClick: () -> Unit, enabled: Boolean) {
+    val brush = if (enabled) Brush.horizontalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.secondary,
+        )
+    ) else
+        Brush.horizontalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.background,
+                MaterialTheme.colorScheme.background,
+            )
+        )
     Button(
         onClick = onClick,
         enabled = enabled,
+        colors = ButtonDefaults.buttonColors(Color.Transparent),
         modifier = Modifier
             .fillMaxWidth(0.7f)
+            .background(
+                brush = brush,
+                shape = ButtonDefaults.shape,
+            )
             .semantics(properties = {
                 this.contentDescription = "Starts new match"
             }),
@@ -247,6 +277,8 @@ private fun StartButton(onClick: () -> Unit, enabled: Boolean) {
         Text(
             text = "Start",
             style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Black,
+            fontSize = 18.sp,
             modifier = Modifier.padding(8.dp),
         )
     }
