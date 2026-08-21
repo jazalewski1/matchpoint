@@ -26,9 +26,11 @@ private fun App() {
     NavHost(navController = navController, startDestination = HomeRoute) {
         homeDestination(onStartClick = { navController.navigateToMatchSetupScreen() })
 
-        matchSetupDestination(onStart = { player1Name, player2Name ->
-            navController.navigateToMatchScreen(player1Name, player2Name)
-        })
+        matchSetupDestination(
+            onStart = { player1Name, player2Name ->
+                navController.navigateToMatchScreen(player1Name, player2Name)
+            }
+        )
 
         matchDestination()
     }

@@ -8,10 +8,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable object MatchSetupRoute
 
-@Serializable data class MatchRoute(
-    val player1Name: String,
-    val player2Name: String,
-)
+@Serializable data class MatchRoute(val player1Name: String, val player2Name: String)
 
 fun NavGraphBuilder.matchSetupDestination(onStart: (String, String) -> Unit) {
     composable<MatchSetupRoute> { MatchSetupScreen(onStart = onStart) }
@@ -27,6 +24,7 @@ fun NavGraphBuilder.matchDestination() {
 fun NavController.navigateToMatchSetupScreen() {
     navigate(route = MatchSetupRoute)
 }
+
 fun NavController.navigateToMatchScreen(player1Name: String, player2Name: String) {
     navigate(route = MatchRoute(player1Name, player2Name))
 }

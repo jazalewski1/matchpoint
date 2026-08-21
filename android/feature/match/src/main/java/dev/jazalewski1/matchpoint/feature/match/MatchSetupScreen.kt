@@ -24,22 +24,16 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 private const val MAX_NAME_LENGTH = 24
 
 @Composable
-internal fun MatchSetupScreen(
-    onStart: (String, String) -> Unit,
-) {
+internal fun MatchSetupScreen(onStart: (String, String) -> Unit) {
     val player1NameInput = rememberNameInputState()
     val player2NameInput = rememberNameInputState()
     val errors by remember {
         derivedStateOf {
-            (player1NameInput.errors + player2NameInput.errors)
-                .distinct()
-                .map(NameError::toString)
+            (player1NameInput.errors + player2NameInput.errors).distinct().map(NameError::toString)
         }
     }
     val isInputValid by remember {
-        derivedStateOf {
-            player1NameInput.isValid && player2NameInput.isValid
-        }
+        derivedStateOf { player1NameInput.isValid && player2NameInput.isValid }
     }
     Screen(
         player1Name = player1NameInput.text,
@@ -57,8 +51,10 @@ internal fun MatchSetupScreen(
 private class NameInputState {
     var text by mutableStateOf("")
         private set
+
     var errors by mutableStateOf(listOf<NameError>())
         private set
+
     var isValid by mutableStateOf(false)
         private set
 
@@ -97,8 +93,7 @@ private enum class NameError {
     },
 }
 
-@Composable
-private fun rememberNameInputState() = remember { NameInputState() }
+@Composable private fun rememberNameInputState() = remember { NameInputState() }
 
 @Composable
 private fun Screen(
@@ -114,19 +109,16 @@ private fun Screen(
 ) {
     Scaffold { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-                .imePadding(),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
+                    .imePadding()
         ) {
             Header()
             Spacer(Modifier.height(16.dp))
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .weight(1f),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).weight(1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 NameInputField(
@@ -148,9 +140,7 @@ private fun Screen(
                 InputErrorCard(errors)
             }
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
                 StartButton(onClick = onStartClick, enabled = isInputValid)
@@ -167,9 +157,7 @@ private fun Header() {
         fontWeight = FontWeight.Black,
         color = MaterialTheme.colorScheme.primary,
         textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
     )
 }
 
@@ -184,14 +172,9 @@ private fun NameInputField(
     Column {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
         ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-            )
+            Text(text = label, style = MaterialTheme.typography.labelLarge)
             Text(
                 text = "${value.length} / $MAX_NAME_LENGTH",
                 style = MaterialTheme.typography.labelLarge,
@@ -202,22 +185,22 @@ private fun NameInputField(
             onValueChange = onValueChange,
             isError = !isValid,
             singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                imeAction = imeAction,
-                capitalization = KeyboardCapitalization.Words,
-            ),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
-                cursorColor = MaterialTheme.colorScheme.secondary,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    imeAction = imeAction,
+                    capitalization = KeyboardCapitalization.Words,
+                ),
+            colors =
+                TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+                    cursorColor = MaterialTheme.colorScheme.secondary,
+                ),
             shape = RoundedCornerShape(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .semantics(properties = {
-                    this.contentDescription = "$label Name"
-                }),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .semantics(properties = { this.contentDescription = "$label Name" }),
         )
     }
 }
@@ -225,22 +208,16 @@ private fun NameInputField(
 @Composable
 private fun InputErrorCard(errors: List<String>) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            ),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             for (msg in errors) {
-                Text(
-                    text = msg,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+                Text(text = msg, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
@@ -248,31 +225,28 @@ private fun InputErrorCard(errors: List<String>) {
 
 @Composable
 private fun StartButton(onClick: () -> Unit, enabled: Boolean) {
-    val brush = if (enabled) Brush.horizontalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.secondary,
-        )
-    ) else
-        Brush.horizontalGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.background,
-                MaterialTheme.colorScheme.background,
+    val brush =
+        if (enabled)
+            Brush.horizontalGradient(
+                colors =
+                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
             )
-        )
+        else
+            Brush.horizontalGradient(
+                colors =
+                    listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.background,
+                    )
+            )
     Button(
         onClick = onClick,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(Color.Transparent),
-        modifier = Modifier
-            .fillMaxWidth(0.7f)
-            .background(
-                brush = brush,
-                shape = ButtonDefaults.shape,
-            )
-            .semantics(properties = {
-                this.contentDescription = "Starts new match"
-            }),
+        modifier =
+            Modifier.fillMaxWidth(0.7f)
+                .background(brush = brush, shape = ButtonDefaults.shape)
+                .semantics(properties = { this.contentDescription = "Starts new match" }),
     ) {
         Text(
             text = "Start",
@@ -292,24 +266,23 @@ private fun ScreenPreviewBase(
     isPlayer2NameValid: Boolean = true,
     isInputValid: Boolean = true,
     errors: List<String> = emptyList(),
-) = Screen(
-    player1Name = player1Name,
-    onPlayer1NameChanged = {},
-    isPlayer1NameValid = isPlayer1NameValid,
-    player2Name = player2Name,
-    isPlayer2NameValid = isPlayer2NameValid,
-    onPlayer2NameChanged = {},
-    isInputValid = isInputValid,
-    onStartClick = {},
-    errors = errors,
-)
+) =
+    Screen(
+        player1Name = player1Name,
+        onPlayer1NameChanged = {},
+        isPlayer1NameValid = isPlayer1NameValid,
+        player2Name = player2Name,
+        isPlayer2NameValid = isPlayer2NameValid,
+        onPlayer2NameChanged = {},
+        isInputValid = isInputValid,
+        onStartClick = {},
+        errors = errors,
+    )
 
 @Preview(showBackground = true, showSystemUi = true, device = DEFAULT)
 @Composable
 private fun ScreenPreview() {
-    AppTheme {
-        ScreenPreviewBase()
-    }
+    AppTheme { ScreenPreviewBase() }
 }
 
 @Preview(showBackground = true, showSystemUi = true, device = DEFAULT)

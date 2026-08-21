@@ -18,15 +18,11 @@ fun isError() = SemanticsMatcher.keyIsDefined(SemanticsProperties.Error)
 
 @RunWith(AndroidJUnit4::class)
 class MatchSetupScreenTest {
-    @get:Rule
-    val rule = createComposeRule()
-    
+    @get:Rule val rule = createComposeRule()
+
     @Composable
-    private fun SutScreen(
-        onStart: (String, String) -> Unit = { p1, p2 -> },
-    ) = MatchSetupScreen(
-        onStart = onStart,
-    )
+    private fun SutScreen(onStart: (String, String) -> Unit = { p1, p2 -> }) =
+        MatchSetupScreen(onStart = onStart)
 
     @Test
     fun `display header`() {
@@ -40,14 +36,10 @@ class MatchSetupScreenTest {
         rule.setContent { SutScreen() }
 
         rule.onNodeWithText("Player 1").assertIsDisplayed()
-        rule.onNodeWithContentDescription("Player 1 Name")
-            .assertIsDisplayed()
-            .assert(hasText(""))
+        rule.onNodeWithContentDescription("Player 1 Name").assertIsDisplayed().assert(hasText(""))
 
         rule.onNodeWithText("Player 2").assertIsDisplayed()
-        rule.onNodeWithContentDescription("Player 2 Name")
-            .assertIsDisplayed()
-            .assert(hasText(""))
+        rule.onNodeWithContentDescription("Player 2 Name").assertIsDisplayed().assert(hasText(""))
 
         rule.onAllNodesWithText("0 / 24").assertCountEquals(2)
     }
@@ -141,7 +133,8 @@ class MatchSetupScreenTest {
     fun `displays disabled start button`() {
         rule.setContent { SutScreen() }
 
-        rule.onNodeWithContentDescription("Starts new match")
+        rule
+            .onNodeWithContentDescription("Starts new match")
             .assertIsDisplayed()
             .assert(hasText("Start"))
             .assertIsNotEnabled()
@@ -163,7 +156,8 @@ class MatchSetupScreenTest {
 
         rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement("a".repeat(200))
 
-        rule.onNodeWithContentDescription("Starts new match")
+        rule
+            .onNodeWithContentDescription("Starts new match")
             .assertIsDisplayed()
             .assert(hasText("Start"))
             .assertIsNotEnabled()
@@ -172,16 +166,13 @@ class MatchSetupScreenTest {
     @Test
     fun `when start button is clicked then callback with input names is triggered`() {
         var names: Pair<String, String>? = null
-        rule.setContent { SutScreen(
-            onStart = { n1, n2 -> names = Pair(n1, n2) }
-        ) }
+        rule.setContent { SutScreen(onStart = { n1, n2 -> names = Pair(n1, n2) }) }
 
         val name1 = "Roger"
         rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement(name1)
         val name2 = "Rafael"
         rule.onNodeWithContentDescription("Player 2 Name").performTextReplacement(name2)
-        rule.onNodeWithContentDescription("Starts new match")
-            .performClick()
+        rule.onNodeWithContentDescription("Starts new match").performClick()
 
         assertEquals(Pair(name1, name2), names)
     }

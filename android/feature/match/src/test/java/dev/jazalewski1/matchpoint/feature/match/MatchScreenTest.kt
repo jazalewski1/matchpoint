@@ -14,15 +14,12 @@ private const val RHS_PLAYER_NAME = "Right player"
 @RunWith(AndroidJUnit4::class)
 class SutScreenTest {
     @get:Rule val rule = createComposeRule()
-    
+
     @Composable
     private fun SutScreen(
         lhsPlayerName: String = LHS_PLAYER_NAME,
         rhsPlayerName: String = RHS_PLAYER_NAME,
-    ) = MatchScreen(
-        lhsPlayerName = lhsPlayerName,
-        rhsPlayerName = rhsPlayerName,
-    )
+    ) = MatchScreen(lhsPlayerName = lhsPlayerName, rhsPlayerName = rhsPlayerName)
 
     @Test
     fun `displays initial points`() {
