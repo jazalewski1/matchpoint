@@ -1,14 +1,11 @@
 package dev.jazalewski1.matchpoint.feature.match
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -18,7 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 private const val MAX_NAME_LENGTH = 24
@@ -143,7 +140,13 @@ private fun Screen(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                StartButton(onClick = onStartClick, enabled = isInputValid)
+                PrimaryButton(
+                    text = "Start",
+                    onClick = onStartClick,
+                    enabled = isInputValid,
+                    contentDescription = "Starts new match",
+                    modifier = Modifier.fillMaxWidth(0.7f),
+                )
             }
         }
     }
@@ -220,41 +223,6 @@ private fun InputErrorCard(errors: List<String>) {
                 Text(text = msg, style = MaterialTheme.typography.bodyLarge)
             }
         }
-    }
-}
-
-@Composable
-private fun StartButton(onClick: () -> Unit, enabled: Boolean) {
-    val brush =
-        if (enabled)
-            Brush.horizontalGradient(
-                colors =
-                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
-            )
-        else
-            Brush.horizontalGradient(
-                colors =
-                    listOf(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.background,
-                    )
-            )
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        colors = ButtonDefaults.buttonColors(Color.Transparent),
-        modifier =
-            Modifier.fillMaxWidth(0.7f)
-                .background(brush = brush, shape = ButtonDefaults.shape)
-                .semantics(properties = { this.contentDescription = "Starts new match" }),
-    ) {
-        Text(
-            text = "Start",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Black,
-            fontSize = 18.sp,
-            modifier = Modifier.padding(8.dp),
-        )
     }
 }
 

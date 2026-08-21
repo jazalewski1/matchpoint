@@ -2,13 +2,13 @@ package dev.jazalewski1.matchpoint.feature.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
@@ -32,13 +32,13 @@ internal fun HomeScreen(onStartClick: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(0.7f).weight(0.5f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Button(onClick = onStartClick, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Start New Match",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(8.dp),
-                    )
-                }
+                PrimaryButton(
+                    text = "Start New Match",
+                    onClick = onStartClick,
+                    enabled = true,
+                    contentDescription = "Starts new match",
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }
