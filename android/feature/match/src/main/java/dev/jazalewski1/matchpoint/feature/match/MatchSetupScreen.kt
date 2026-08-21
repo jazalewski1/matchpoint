@@ -1,21 +1,18 @@
 package dev.jazalewski1.matchpoint.feature.match
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.DEFAULT
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
+import dev.jazalewski1.matchpoint.core.ui.common.PrimaryTextField
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 private const val MAX_NAME_LENGTH = 24
@@ -183,27 +180,12 @@ private fun NameInputField(
                 style = MaterialTheme.typography.labelLarge,
             )
         }
-        OutlinedTextField(
+        PrimaryTextField(
             value = value,
             onValueChange = onValueChange,
-            isError = !isValid,
-            singleLine = true,
-            keyboardOptions =
-                KeyboardOptions(
-                    imeAction = imeAction,
-                    capitalization = KeyboardCapitalization.Words,
-                ),
-            colors =
-                TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
-                    cursorColor = MaterialTheme.colorScheme.secondary,
-                ),
-            shape = RoundedCornerShape(8.dp),
-            modifier =
-                Modifier.fillMaxWidth()
-                    .semantics(properties = { this.contentDescription = "$label Name" }),
+            isValid = isValid,
+            imeAction = imeAction,
+            contentDescription = "$label Name",
         )
     }
 }
