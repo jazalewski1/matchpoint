@@ -26,5 +26,7 @@ fun NavController.navigateToMatchSetupScreen() {
 }
 
 fun NavController.navigateToMatchScreen(player1Name: String, player2Name: String) {
-    navigate(route = MatchRoute(player1Name, player2Name))
+    navigate(route = MatchRoute(player1Name, player2Name)) {
+        popUpTo<MatchSetupRoute> { inclusive = true }
+    }
 }
