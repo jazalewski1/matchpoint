@@ -19,11 +19,9 @@ import androidx.compose.ui.unit.sp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
-internal fun MatchScreen() {
+internal fun MatchScreen(lhsPlayerName: String, rhsPlayerName: String) {
     val context = LocalContext.current
     val scoreState = rememberScoreState()
-    val lhsPlayerName = "Player 1"
-    val rhsPlayerName = "Player 2"
 
     DisposableEffect(Unit) {
         val activity = context as? Activity
@@ -103,5 +101,5 @@ private class ScoreState {
 )
 @Composable
 private fun MatchScreenPreview() {
-    AppTheme { MatchScreen() }
+    AppTheme { MatchScreen(lhsPlayerName = "Novak", rhsPlayerName = "Rafael") }
 }

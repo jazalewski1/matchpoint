@@ -10,8 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.feature.home.HomeRoute
 import dev.jazalewski1.matchpoint.feature.home.homeDestination
-import dev.jazalewski1.matchpoint.feature.match.matchDestination
-import dev.jazalewski1.matchpoint.feature.match.navigateToMatchScreen
+import dev.jazalewski1.matchpoint.feature.match.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +24,14 @@ class MainActivity : ComponentActivity() {
 private fun App() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = HomeRoute) {
-        homeDestination(onStartClick = { navController.navigateToMatchScreen() })
+        homeDestination(onStartClick = { navController.navigateToMatchSetupScreen() })
+
+        matchSetupDestination(
+            onStart = { player1Name, player2Name ->
+                navController.navigateToMatchScreen(player1Name, player2Name)
+            }
+        )
+
         matchDestination()
     }
 }
