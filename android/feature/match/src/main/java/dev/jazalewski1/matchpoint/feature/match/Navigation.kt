@@ -3,7 +3,6 @@ package dev.jazalewski1.matchpoint.feature.match
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable object MatchSetupRoute
@@ -15,10 +14,7 @@ fun NavGraphBuilder.matchSetupDestination(onStart: (String, String) -> Unit) {
 }
 
 fun NavGraphBuilder.matchDestination() {
-    composable<MatchRoute> { backStackEntry ->
-        val route: MatchRoute = backStackEntry.toRoute()
-        MatchScreen(route.player1Name, route.player2Name)
-    }
+    composable<MatchRoute> { MatchScreen() }
 }
 
 fun NavController.navigateToMatchSetupScreen() {

@@ -17,25 +17,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
-import dev.jazalewski1.matchpoint.domain.tennis.MatchControllerImpl
 
 @Composable
-internal fun MatchScreen(lhsPlayerName: String, rhsPlayerName: String) {
-    val scoreState = rememberScoreState()
-    Screen(
-        lhsPlayerName = lhsPlayerName,
-        rhsPlayerName = rhsPlayerName,
-        lhsScore = scoreState.lhsScore,
-        rhsScore = scoreState.rhsScore,
-        onLhsClick = scoreState::increaseLhs,
-        onRhsClick = scoreState::increaseRhs,
+internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    MatchScreen(
+        lhsPlayerName = uiState.lhsPlayerName,
+        rhsPlayerName = uiState.rhsPlayerName,
+        lhsScore = uiState.lhsScore,
+        rhsScore = uiState.rhsScore,
+        onLhsClick = viewModel::addLhsScore,
+        onRhsClick = viewModel::addRhsScore,
     )
 }
 
 @Composable
-private fun Screen(
+internal fun MatchScreen(
     lhsPlayerName: String,
     rhsPlayerName: String,
     lhsScore: String,
@@ -100,52 +100,6 @@ private fun PointContainer(
     }
 }
 
-private class ScoreState {
-    private val matchController = MatchControllerImpl()
-    var lhsScore by mutableStateOf("")
-        private set
-
-    var rhsScore by mutableStateOf("")
-        private set
-
-    init {
-        update()
-    }
-
-    fun increaseLhs() {
-        matchController.addLhsScore()
-        update()
-    }
-
-    fun increaseRhs() {
-        matchController.addRhsScore()
-        update()
-    }
-
-    private fun update() {
-        when (val game = matchController.getState().game) {
-            is GameState.Ongoing -> {
-                lhsScore = game.lhs.value.toString()
-                rhsScore = game.rhs.value.toString()
-            }
-            is GameState.Deuce -> {
-                lhsScore = "40"
-                rhsScore = "40"
-            }
-            is GameState.Advantage.Lhs -> {
-                lhsScore = "AD"
-                rhsScore = "40"
-            }
-            is GameState.Advantage.Rhs -> {
-                lhsScore = "40"
-                rhsScore = "AD"
-            }
-        }
-    }
-}
-
-@Composable private fun rememberScoreState() = remember { ScoreState() }
-
 @Preview(
     showBackground = true,
     device = "spec:width=891dp,height=411dp,dpi=420,orientation=landscape",
@@ -153,7 +107,7 @@ private class ScoreState {
 @Composable
 private fun Preview() {
     AppTheme {
-        Screen(
+        MatchScreen(
             lhsPlayerName = "Federer",
             rhsPlayerName = "Nadal",
             lhsScore = "40",
