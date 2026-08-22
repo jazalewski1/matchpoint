@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -138,9 +137,10 @@ private fun PointContainer(
             fontWeight = FontWeight.Black,
             color = MaterialTheme.colorScheme.primary,
         )
-        BasicText(
+        Text(
             text = score,
             style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Black,
             autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
         )
     }
