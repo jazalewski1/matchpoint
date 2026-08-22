@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
-import dev.jazalewski1.matchpoint.feature.match.util.toPairOfStrings
+import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,17 +25,17 @@ constructor(
     private val _uiState =
         MutableStateFlow(
             run {
-                val (lhsScore, rhsScore) = matchController.getState().game.toPairOfStrings()
+                val game = matchController.getState().game
                 MatchUiState(
                     lhsPlayer =
                         PlayerUiState(
                             name = savedStateHandle.toRoute<MatchRoute>().player1Name,
-                            score = lhsScore,
+                            score = game.lhsToString(),
                         ),
                     rhsPlayer =
                         PlayerUiState(
                             name = savedStateHandle.toRoute<MatchRoute>().player2Name,
-                            score = rhsScore,
+                            score = game.rhsToString(),
                         ),
                 )
             }
@@ -52,14 +52,13 @@ constructor(
                 is PointOutcome.PointScored -> {
                     _uiState.update { current ->
                         val game = matchController.getState().game
-                        val (lhsScore, rhsScore) = game.toPairOfStrings()
                         current.copy(
                             lhsPlayer =
                                 current.lhsPlayer.copy(
-                                    score = lhsScore,
+                                    score = game.lhsToString(),
                                     indication = Indication.Minor,
                                 ),
-                            rhsPlayer = current.rhsPlayer.copy(score = rhsScore),
+                            rhsPlayer = current.rhsPlayer.copy(score = game.rhsToString()),
                         )
                     }
                     delay(MINOR_INDICATION_DURATION)
@@ -76,10 +75,17 @@ constructor(
                     delay(MAJOR_INDICATION_DURATION)
                     _uiState.update { current ->
                         val game = matchController.getState().game
-                        val (lhsScore, rhsScore) = game.toPairOfStrings()
                         current.copy(
-                            lhsPlayer = current.lhsPlayer.copy(score = lhsScore, indication = null),
-                            rhsPlayer = current.rhsPlayer.copy(score = rhsScore, indication = null),
+                            lhsPlayer =
+                                current.lhsPlayer.copy(
+                                    score = game.lhsToString(),
+                                    indication = null,
+                                ),
+                            rhsPlayer =
+                                current.rhsPlayer.copy(
+                                    score = game.rhsToString(),
+                                    indication = null,
+                                ),
                         )
                     }
                 }
@@ -97,12 +103,11 @@ constructor(
                 is PointOutcome.PointScored -> {
                     _uiState.update { current ->
                         val game = matchController.getState().game
-                        val (lhsScore, rhsScore) = game.toPairOfStrings()
                         current.copy(
-                            lhsPlayer = current.lhsPlayer.copy(score = lhsScore),
+                            lhsPlayer = current.lhsPlayer.copy(score = game.lhsToString()),
                             rhsPlayer =
                                 current.rhsPlayer.copy(
-                                    score = rhsScore,
+                                    score = game.rhsToString(),
                                     indication = Indication.Minor,
                                 ),
                         )
@@ -121,10 +126,17 @@ constructor(
                     delay(MAJOR_INDICATION_DURATION)
                     _uiState.update { current ->
                         val game = matchController.getState().game
-                        val (lhsScore, rhsScore) = game.toPairOfStrings()
                         current.copy(
-                            lhsPlayer = current.lhsPlayer.copy(score = lhsScore, indication = null),
-                            rhsPlayer = current.rhsPlayer.copy(score = rhsScore, indication = null),
+                            lhsPlayer =
+                                current.lhsPlayer.copy(
+                                    score = game.lhsToString(),
+                                    indication = null,
+                                ),
+                            rhsPlayer =
+                                current.rhsPlayer.copy(
+                                    score = game.rhsToString(),
+                                    indication = null,
+                                ),
                         )
                     }
                 }

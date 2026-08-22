@@ -6,16 +6,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class GameStateConverterTest {
-    private fun assertConverted(game: GameState, expectedLhs: String, expectedRhs: String) {
-        val actual = game.toPairOfStrings()
-        assertThat(actual).isEqualTo(Pair(expectedLhs, expectedRhs))
-    }
-
     @Test
     fun `converts lhs in ongoing game`() {
         fun assertLhsConverted(points: Points, expected: String) {
-            val actual = GameState.Ongoing(points, Points.LOVE).toPairOfStrings()
-            assertThat(actual.first).isEqualTo(expected)
+            val actual = GameState.Ongoing(points, Points.LOVE).lhsToString()
+            assertThat(actual).isEqualTo(expected)
         }
         assertLhsConverted(Points.LOVE, "0")
         assertLhsConverted(Points.FIFTEEN, "15")
@@ -26,8 +21,8 @@ class GameStateConverterTest {
     @Test
     fun `converts rhs in ongoing game`() {
         fun assertRhsConverted(points: Points, expected: String) {
-            val actual = GameState.Ongoing(Points.LOVE, points).toPairOfStrings()
-            assertThat(actual.second).isEqualTo(expected)
+            val actual = GameState.Ongoing(Points.LOVE, points).rhsToString()
+            assertThat(actual).isEqualTo(expected)
         }
         assertRhsConverted(Points.LOVE, "0")
         assertRhsConverted(Points.FIFTEEN, "15")
@@ -37,12 +32,22 @@ class GameStateConverterTest {
 
     @Test
     fun `converts deuce`() {
-        assertConverted(GameState.Deuce, "40", "40")
+        val game = GameState.Deuce
+        assertThat(game.lhsToString()).isEqualTo("40")
+        assertThat(game.rhsToString()).isEqualTo("40")
     }
 
     @Test
-    fun `converts advantages`() {
-        assertConverted(GameState.Advantage.Lhs, "AD", "40")
-        assertConverted(GameState.Advantage.Rhs, "40", "AD")
+    fun `converts lhs advantage`() {
+        val game = GameState.Advantage.Lhs
+        assertThat(game.lhsToString()).isEqualTo("AD")
+        assertThat(game.rhsToString()).isEqualTo("40")
+    }
+
+    @Test
+    fun `converts rhs advantage`() {
+        val game = GameState.Advantage.Rhs
+        assertThat(game.lhsToString()).isEqualTo("40")
+        assertThat(game.rhsToString()).isEqualTo("AD")
     }
 }
