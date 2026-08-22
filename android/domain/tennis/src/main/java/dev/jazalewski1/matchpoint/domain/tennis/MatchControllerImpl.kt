@@ -9,17 +9,15 @@ class MatchControllerImpl : MatchController {
         state =
             when (val game = state.game) {
                 is GameState.Ongoing -> {
-                    when (val newLhs = game.lhs.next()) {
-                        null -> {
-                            state // TODO: win
+                    val nextLhs = game.lhs.next()
+                    if (nextLhs != null) {
+                        if (nextLhs == Points.FORTY && game.rhs == Points.FORTY) {
+                            state.copy(game = GameState.Deuce)
+                        } else {
+                            state.copy(game = game.copy(lhs = nextLhs))
                         }
-                        else -> {
-                            if (newLhs == Points.FORTY && game.rhs == Points.FORTY) {
-                                state.copy(game = GameState.Deuce)
-                            } else {
-                                state.copy(game = game.copy(lhs = newLhs))
-                            }
-                        }
+                    } else {
+                        state // TODO: win
                     }
                 }
                 is GameState.Deuce -> {
@@ -38,17 +36,15 @@ class MatchControllerImpl : MatchController {
         state =
             when (val game = state.game) {
                 is GameState.Ongoing -> {
-                    when (val newRhs = game.rhs.next()) {
-                        null -> {
-                            state // TODO: win
+                    val nextRhs = game.rhs.next()
+                    if (nextRhs != null) {
+                        if (nextRhs == Points.FORTY && game.lhs == Points.FORTY) {
+                            state.copy(game = GameState.Deuce)
+                        } else {
+                            state.copy(game = game.copy(rhs = nextRhs))
                         }
-                        else -> {
-                            if (newRhs == Points.FORTY && game.lhs == Points.FORTY) {
-                                state.copy(game = GameState.Deuce)
-                            } else {
-                                state.copy(game = game.copy(rhs = newRhs))
-                            }
-                        }
+                    } else {
+                        state // TODO: win
                     }
                 }
                 is GameState.Deuce -> {
