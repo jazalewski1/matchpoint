@@ -7,6 +7,7 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
+import dev.jazalewski1.matchpoint.domain.tennis.Side
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -46,50 +47,9 @@ constructor(
         if (isIndicationOngoing()) {
             return
         }
-        val outcome = matchController.addLhsScore()
-        viewModelScope.launch {
-            when (outcome) {
-                is PointOutcome.PointScored -> {
-                    _uiState.update { current ->
-                        val game = matchController.getState().game
-                        current.copy(
-                            lhsPlayer =
-                                current.lhsPlayer.copy(
-                                    score = game.lhsToString(),
-                                    indication = Indication.Minor,
-                                ),
-                            rhsPlayer = current.rhsPlayer.copy(score = game.rhsToString()),
-                        )
-                    }
-                    delay(MINOR_INDICATION_DURATION)
-                    _uiState.update { current ->
-                        current.copy(lhsPlayer = current.lhsPlayer.copy(indication = null))
-                    }
-                }
-                is PointOutcome.GameWon -> {
-                    _uiState.update { current ->
-                        current.copy(
-                            lhsPlayer = current.lhsPlayer.copy(indication = Indication.Major)
-                        )
-                    }
-                    delay(MAJOR_INDICATION_DURATION)
-                    _uiState.update { current ->
-                        val game = matchController.getState().game
-                        current.copy(
-                            lhsPlayer =
-                                current.lhsPlayer.copy(
-                                    score = game.lhsToString(),
-                                    indication = null,
-                                ),
-                            rhsPlayer =
-                                current.rhsPlayer.copy(
-                                    score = game.rhsToString(),
-                                    indication = null,
-                                ),
-                        )
-                    }
-                }
-            }
+        when (val outcome = matchController.addLhsScore()) {
+            is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
+            is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
         }
     }
 
@@ -97,49 +57,64 @@ constructor(
         if (isIndicationOngoing()) {
             return
         }
-        val outcome = matchController.addRhsScore()
+        when (val outcome = matchController.addRhsScore()) {
+            is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
+            is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
+        }
+    }
+
+    private fun updateFromPointScored(side: Side) {
         viewModelScope.launch {
-            when (outcome) {
-                is PointOutcome.PointScored -> {
-                    _uiState.update { current ->
-                        val game = matchController.getState().game
-                        current.copy(
-                            lhsPlayer = current.lhsPlayer.copy(score = game.lhsToString()),
-                            rhsPlayer =
-                                current.rhsPlayer.copy(
-                                    score = game.rhsToString(),
-                                    indication = Indication.Minor,
-                                ),
-                        )
-                    }
-                    delay(MINOR_INDICATION_DURATION)
-                    _uiState.update { current ->
-                        current.copy(rhsPlayer = current.rhsPlayer.copy(indication = null))
-                    }
-                }
-                is PointOutcome.GameWon -> {
-                    _uiState.update { current ->
-                        current.copy(
-                            rhsPlayer = current.rhsPlayer.copy(indication = Indication.Major)
-                        )
-                    }
-                    delay(MAJOR_INDICATION_DURATION)
-                    _uiState.update { current ->
-                        val game = matchController.getState().game
-                        current.copy(
-                            lhsPlayer =
-                                current.lhsPlayer.copy(
-                                    score = game.lhsToString(),
-                                    indication = null,
-                                ),
-                            rhsPlayer =
-                                current.rhsPlayer.copy(
-                                    score = game.rhsToString(),
-                                    indication = null,
-                                ),
-                        )
-                    }
-                }
+            _uiState.update { current ->
+                val game = matchController.getState().game
+                val indication = Indication.Minor
+                val lhsPlayer =
+                    current.lhsPlayer.copy(
+                        score = game.lhsToString(),
+                        indication = if (side == Side.LHS) indication else null,
+                    )
+                val rhsPlayer =
+                    current.rhsPlayer.copy(
+                        score = game.rhsToString(),
+                        indication = if (side == Side.RHS) indication else null,
+                    )
+                current.copy(lhsPlayer = lhsPlayer, rhsPlayer = rhsPlayer)
+            }
+            delay(MINOR_INDICATION_DURATION)
+            _uiState.update { current ->
+                current.copy(
+                    lhsPlayer = current.lhsPlayer.copy(indication = null),
+                    rhsPlayer = current.rhsPlayer.copy(indication = null),
+                )
+            }
+        }
+    }
+
+    private fun updateFromGameWon(side: Side) {
+        viewModelScope.launch {
+            _uiState.update { current ->
+                val indication = Indication.Major
+                val lhsPlayer =
+                    current.lhsPlayer.copy(indication = if (side == Side.LHS) indication else null)
+                val rhsPlayer =
+                    current.rhsPlayer.copy(indication = if (side == Side.RHS) indication else null)
+                current.copy(lhsPlayer = lhsPlayer, rhsPlayer = rhsPlayer)
+            }
+            delay(MAJOR_INDICATION_DURATION)
+            _uiState.update { current ->
+                val game = matchController.getState().game
+                current.copy(
+                    lhsPlayer =
+                        current.lhsPlayer.copy(
+                            score = game.lhsToString(),
+                            indication = null,
+                        ),
+                    rhsPlayer =
+                        current.rhsPlayer.copy(
+                            score = game.rhsToString(),
+                            indication = null,
+                        ),
+                )
             }
         }
     }
