@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
 import dev.jazalewski1.matchpoint.feature.match.util.toPairOfStrings
@@ -16,43 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-sealed interface Indication {
-    data object Minor : Indication
-
-    data object Major : Indication
-}
-
-data class PlayerUiState(
-    val name: String,
-    val score: String,
-    val indication: Indication? = null,
-)
-
-data class MatchUiState(
-    val lhsPlayer: PlayerUiState,
-    val rhsPlayer: PlayerUiState,
-)
-
-private fun createMatchUiState(
-    lhsPlayerName: String,
-    rhsPlayerName: String,
-    game: GameState,
-): MatchUiState {
-    val (lhsScore, rhsScore) = game.toPairOfStrings()
-    return MatchUiState(
-        lhsPlayer =
-            PlayerUiState(
-                name = lhsPlayerName,
-                score = lhsScore,
-            ),
-        rhsPlayer =
-            PlayerUiState(
-                name = rhsPlayerName,
-                score = rhsScore,
-            ),
-    )
-}
-
 @HiltViewModel
 class MatchViewModel
 @Inject
@@ -62,11 +24,21 @@ constructor(
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
-            createMatchUiState(
-                lhsPlayerName = savedStateHandle.toRoute<MatchRoute>().player1Name,
-                rhsPlayerName = savedStateHandle.toRoute<MatchRoute>().player2Name,
-                game = matchController.getState().game,
-            )
+            run {
+                val (lhsScore, rhsScore) = matchController.getState().game.toPairOfStrings()
+                MatchUiState(
+                    lhsPlayer =
+                        PlayerUiState(
+                            name = savedStateHandle.toRoute<MatchRoute>().player1Name,
+                            score = lhsScore,
+                        ),
+                    rhsPlayer =
+                        PlayerUiState(
+                            name = savedStateHandle.toRoute<MatchRoute>().player2Name,
+                            score = rhsScore,
+                        ),
+                )
+            }
         )
     val uiState = _uiState.asStateFlow()
 
