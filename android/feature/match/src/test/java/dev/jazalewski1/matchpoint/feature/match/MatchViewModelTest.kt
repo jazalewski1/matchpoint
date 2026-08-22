@@ -288,4 +288,42 @@ class MatchViewModelTest {
         assertThat(matchController.addRhsScoreCount).isEqualTo(1)
         advanceTimeBy(minorIndicationFinishedDuration)
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `updates both scores after lhs when controller does it`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.setState(sampleMatchState.copy(game = game15And40))
+
+        viewModel.addLhsScore()
+        runCurrent()
+
+        viewModel.uiState.test {
+            val actual = awaitItem()
+            assertThat(actual.lhsPlayer.score).isEqualTo("15")
+            assertThat(actual.rhsPlayer.score).isEqualTo("40")
+        }
+        advanceTimeBy(minorIndicationFinishedDuration)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `updates both scores after rhs when controller does it`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.setState(sampleMatchState.copy(game = game40And15))
+
+        viewModel.addRhsScore()
+        runCurrent()
+
+        viewModel.uiState.test {
+            val actual = awaitItem()
+            assertThat(actual.lhsPlayer.score).isEqualTo("40")
+            assertThat(actual.rhsPlayer.score).isEqualTo("15")
+        }
+        advanceTimeBy(minorIndicationFinishedDuration)
+    }
 }
