@@ -2,7 +2,12 @@ package dev.jazalewski1.matchpoint.feature.match
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -10,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -17,31 +24,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
-import dev.jazalewski1.matchpoint.domain.tennis.MatchControllerImpl
+import kotlin.time.DurationUnit
 
 @Composable
-internal fun MatchScreen(lhsPlayerName: String, rhsPlayerName: String) {
-    val scoreState = rememberScoreState()
-    Screen(
-        lhsPlayerName = lhsPlayerName,
-        rhsPlayerName = rhsPlayerName,
-        lhsScore = scoreState.lhsScore,
-        rhsScore = scoreState.rhsScore,
-        onLhsClick = scoreState::increaseLhs,
-        onRhsClick = scoreState::increaseRhs,
+internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    MatchScreen(
+        lhsPlayerName = uiState.lhsPlayer.name,
+        rhsPlayerName = uiState.rhsPlayer.name,
+        lhsScore = uiState.lhsPlayer.score,
+        rhsScore = uiState.rhsPlayer.score,
+        onLhsClick = viewModel::addLhsScore,
+        onRhsClick = viewModel::addRhsScore,
+        lhsIndication = uiState.lhsPlayer.indication,
+        rhsIndication = uiState.rhsPlayer.indication,
     )
 }
 
 @Composable
-private fun Screen(
+internal fun MatchScreen(
     lhsPlayerName: String,
     rhsPlayerName: String,
     lhsScore: String,
     rhsScore: String,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
+    lhsIndication: Indication?,
+    rhsIndication: Indication?,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
@@ -58,6 +70,7 @@ private fun Screen(
                 onClick = onLhsClick,
                 contentDescription = "Left Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
+                indication = lhsIndication,
             )
             VerticalDivider(thickness = 2.dp)
             PointContainer(
@@ -66,6 +79,7 @@ private fun Screen(
                 onClick = onRhsClick,
                 contentDescription = "Right Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
+                indication = rhsIndication,
             )
         }
     }
@@ -78,11 +92,43 @@ private fun PointContainer(
     onClick: () -> Unit,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    indication: Indication?,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val defaultBackground = MaterialTheme.colorScheme.background
+    val minorIndicationBackground = MaterialTheme.colorScheme.secondaryContainer
+    val majorIndicationBackground = MaterialTheme.colorScheme.tertiaryContainer
+
+    val backgroundColor = remember { Animatable(defaultBackground) }
+
+    LaunchedEffect(indication) {
+        backgroundColor.snapTo(defaultBackground)
+        if (indication == null) {
+            return@LaunchedEffect
+        }
+        val targetColor =
+            when (indication) {
+                Indication.Minor -> minorIndicationBackground
+                Indication.Major -> majorIndicationBackground
+            }
+        val duration = HALF_PULSE_DURATION.toInt(DurationUnit.MILLISECONDS)
+        val tweenSpec = tween<Color>(duration, easing = FastOutSlowInEasing)
+        while (true) {
+            backgroundColor.animateTo(targetColor, tweenSpec)
+            backgroundColor.animateTo(defaultBackground, tweenSpec)
+        }
+    }
+
     Column(
         modifier =
             modifier
-                .clickable(enabled = true, onClick = onClick)
+                .clickable(
+                    enabled = true,
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource,
+                )
+                .drawBehind { drawRect(backgroundColor.value) }
                 .semantics(properties = { this.contentDescription = contentDescription }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -100,66 +146,52 @@ private fun PointContainer(
     }
 }
 
-private class ScoreState {
-    private val matchController = MatchControllerImpl()
-    var lhsScore by mutableStateOf("")
-        private set
-
-    var rhsScore by mutableStateOf("")
-        private set
-
-    init {
-        update()
-    }
-
-    fun increaseLhs() {
-        matchController.addLhsScore()
-        update()
-    }
-
-    fun increaseRhs() {
-        matchController.addRhsScore()
-        update()
-    }
-
-    private fun update() {
-        when (val game = matchController.getState().game) {
-            is GameState.Ongoing -> {
-                lhsScore = game.lhs.value.toString()
-                rhsScore = game.rhs.value.toString()
-            }
-            is GameState.Deuce -> {
-                lhsScore = "40"
-                rhsScore = "40"
-            }
-            is GameState.Advantage.Lhs -> {
-                lhsScore = "AD"
-                rhsScore = "40"
-            }
-            is GameState.Advantage.Rhs -> {
-                lhsScore = "40"
-                rhsScore = "AD"
-            }
-        }
-    }
-}
-
-@Composable private fun rememberScoreState() = remember { ScoreState() }
-
 @Preview(
     showBackground = true,
     device = "spec:width=891dp,height=411dp,dpi=420,orientation=landscape",
 )
+annotation class HorizontalPreview
+
+@Composable
+private fun ScreenPreviewBase(
+    lhsPlayerName: String = "Federer",
+    rhsPlayerName: String = "Nadal",
+    lhsScore: String = "40",
+    rhsScore: String = "15",
+    lhsIndication: Indication? = null,
+    rhsIndication: Indication? = null,
+) =
+    MatchScreen(
+        lhsPlayerName = lhsPlayerName,
+        rhsPlayerName = rhsPlayerName,
+        lhsScore = lhsScore,
+        rhsScore = rhsScore,
+        onLhsClick = {},
+        onRhsClick = {},
+        lhsIndication = lhsIndication,
+        rhsIndication = rhsIndication,
+    )
+
+@HorizontalPreview
 @Composable
 private fun Preview() {
     AppTheme {
-        Screen(
-            lhsPlayerName = "Federer",
-            rhsPlayerName = "Nadal",
-            lhsScore = "40",
-            rhsScore = "15",
-            onLhsClick = {},
-            onRhsClick = {},
-        )
+        ScreenPreviewBase()
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun PreviewWithMinorIndication() {
+    AppTheme {
+        ScreenPreviewBase(lhsIndication = Indication.Minor)
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun PreviewWithMajorIndication() {
+    AppTheme {
+        ScreenPreviewBase(lhsIndication = Indication.Major)
     }
 }
