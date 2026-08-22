@@ -43,6 +43,7 @@ android {
 
 dependencies {
     implementation(project(":core:ui"))
+    implementation(project(":domain:tennis"))
 
     api(libs.androidx.compose.foundation.layout)
     api(libs.androidx.compose.runtime)

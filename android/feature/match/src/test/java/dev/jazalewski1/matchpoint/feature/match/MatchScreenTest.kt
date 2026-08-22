@@ -48,23 +48,43 @@ class SutScreenTest {
     }
 
     @Test
-    fun `when point is clicked then it is increased`() {
+    fun `when lhs point is clicked then it is increased`() {
+        rule.setContent { SutScreen() }
+
+        rule
+            .onNodeWithContentDescription("Left Score")
+            .performClick()
+            .assert(hasText("15"))
+            .performClick()
+            .assert(hasText("30"))
+            .performClick()
+            .assert(hasText("40"))
+    }
+
+    @Test
+    fun `when rhs point is clicked then it is increased`() {
         rule.setContent { SutScreen() }
 
         rule
             .onNodeWithContentDescription("Right Score")
             .performClick()
-            .assert(hasText("1"))
+            .assert(hasText("15"))
             .performClick()
+            .assert(hasText("30"))
             .performClick()
-            .assert(hasText("3"))
+            .assert(hasText("40"))
+    }
 
-        rule
-            .onNodeWithContentDescription("Left Score")
-            .performClick()
-            .assert(hasText("1"))
-            .performClick()
-            .performClick()
-            .assert(hasText("3"))
+    @Test
+    fun `when advantage then displays score`() {
+        rule.setContent { SutScreen() }
+
+        val lhs = rule.onNodeWithContentDescription("Left Score")
+        repeat(3) { lhs.performClick() }
+        val rhs = rule.onNodeWithContentDescription("Right Score")
+        repeat(4) { rhs.performClick() }
+
+        lhs.assert(hasText("40"))
+        rhs.assert(hasText("AD"))
     }
 }

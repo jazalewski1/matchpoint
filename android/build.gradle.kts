@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.spotless)
     id("com.autonomousapps.dependency-analysis") version "3.18.0"
+    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
 }
 
 spotless {
