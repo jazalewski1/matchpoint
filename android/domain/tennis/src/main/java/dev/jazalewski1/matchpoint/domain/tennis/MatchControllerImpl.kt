@@ -18,6 +18,7 @@ class MatchControllerImpl : MatchController {
                         return PointOutcome.PointScored(Side.LHS)
                     }
                 } else {
+                    state = state.copy(game = GameState.default())
                     return PointOutcome.GameWon(Side.LHS)
                 }
             }
@@ -26,6 +27,7 @@ class MatchControllerImpl : MatchController {
                 return PointOutcome.PointScored(Side.LHS)
             }
             is GameState.Advantage.Lhs -> {
+                state = state.copy(game = GameState.default())
                 return PointOutcome.GameWon(Side.LHS)
             }
             is GameState.Advantage.Rhs -> {
@@ -47,6 +49,7 @@ class MatchControllerImpl : MatchController {
                         return PointOutcome.PointScored(Side.RHS)
                     }
                 } else {
+                    state = state.copy(game = GameState.default())
                     return PointOutcome.GameWon(Side.RHS)
                 }
             }
@@ -59,6 +62,7 @@ class MatchControllerImpl : MatchController {
                 return PointOutcome.PointScored(Side.RHS)
             }
             is GameState.Advantage.Rhs -> {
+                state = state.copy(game = GameState.default())
                 return PointOutcome.GameWon(Side.RHS)
             }
         }
