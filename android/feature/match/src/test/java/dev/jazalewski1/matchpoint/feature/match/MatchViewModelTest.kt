@@ -47,10 +47,10 @@ private val minorIndicationFinishedDuration = MINOR_INDICATION_DURATION + 1.mill
 private val majorIndicationFinishedDuration = MAJOR_INDICATION_DURATION + 1.milliseconds
 
 class FakeMatchController : MatchController {
-    var addedLhsScore = false
+    var addLhsScoreCount = 0
         private set
 
-    var addedRhsScore = false
+    var addRhsScoreCount = 0
         private set
 
     private var matchState = sampleMatchState
@@ -72,12 +72,12 @@ class FakeMatchController : MatchController {
     override fun getState() = matchState
 
     override fun addLhsScore(): PointOutcome {
-        addedLhsScore = true
+        addLhsScoreCount += 1
         return lhsPointOutcome
     }
 
     override fun addRhsScore(): PointOutcome {
-        addedRhsScore = true
+        addRhsScoreCount += 1
         return rhsPointOutcome
     }
 }
@@ -118,7 +118,7 @@ class MatchViewModelTest {
 
         viewModel.addLhsScore()
 
-        assertThat(matchController.addedLhsScore).isTrue()
+        assertThat(matchController.addLhsScoreCount).isEqualTo(1)
     }
 
     @Test
@@ -128,7 +128,7 @@ class MatchViewModelTest {
 
         viewModel.addRhsScore()
 
-        assertThat(matchController.addedRhsScore).isTrue()
+        assertThat(matchController.addRhsScoreCount).isEqualTo(1)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -251,5 +251,41 @@ class MatchViewModelTest {
             val expected = sampleMatchUiState.copy(lhsPlayer = expectedLhs, rhsPlayer = expectedRhs)
             assertThat(awaitItem()).isEqualTo(expected)
         }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `disables lhs scoring when indication is ongoing`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.setState(sampleMatchState.copy(game = game15And40))
+        matchController.returnAddLhsScore(PointOutcome.PointScored(Side.LHS))
+
+        viewModel.addLhsScore()
+        runCurrent()
+
+        assertThat(matchController.addLhsScoreCount).isEqualTo(1)
+        viewModel.addLhsScore()
+        assertThat(matchController.addLhsScoreCount).isEqualTo(1)
+        advanceTimeBy(minorIndicationFinishedDuration)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `disables rhs scoring when indication is ongoing`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.setState(sampleMatchState.copy(game = game40And15))
+        matchController.returnAddRhsScore(PointOutcome.PointScored(Side.RHS))
+
+        viewModel.addRhsScore()
+        runCurrent()
+
+        assertThat(matchController.addRhsScoreCount).isEqualTo(1)
+        viewModel.addRhsScore()
+        assertThat(matchController.addRhsScoreCount).isEqualTo(1)
+        advanceTimeBy(minorIndicationFinishedDuration)
     }
 }
