@@ -3,6 +3,7 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -79,10 +80,16 @@ private fun PointContainer(
     contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier =
             modifier
-                .clickable(enabled = true, onClick = onClick)
+                .clickable(
+                    enabled = true,
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource,
+                )
                 .semantics(properties = { this.contentDescription = contentDescription }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
