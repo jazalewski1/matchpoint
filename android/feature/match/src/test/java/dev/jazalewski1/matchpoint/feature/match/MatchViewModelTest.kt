@@ -6,7 +6,9 @@ import app.cash.turbine.test
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchState
+import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
 import dev.jazalewski1.matchpoint.domain.tennis.Points
+import dev.jazalewski1.matchpoint.domain.tennis.Side
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -55,12 +57,14 @@ class FakeMatchController : MatchController {
 
     override fun getState() = matchState
 
-    override fun addLhsScore() {
+    override fun addLhsScore(): PointOutcome {
         addedLhsScore = true
+        return PointOutcome.PointScored(Side.LHS)
     }
 
-    override fun addRhsScore() {
+    override fun addRhsScore(): PointOutcome {
         addedRhsScore = true
+        return PointOutcome.PointScored(Side.LHS)
     }
 }
 

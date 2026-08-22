@@ -35,10 +35,21 @@ sealed interface GameState {
 
 data class MatchState(val game: GameState)
 
+enum class Side {
+    LHS,
+    RHS,
+}
+
+sealed interface PointOutcome {
+    data class PointScored(val side: Side) : PointOutcome
+
+    data class GameWon(val side: Side) : PointOutcome
+}
+
 interface MatchController {
     fun getState(): MatchState
 
-    fun addLhsScore()
+    fun addLhsScore(): PointOutcome
 
-    fun addRhsScore()
+    fun addRhsScore(): PointOutcome
 }

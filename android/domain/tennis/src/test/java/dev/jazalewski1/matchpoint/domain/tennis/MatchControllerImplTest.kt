@@ -4,6 +4,22 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class MatchControllerImplTest {
+    private fun assertLhsPointScored(outcome: PointOutcome) {
+        assertThat(outcome).isEqualTo(PointOutcome.PointScored(Side.LHS))
+    }
+
+    private fun assertRhsPointScored(outcome: PointOutcome) {
+        assertThat(outcome).isEqualTo(PointOutcome.PointScored(Side.RHS))
+    }
+
+    private fun assertLhsGameWon(outcome: PointOutcome) {
+        assertThat(outcome).isEqualTo(PointOutcome.GameWon(Side.LHS))
+    }
+
+    private fun assertRhsGameWon(outcome: PointOutcome) {
+        assertThat(outcome).isEqualTo(PointOutcome.GameWon(Side.RHS))
+    }
+
     @Test
     fun `when initialized then has love all`() {
         val controller = MatchControllerImpl()
@@ -21,11 +37,11 @@ class MatchControllerImplTest {
                 .isEqualTo(MatchState(game = GameState.Ongoing(expectedPoints, Points.LOVE)))
         }
 
-        controller.addLhsScore()
+        assertLhsPointScored(controller.addLhsScore())
         assertLhsPoints(Points.FIFTEEN)
-        controller.addLhsScore()
+        assertLhsPointScored(controller.addLhsScore())
         assertLhsPoints(Points.THIRTY)
-        controller.addLhsScore()
+        assertLhsPointScored(controller.addLhsScore())
         assertLhsPoints(Points.FORTY)
     }
 
@@ -38,11 +54,11 @@ class MatchControllerImplTest {
                 .isEqualTo(MatchState(game = GameState.Ongoing(Points.LOVE, expectedPoints)))
         }
 
-        controller.addRhsScore()
+        assertRhsPointScored(controller.addRhsScore())
         assertRhsPoints(Points.FIFTEEN)
-        controller.addRhsScore()
+        assertRhsPointScored(controller.addRhsScore())
         assertRhsPoints(Points.THIRTY)
-        controller.addRhsScore()
+        assertRhsPointScored(controller.addRhsScore())
         assertRhsPoints(Points.FORTY)
     }
 
@@ -51,7 +67,8 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         repeat(2) { controller.addRhsScore() }
-        repeat(4) { controller.addLhsScore() }
+        repeat(3) { controller.addLhsScore() }
+        assertLhsGameWon(controller.addLhsScore())
 
         val expected = MatchState(game = GameState.Ongoing(Points.FORTY, Points.THIRTY))
         assertThat(controller.getState()).isEqualTo(expected)
@@ -62,7 +79,8 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         repeat(2) { controller.addLhsScore() }
-        repeat(4) { controller.addRhsScore() }
+        repeat(3) { controller.addRhsScore() }
+        assertRhsGameWon(controller.addRhsScore())
 
         val expected = MatchState(game = GameState.Ongoing(Points.THIRTY, Points.FORTY))
         assertThat(controller.getState()).isEqualTo(expected)
@@ -88,7 +106,7 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         advanceToDeuce(controller)
-        controller.addLhsScore()
+        assertLhsPointScored(controller.addLhsScore())
 
         val expected = MatchState(game = GameState.Advantage.Lhs)
         assertThat(controller.getState()).isEqualTo(expected)
@@ -99,7 +117,7 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         advanceToDeuce(controller)
-        controller.addRhsScore()
+        assertRhsPointScored(controller.addRhsScore())
 
         val expected = MatchState(game = GameState.Advantage.Rhs)
         assertThat(controller.getState()).isEqualTo(expected)
@@ -111,7 +129,7 @@ class MatchControllerImplTest {
 
         advanceToDeuce(controller)
         controller.addLhsScore()
-        controller.addLhsScore()
+        assertLhsGameWon(controller.addLhsScore())
 
         val expected = MatchState(game = GameState.Advantage.Lhs)
         assertThat(controller.getState()).isEqualTo(expected)
@@ -123,7 +141,7 @@ class MatchControllerImplTest {
 
         advanceToDeuce(controller)
         controller.addRhsScore()
-        controller.addRhsScore()
+        assertRhsGameWon(controller.addRhsScore())
 
         val expected = MatchState(game = GameState.Advantage.Rhs)
         assertThat(controller.getState()).isEqualTo(expected)
@@ -135,7 +153,7 @@ class MatchControllerImplTest {
 
         advanceToDeuce(controller)
         controller.addLhsScore()
-        controller.addRhsScore()
+        assertRhsPointScored(controller.addRhsScore())
 
         val expected = MatchState(game = GameState.Deuce)
         assertThat(controller.getState()).isEqualTo(expected)
@@ -147,7 +165,7 @@ class MatchControllerImplTest {
 
         advanceToDeuce(controller)
         controller.addRhsScore()
-        controller.addLhsScore()
+        assertLhsPointScored(controller.addLhsScore())
 
         val expected = MatchState(game = GameState.Deuce)
         assertThat(controller.getState()).isEqualTo(expected)
