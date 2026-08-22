@@ -26,6 +26,8 @@ class MatchScreenTest {
         rhsScore: String = RHS_SCORE,
         onLhsClick: () -> Unit = {},
         onRhsClick: () -> Unit = {},
+        lhsIndication: Indication? = null,
+        rhsIndication: Indication? = null,
     ) =
         MatchScreen(
             lhsPlayerName = lhsPlayerName,
@@ -34,6 +36,8 @@ class MatchScreenTest {
             rhsScore = rhsScore,
             onLhsClick = onLhsClick,
             onRhsClick = onRhsClick,
+            lhsIndication = lhsIndication,
+            rhsIndication = rhsIndication,
         )
 
     @Test

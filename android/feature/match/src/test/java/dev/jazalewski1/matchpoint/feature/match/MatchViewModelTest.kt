@@ -9,11 +9,14 @@ import dev.jazalewski1.matchpoint.domain.tennis.MatchState
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
 import dev.jazalewski1.matchpoint.domain.tennis.Points
 import dev.jazalewski1.matchpoint.domain.tennis.Side
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.assertj.core.api.Assertions.assertThat
@@ -24,7 +27,7 @@ import org.junit.runner.Description
 import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MainDispatcherRule(val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()) :
+class MainDispatcherRule(val testDispatcher: TestDispatcher = StandardTestDispatcher()) :
     TestWatcher() {
     override fun starting(description: Description) = Dispatchers.setMain(testDispatcher)
 
@@ -34,13 +37,14 @@ class MainDispatcherRule(val testDispatcher: TestDispatcher = UnconfinedTestDisp
 private const val LHS_PLAYER_NAME = "Left player"
 private const val RHS_PLAYER_NAME = "Right player"
 
+private val sampleLhsPlayer = PlayerUiState(name = LHS_PLAYER_NAME, score = "0")
+private val sampleRhsPlayer = PlayerUiState(name = RHS_PLAYER_NAME, score = "0")
+
 private val sampleMatchUiState =
-    MatchUiState(
-        lhsPlayerName = LHS_PLAYER_NAME,
-        rhsPlayerName = RHS_PLAYER_NAME,
-        lhsScore = "0",
-        rhsScore = "0",
-    )
+    MatchUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer)
+
+private val minorIndicationFinishedDuration = MINOR_INDICATION_DURATION + 1.milliseconds
+private val majorIndicationFinishedDuration = MAJOR_INDICATION_DURATION + 1.milliseconds
 
 class FakeMatchController : MatchController {
     var addedLhsScore = false
@@ -50,25 +54,40 @@ class FakeMatchController : MatchController {
         private set
 
     private var matchState = sampleMatchState
+    private var lhsPointOutcome: PointOutcome = PointOutcome.PointScored(Side.LHS)
+    private var rhsPointOutcome: PointOutcome = PointOutcome.PointScored(Side.RHS)
 
     fun setState(new: MatchState) {
         matchState = new
+    }
+
+    fun returnAddLhsScore(outcome: PointOutcome) {
+        lhsPointOutcome = outcome
+    }
+
+    fun returnAddRhsScore(outcome: PointOutcome) {
+        rhsPointOutcome = outcome
     }
 
     override fun getState() = matchState
 
     override fun addLhsScore(): PointOutcome {
         addedLhsScore = true
-        return PointOutcome.PointScored(Side.LHS)
+        return lhsPointOutcome
     }
 
     override fun addRhsScore(): PointOutcome {
         addedRhsScore = true
-        return PointOutcome.PointScored(Side.LHS)
+        return rhsPointOutcome
     }
 }
 
-private val sampleMatchState = MatchState(game = GameState.Ongoing(Points.LOVE, Points.LOVE))
+private val gameLoveAll = GameState.default()
+private val game0And15 = GameState.Ongoing(Points.LOVE, Points.FIFTEEN)
+private val game15And0 = GameState.Ongoing(Points.FIFTEEN, Points.LOVE)
+private val game15And40 = GameState.Ongoing(Points.FIFTEEN, Points.FORTY)
+private val game40And15 = GameState.Ongoing(Points.FORTY, Points.FIFTEEN)
+private val sampleMatchState = MatchState(game = gameLoveAll)
 
 @RunWith(AndroidJUnit4::class)
 class MatchViewModelTest {
@@ -112,44 +131,124 @@ class MatchViewModelTest {
         assertThat(matchController.addedRhsScore).isTrue()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `updates ui state when adding lhs score`() = runTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        val newMatchState =
-            sampleMatchState.copy(game = GameState.Ongoing(Points.FIFTEEN, Points.LOVE))
+        val newMatchState = sampleMatchState.copy(game = game15And0)
         matchController.setState(newMatchState)
 
         viewModel.addLhsScore()
+        runCurrent()
 
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    lhsScore = "15",
-                    rhsScore = "0",
+                    lhsPlayer = sampleLhsPlayer.copy(score = "15", indication = Indication.Minor)
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+
+        advanceTimeBy(minorIndicationFinishedDuration)
+
+        viewModel.uiState.test {
+            val expected =
+                sampleMatchUiState.copy(
+                    lhsPlayer = sampleLhsPlayer.copy(score = "15", indication = null)
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `updates ui state when adding rhs score`() = runTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        val newMatchState =
-            sampleMatchState.copy(game = GameState.Ongoing(Points.LOVE, Points.FIFTEEN))
+        val newMatchState = sampleMatchState.copy(game = game0And15)
         matchController.setState(newMatchState)
 
         viewModel.addRhsScore()
+        runCurrent()
 
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    lhsScore = "0",
-                    rhsScore = "15",
+                    rhsPlayer = sampleRhsPlayer.copy(score = "15", indication = Indication.Minor)
                 )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+
+        advanceTimeBy(minorIndicationFinishedDuration)
+
+        viewModel.uiState.test {
+            val expected =
+                sampleMatchUiState.copy(
+                    rhsPlayer = sampleRhsPlayer.copy(score = "15", indication = null)
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `updates ui state when adding lhs score and game won`() = runTest {
+        val matchController = FakeMatchController()
+        matchController.setState(sampleMatchState.copy(game = game40And15))
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.setState(sampleMatchState.copy(game = GameState.default()))
+        matchController.returnAddLhsScore(PointOutcome.GameWon(Side.LHS))
+
+        viewModel.addLhsScore()
+        runCurrent()
+
+        viewModel.uiState.test {
+            val expectedLhs = sampleLhsPlayer.copy(score = "40", indication = Indication.Major)
+            val expectedRhs = sampleRhsPlayer.copy(score = "15", indication = null)
+            val expected = sampleMatchUiState.copy(lhsPlayer = expectedLhs, rhsPlayer = expectedRhs)
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+
+        advanceTimeBy(majorIndicationFinishedDuration)
+
+        viewModel.uiState.test {
+            val expectedLhs = sampleLhsPlayer.copy(score = "0", indication = null)
+            val expectedRhs = sampleRhsPlayer.copy(score = "0", indication = null)
+            val expected = sampleMatchUiState.copy(lhsPlayer = expectedLhs, rhsPlayer = expectedRhs)
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `updates ui state when adding rhs score and game won`() = runTest {
+        val matchController = FakeMatchController()
+        matchController.setState(sampleMatchState.copy(game = game15And40))
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.setState(sampleMatchState.copy(game = GameState.default()))
+        matchController.returnAddRhsScore(PointOutcome.GameWon(Side.RHS))
+
+        viewModel.addRhsScore()
+        runCurrent()
+
+        viewModel.uiState.test {
+            val expectedLhs = sampleLhsPlayer.copy(score = "15", indication = null)
+            val expectedRhs = sampleRhsPlayer.copy(score = "40", indication = Indication.Major)
+            val expected = sampleMatchUiState.copy(lhsPlayer = expectedLhs, rhsPlayer = expectedRhs)
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+
+        advanceTimeBy(majorIndicationFinishedDuration)
+
+        viewModel.uiState.test {
+            val expectedLhs = sampleLhsPlayer.copy(score = "0", indication = null)
+            val expectedRhs = sampleRhsPlayer.copy(score = "0", indication = null)
+            val expected = sampleMatchUiState.copy(lhsPlayer = expectedLhs, rhsPlayer = expectedRhs)
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
