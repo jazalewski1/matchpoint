@@ -8,7 +8,7 @@ if [ "${#TITLE}" -gt "${MAX_TITLE_LENGTH}" ]; then
     exit 1
 fi
 
-TITLE_PATTERN="^(build|ci|docs|feat|fix|perf|refactor|style|test)(\(\w+\))?: .*$"
+TITLE_PATTERN="^(build|ci|docs|feat|fix|perf|refactor|enhance|style|test)(\(\w+\))?: .*$"
 
 if ! echo "${TITLE}" | grep -E -q "${TITLE_PATTERN}"; then
     echo >&2 "FAIL: PR title does not match required pattern"
