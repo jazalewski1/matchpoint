@@ -2,18 +2,21 @@ package dev.jazalewski1.matchpoint.feature.match
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+
+sealed interface MatchUiEvent {
+    data class Indication(val type: IndicationType, val side: Side) : MatchUiEvent
+}
 
 @HiltViewModel
 class MatchViewModel
@@ -41,90 +44,45 @@ constructor(
             }
         )
     val uiState = _uiState.asStateFlow()
+    private val _uiEvents = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+    val uiEvents = _uiEvents.asSharedFlow()
 
-    fun addPointToLhs() {
-        if (isIndicationOngoing()) {
-            return
-        }
+    fun onLhsPressed() {
         when (matchController.addPointToLhs()) {
-            is PointOutcome.PointScored -> updateFromPointScored(Side.LHS)
-            is PointOutcome.GameWon -> updateFromGameWon(Side.LHS)
+            is PointOutcome.PointScored -> processPointScored(Side.LHS)
+            is PointOutcome.GameWon -> processGameWon(Side.LHS)
         }
     }
 
-    fun addPointToRhs() {
-        if (isIndicationOngoing()) {
-            return
-        }
+    fun onRhsPressed() {
         when (matchController.addPointToRhs()) {
-            is PointOutcome.PointScored -> updateFromPointScored(Side.RHS)
-            is PointOutcome.GameWon -> updateFromGameWon(Side.RHS)
+            is PointOutcome.PointScored -> processPointScored(Side.RHS)
+            is PointOutcome.GameWon -> processGameWon(Side.RHS)
         }
     }
 
-    private fun updateFromPointScored(side: Side) {
-        viewModelScope.launch {
-            _uiState.update { current ->
-                val game = matchController.getCurrentGame()
-                val indication = Indication.Minor
-                val lhsPlayer =
-                    current.lhsPlayer.copy(
-                        score = game.lhsToString(),
-                        indication = if (side == Side.LHS) indication else null,
-                    )
-                val rhsPlayer =
-                    current.rhsPlayer.copy(
-                        score = game.rhsToString(),
-                        indication = if (side == Side.RHS) indication else null,
-                    )
-                current.copy(lhsPlayer = lhsPlayer, rhsPlayer = rhsPlayer)
-            }
-            delay(MINOR_INDICATION_DURATION)
-            _uiState.update { current ->
-                current.copy(
-                    lhsPlayer = current.lhsPlayer.copy(indication = null),
-                    rhsPlayer = current.rhsPlayer.copy(indication = null),
-                )
-            }
+    fun onIndicationCompletion(event: MatchUiEvent) {
+        if (event is MatchUiEvent.Indication && event.type == IndicationType.Major) {
+            updateScores()
         }
     }
 
-    private fun updateFromGameWon(side: Side) {
-        viewModelScope.launch {
-            _uiState.update { current ->
-                val indication = Indication.Major
-                val lhsPlayer =
-                    current.lhsPlayer.copy(indication = if (side == Side.LHS) indication else null)
-                val rhsPlayer =
-                    current.rhsPlayer.copy(indication = if (side == Side.RHS) indication else null)
-                current.copy(lhsPlayer = lhsPlayer, rhsPlayer = rhsPlayer)
-            }
-            delay(MAJOR_INDICATION_DURATION)
-            _uiState.update { current ->
-                val game = matchController.getCurrentGame()
-                current.copy(
-                    lhsPlayer =
-                        current.lhsPlayer.copy(
-                            score = game.lhsToString(),
-                            indication = null,
-                        ),
-                    rhsPlayer =
-                        current.rhsPlayer.copy(
-                            score = game.rhsToString(),
-                            indication = null,
-                        ),
-                )
-            }
+    private fun processPointScored(side: Side) {
+        updateScores()
+        _uiEvents.tryEmit(MatchUiEvent.Indication(type = IndicationType.Minor, side = side))
+    }
+
+    private fun processGameWon(side: Side) {
+        _uiEvents.tryEmit(MatchUiEvent.Indication(type = IndicationType.Major, side = side))
+    }
+
+    private fun updateScores() {
+        val game = matchController.getCurrentGame()
+        _uiState.update { current ->
+            current.copy(
+                lhsPlayer = current.lhsPlayer.copy(score = game.lhsToString()),
+                rhsPlayer = current.rhsPlayer.copy(score = game.rhsToString()),
+            )
         }
     }
-
-    private fun isIndicationOngoing(): Boolean {
-        val current = _uiState.value
-        return current.lhsPlayer.indication != null || current.rhsPlayer.indication != null
-    }
-}
-
-private enum class Side {
-    LHS,
-    RHS,
 }

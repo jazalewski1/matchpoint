@@ -70,7 +70,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        viewModel.addPointToLhs()
+        viewModel.onLhsPressed()
 
         assertThat(matchController.addPointToLhsCount).isEqualTo(1)
     }
@@ -80,7 +80,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        viewModel.addPointToRhs()
+        viewModel.onRhsPressed()
 
         assertThat(matchController.addPointToRhsCount).isEqualTo(1)
     }
@@ -93,7 +93,7 @@ class MatchViewModelTest {
 
         matchController.returnGetCurrentGame(game15And0)
 
-        viewModel.addPointToLhs()
+        viewModel.onLhsPressed()
         runCurrent()
 
         viewModel.uiState.test {
@@ -123,7 +123,7 @@ class MatchViewModelTest {
 
         matchController.returnGetCurrentGame(game0And15)
 
-        viewModel.addPointToRhs()
+        viewModel.onRhsPressed()
         runCurrent()
 
         viewModel.uiState.test {
@@ -155,7 +155,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(gameLoveAll)
         matchController.returnAddPointToLhs(PointOutcome.GameWon)
 
-        viewModel.addPointToLhs()
+        viewModel.onLhsPressed()
         runCurrent()
 
         viewModel.uiState.test {
@@ -185,7 +185,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(gameLoveAll)
         matchController.returnAddPointToRhs(PointOutcome.GameWon)
 
-        viewModel.addPointToRhs()
+        viewModel.onRhsPressed()
         runCurrent()
 
         viewModel.uiState.test {
@@ -214,11 +214,11 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game15And40)
         matchController.returnAddPointToLhs(PointOutcome.PointScored)
 
-        viewModel.addPointToLhs()
+        viewModel.onLhsPressed()
         runCurrent()
 
         assertThat(matchController.addPointToLhsCount).isEqualTo(1)
-        viewModel.addPointToLhs()
+        viewModel.onLhsPressed()
         assertThat(matchController.addPointToLhsCount).isEqualTo(1)
         advanceTimeBy(minorIndicationFinishedDuration)
     }
@@ -232,11 +232,11 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game40And15)
         matchController.returnAddPointToRhs(PointOutcome.PointScored)
 
-        viewModel.addPointToRhs()
+        viewModel.onRhsPressed()
         runCurrent()
 
         assertThat(matchController.addPointToRhsCount).isEqualTo(1)
-        viewModel.addPointToRhs()
+        viewModel.onRhsPressed()
         assertThat(matchController.addPointToRhsCount).isEqualTo(1)
         advanceTimeBy(minorIndicationFinishedDuration)
     }
@@ -249,7 +249,7 @@ class MatchViewModelTest {
 
         matchController.returnGetCurrentGame(game15And40)
 
-        viewModel.addPointToLhs()
+        viewModel.onLhsPressed()
         runCurrent()
 
         viewModel.uiState.test {
@@ -268,7 +268,7 @@ class MatchViewModelTest {
 
         matchController.returnGetCurrentGame(game40And15)
 
-        viewModel.addPointToRhs()
+        viewModel.onRhsPressed()
         runCurrent()
 
         viewModel.uiState.test {
