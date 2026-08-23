@@ -25,7 +25,7 @@ constructor(
     private val _uiState =
         MutableStateFlow(
             run {
-                val game = matchController.getState().game
+                val game = matchController.getCurrentGame()
                 MatchUiState(
                     lhsPlayer =
                         PlayerUiState(
@@ -65,7 +65,7 @@ constructor(
     private fun updateFromPointScored(side: Side) {
         viewModelScope.launch {
             _uiState.update { current ->
-                val game = matchController.getState().game
+                val game = matchController.getCurrentGame()
                 val indication = Indication.Minor
                 val lhsPlayer =
                     current.lhsPlayer.copy(
@@ -101,7 +101,7 @@ constructor(
             }
             delay(MAJOR_INDICATION_DURATION)
             _uiState.update { current ->
-                val game = matchController.getState().game
+                val game = matchController.getCurrentGame()
                 current.copy(
                     lhsPlayer =
                         current.lhsPlayer.copy(

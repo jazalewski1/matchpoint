@@ -1,7 +1,5 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
-data class MatchState(val game: GameState)
-
 sealed interface GameState {
     data class Ongoing(val lhs: Points, val rhs: Points) : GameState
 
