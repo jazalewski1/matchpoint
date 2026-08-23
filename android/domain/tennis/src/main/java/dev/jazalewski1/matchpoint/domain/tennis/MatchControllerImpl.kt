@@ -5,7 +5,7 @@ class MatchControllerImpl : MatchController {
 
     override fun getState() = state
 
-    override fun addLhsScore(): PointOutcome =
+    override fun addPointToLhs(): PointOutcome =
         when (val game = state.game) {
             is GameState.Ongoing -> {
                 val nextLhs = game.lhs.next()
@@ -36,7 +36,7 @@ class MatchControllerImpl : MatchController {
             }
         }
 
-    override fun addRhsScore(): PointOutcome =
+    override fun addPointToRhs(): PointOutcome =
         when (val game = state.game) {
             is GameState.Ongoing -> {
                 val nextRhs = game.rhs.next()

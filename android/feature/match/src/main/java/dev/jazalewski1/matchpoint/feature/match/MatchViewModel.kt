@@ -43,21 +43,21 @@ constructor(
         )
     val uiState = _uiState.asStateFlow()
 
-    fun addLhsScore() {
+    fun addPointToLhs() {
         if (isIndicationOngoing()) {
             return
         }
-        when (val outcome = matchController.addLhsScore()) {
+        when (val outcome = matchController.addPointToLhs()) {
             is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
             is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
         }
     }
 
-    fun addRhsScore() {
+    fun addPointToRhs() {
         if (isIndicationOngoing()) {
             return
         }
-        when (val outcome = matchController.addRhsScore()) {
+        when (val outcome = matchController.addPointToRhs()) {
             is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
             is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
         }
