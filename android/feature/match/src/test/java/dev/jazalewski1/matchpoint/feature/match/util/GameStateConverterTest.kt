@@ -7,9 +7,9 @@ import org.junit.Test
 
 class GameStateConverterTest {
     @Test
-    fun `converts lhs in ongoing game`() {
+    fun `converts lhs in regular game`() {
         fun assertLhsConverted(points: Points, expected: String) {
-            val actual = GameState.Ongoing(points, Points.LOVE).lhsToString()
+            val actual = GameState.Regular(points, Points.LOVE).lhsToString()
             assertThat(actual).isEqualTo(expected)
         }
         assertLhsConverted(Points.LOVE, "0")
@@ -19,9 +19,9 @@ class GameStateConverterTest {
     }
 
     @Test
-    fun `converts rhs in ongoing game`() {
+    fun `converts rhs in regular game`() {
         fun assertRhsConverted(points: Points, expected: String) {
-            val actual = GameState.Ongoing(Points.LOVE, points).rhsToString()
+            val actual = GameState.Regular(Points.LOVE, points).rhsToString()
             assertThat(actual).isEqualTo(expected)
         }
         assertRhsConverted(Points.LOVE, "0")

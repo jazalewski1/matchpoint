@@ -7,7 +7,6 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
-import dev.jazalewski1.matchpoint.domain.tennis.Side
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -26,7 +25,7 @@ constructor(
     private val _uiState =
         MutableStateFlow(
             run {
-                val game = matchController.getState().game
+                val game = matchController.getCurrentGame()
                 MatchUiState(
                     lhsPlayer =
                         PlayerUiState(
@@ -47,9 +46,9 @@ constructor(
         if (isIndicationOngoing()) {
             return
         }
-        when (val outcome = matchController.addPointToLhs()) {
-            is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
-            is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
+        when (matchController.addPointToLhs()) {
+            is PointOutcome.PointScored -> updateFromPointScored(Side.LHS)
+            is PointOutcome.GameWon -> updateFromGameWon(Side.LHS)
         }
     }
 
@@ -57,16 +56,16 @@ constructor(
         if (isIndicationOngoing()) {
             return
         }
-        when (val outcome = matchController.addPointToRhs()) {
-            is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
-            is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
+        when (matchController.addPointToRhs()) {
+            is PointOutcome.PointScored -> updateFromPointScored(Side.RHS)
+            is PointOutcome.GameWon -> updateFromGameWon(Side.RHS)
         }
     }
 
     private fun updateFromPointScored(side: Side) {
         viewModelScope.launch {
             _uiState.update { current ->
-                val game = matchController.getState().game
+                val game = matchController.getCurrentGame()
                 val indication = Indication.Minor
                 val lhsPlayer =
                     current.lhsPlayer.copy(
@@ -102,7 +101,7 @@ constructor(
             }
             delay(MAJOR_INDICATION_DURATION)
             _uiState.update { current ->
-                val game = matchController.getState().game
+                val game = matchController.getCurrentGame()
                 current.copy(
                     lhsPlayer =
                         current.lhsPlayer.copy(
@@ -123,4 +122,9 @@ constructor(
         val current = _uiState.value
         return current.lhsPlayer.indication != null || current.rhsPlayer.indication != null
     }
+}
+
+private enum class Side {
+    LHS,
+    RHS,
 }

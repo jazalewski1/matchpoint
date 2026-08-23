@@ -1,69 +1,69 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 class MatchControllerImpl : MatchController {
-    private var state = MatchState(game = GameState.default())
+    private var gameState: GameState = GameState.default()
 
-    override fun getState() = state
+    override fun getCurrentGame() = gameState
 
     override fun addPointToLhs(): PointOutcome =
-        when (val game = state.game) {
-            is GameState.Ongoing -> {
-                val nextLhs = game.lhs.next()
+        when (val current = gameState) {
+            is GameState.Regular -> {
+                val nextLhs = current.lhs.next()
                 if (nextLhs != null) {
-                    if (nextLhs == Points.FORTY && game.rhs == Points.FORTY) {
-                        state = state.copy(game = GameState.Deuce)
-                        return PointOutcome.PointScored(Side.LHS)
+                    if (nextLhs == Points.FORTY && current.rhs == Points.FORTY) {
+                        gameState = GameState.Deuce
+                        return PointOutcome.PointScored
                     } else {
-                        state = state.copy(game = game.copy(lhs = nextLhs))
-                        return PointOutcome.PointScored(Side.LHS)
+                        gameState = current.copy(lhs = nextLhs)
+                        return PointOutcome.PointScored
                     }
                 } else {
-                    state = state.copy(game = GameState.default())
-                    return PointOutcome.GameWon(Side.LHS)
+                    gameState = GameState.default()
+                    return PointOutcome.GameWon
                 }
             }
             is GameState.Deuce -> {
-                state = state.copy(game = GameState.Advantage.Lhs)
-                return PointOutcome.PointScored(Side.LHS)
+                gameState = GameState.Advantage.Lhs
+                return PointOutcome.PointScored
             }
             is GameState.Advantage.Lhs -> {
-                state = state.copy(game = GameState.default())
-                return PointOutcome.GameWon(Side.LHS)
+                gameState = GameState.default()
+                return PointOutcome.GameWon
             }
             is GameState.Advantage.Rhs -> {
-                state = state.copy(game = GameState.Deuce)
-                return PointOutcome.PointScored(Side.LHS)
+                gameState = GameState.Deuce
+                return PointOutcome.PointScored
             }
         }
 
     override fun addPointToRhs(): PointOutcome =
-        when (val game = state.game) {
-            is GameState.Ongoing -> {
-                val nextRhs = game.rhs.next()
+        when (val current = gameState) {
+            is GameState.Regular -> {
+                val nextRhs = current.rhs.next()
                 if (nextRhs != null) {
-                    if (nextRhs == Points.FORTY && game.lhs == Points.FORTY) {
-                        state = state.copy(game = GameState.Deuce)
-                        return PointOutcome.PointScored(Side.RHS)
+                    if (nextRhs == Points.FORTY && current.lhs == Points.FORTY) {
+                        gameState = GameState.Deuce
+                        return PointOutcome.PointScored
                     } else {
-                        state = state.copy(game = game.copy(rhs = nextRhs))
-                        return PointOutcome.PointScored(Side.RHS)
+                        gameState = current.copy(rhs = nextRhs)
+                        return PointOutcome.PointScored
                     }
                 } else {
-                    state = state.copy(game = GameState.default())
-                    return PointOutcome.GameWon(Side.RHS)
+                    gameState = GameState.default()
+                    return PointOutcome.GameWon
                 }
             }
             is GameState.Deuce -> {
-                state = state.copy(game = GameState.Advantage.Rhs)
-                return PointOutcome.PointScored(Side.RHS)
+                gameState = GameState.Advantage.Rhs
+                return PointOutcome.PointScored
             }
             is GameState.Advantage.Lhs -> {
-                state = state.copy(game = GameState.Deuce)
-                return PointOutcome.PointScored(Side.RHS)
+                gameState = GameState.Deuce
+                return PointOutcome.PointScored
             }
             is GameState.Advantage.Rhs -> {
-                state = state.copy(game = GameState.default())
-                return PointOutcome.GameWon(Side.RHS)
+                gameState = GameState.default()
+                return PointOutcome.GameWon
             }
         }
 }

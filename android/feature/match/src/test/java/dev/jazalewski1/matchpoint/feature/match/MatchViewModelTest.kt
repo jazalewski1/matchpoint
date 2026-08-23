@@ -3,12 +3,9 @@ package dev.jazalewski1.matchpoint.feature.match
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
-import dev.jazalewski1.matchpoint.domain.tennis.MatchController
-import dev.jazalewski1.matchpoint.domain.tennis.MatchState
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
-import dev.jazalewski1.matchpoint.domain.tennis.Points
-import dev.jazalewski1.matchpoint.domain.tennis.Side
+import dev.jazalewski1.matchpoint.feature.match.testdata.*
+import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,49 +42,6 @@ private val sampleMatchUiState =
 
 private val minorIndicationFinishedDuration = MINOR_INDICATION_DURATION + 1.milliseconds
 private val majorIndicationFinishedDuration = MAJOR_INDICATION_DURATION + 1.milliseconds
-
-class FakeMatchController : MatchController {
-    var addPointToLhsCount = 0
-        private set
-
-    var addPointToRhsCount = 0
-        private set
-
-    private var matchState = sampleMatchState
-    private var lhsPointOutcome: PointOutcome = PointOutcome.PointScored(Side.LHS)
-    private var rhsPointOutcome: PointOutcome = PointOutcome.PointScored(Side.RHS)
-
-    fun setState(new: MatchState) {
-        matchState = new
-    }
-
-    fun returnAddPointToLhs(outcome: PointOutcome) {
-        lhsPointOutcome = outcome
-    }
-
-    fun returnAddPointToRhs(outcome: PointOutcome) {
-        rhsPointOutcome = outcome
-    }
-
-    override fun getState() = matchState
-
-    override fun addPointToLhs(): PointOutcome {
-        addPointToLhsCount += 1
-        return lhsPointOutcome
-    }
-
-    override fun addPointToRhs(): PointOutcome {
-        addPointToRhsCount += 1
-        return rhsPointOutcome
-    }
-}
-
-private val gameLoveAll = GameState.default()
-private val game0And15 = GameState.Ongoing(Points.LOVE, Points.FIFTEEN)
-private val game15And0 = GameState.Ongoing(Points.FIFTEEN, Points.LOVE)
-private val game15And40 = GameState.Ongoing(Points.FIFTEEN, Points.FORTY)
-private val game40And15 = GameState.Ongoing(Points.FORTY, Points.FIFTEEN)
-private val sampleMatchState = MatchState(game = gameLoveAll)
 
 @RunWith(AndroidJUnit4::class)
 class MatchViewModelTest {
@@ -137,8 +91,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        val newMatchState = sampleMatchState.copy(game = game15And0)
-        matchController.setState(newMatchState)
+        matchController.returnGetCurrentGame(game15And0)
 
         viewModel.addPointToLhs()
         runCurrent()
@@ -168,8 +121,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        val newMatchState = sampleMatchState.copy(game = game0And15)
-        matchController.setState(newMatchState)
+        matchController.returnGetCurrentGame(game0And15)
 
         viewModel.addPointToRhs()
         runCurrent()
@@ -197,11 +149,11 @@ class MatchViewModelTest {
     @Test
     fun `updates ui state when adding lhs score and game won`() = runTest {
         val matchController = FakeMatchController()
-        matchController.setState(sampleMatchState.copy(game = game40And15))
+        matchController.returnGetCurrentGame(game40And15)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.setState(sampleMatchState.copy(game = GameState.default()))
-        matchController.returnAddPointToLhs(PointOutcome.GameWon(Side.LHS))
+        matchController.returnGetCurrentGame(gameLoveAll)
+        matchController.returnAddPointToLhs(PointOutcome.GameWon)
 
         viewModel.addPointToLhs()
         runCurrent()
@@ -227,11 +179,11 @@ class MatchViewModelTest {
     @Test
     fun `updates ui state when adding rhs score and game won`() = runTest {
         val matchController = FakeMatchController()
-        matchController.setState(sampleMatchState.copy(game = game15And40))
+        matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.setState(sampleMatchState.copy(game = GameState.default()))
-        matchController.returnAddPointToRhs(PointOutcome.GameWon(Side.RHS))
+        matchController.returnGetCurrentGame(gameLoveAll)
+        matchController.returnAddPointToRhs(PointOutcome.GameWon)
 
         viewModel.addPointToRhs()
         runCurrent()
@@ -259,8 +211,8 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.setState(sampleMatchState.copy(game = game15And40))
-        matchController.returnAddPointToLhs(PointOutcome.PointScored(Side.LHS))
+        matchController.returnGetCurrentGame(game15And40)
+        matchController.returnAddPointToLhs(PointOutcome.PointScored)
 
         viewModel.addPointToLhs()
         runCurrent()
@@ -277,8 +229,8 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.setState(sampleMatchState.copy(game = game40And15))
-        matchController.returnAddPointToRhs(PointOutcome.PointScored(Side.RHS))
+        matchController.returnGetCurrentGame(game40And15)
+        matchController.returnAddPointToRhs(PointOutcome.PointScored)
 
         viewModel.addPointToRhs()
         runCurrent()
@@ -295,7 +247,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.setState(sampleMatchState.copy(game = game15And40))
+        matchController.returnGetCurrentGame(game15And40)
 
         viewModel.addPointToLhs()
         runCurrent()
@@ -314,7 +266,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.setState(sampleMatchState.copy(game = game40And15))
+        matchController.returnGetCurrentGame(game40And15)
 
         viewModel.addPointToRhs()
         runCurrent()
