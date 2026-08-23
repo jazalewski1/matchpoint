@@ -36,8 +36,8 @@ internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
         rhsPlayerName = uiState.rhsPlayer.name,
         lhsScore = uiState.lhsPlayer.score,
         rhsScore = uiState.rhsPlayer.score,
-        onLhsClick = viewModel::addLhsScore,
-        onRhsClick = viewModel::addRhsScore,
+        onLhsClick = viewModel::addPointToLhs,
+        onRhsClick = viewModel::addPointToRhs,
         lhsIndication = uiState.lhsPlayer.indication,
         rhsIndication = uiState.rhsPlayer.indication,
     )

@@ -49,7 +49,7 @@ sealed interface PointOutcome {
 interface MatchController {
     fun getState(): MatchState
 
-    fun addLhsScore(): PointOutcome
+    fun addPointToLhs(): PointOutcome
 
-    fun addRhsScore(): PointOutcome
+    fun addPointToRhs(): PointOutcome
 }
