@@ -3,10 +3,9 @@ package dev.jazalewski1.matchpoint.feature.match
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
-import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
-import dev.jazalewski1.matchpoint.domain.tennis.Points
+import dev.jazalewski1.matchpoint.feature.match.testdata.*
+import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,50 +40,8 @@ private val sampleRhsPlayer = PlayerUiState(name = RHS_PLAYER_NAME, score = "0")
 private val sampleMatchUiState =
     MatchUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer)
 
-private val gameLoveAll = GameState.default()
-private val game0And15 = GameState.Regular(Points.LOVE, Points.FIFTEEN)
-private val game15And0 = GameState.Regular(Points.FIFTEEN, Points.LOVE)
-private val game15And40 = GameState.Regular(Points.FIFTEEN, Points.FORTY)
-private val game40And15 = GameState.Regular(Points.FORTY, Points.FIFTEEN)
-
 private val minorIndicationFinishedDuration = MINOR_INDICATION_DURATION + 1.milliseconds
 private val majorIndicationFinishedDuration = MAJOR_INDICATION_DURATION + 1.milliseconds
-
-class FakeMatchController : MatchController {
-    var addPointToLhsCount = 0
-        private set
-
-    var addPointToRhsCount = 0
-        private set
-
-    private var gameState: GameState = gameLoveAll
-    private var lhsPointOutcome: PointOutcome = PointOutcome.PointScored
-    private var rhsPointOutcome: PointOutcome = PointOutcome.PointScored
-
-    fun returnGetCurrentGame(new: GameState) {
-        gameState = new
-    }
-
-    fun returnAddPointToLhs(outcome: PointOutcome) {
-        lhsPointOutcome = outcome
-    }
-
-    fun returnAddPointToRhs(outcome: PointOutcome) {
-        rhsPointOutcome = outcome
-    }
-
-    override fun getCurrentGame() = gameState
-
-    override fun addPointToLhs(): PointOutcome {
-        addPointToLhsCount += 1
-        return lhsPointOutcome
-    }
-
-    override fun addPointToRhs(): PointOutcome {
-        addPointToRhsCount += 1
-        return rhsPointOutcome
-    }
-}
 
 @RunWith(AndroidJUnit4::class)
 class MatchViewModelTest {
