@@ -7,7 +7,7 @@ class MatchControllerImpl : MatchController {
 
     override fun addPointToLhs(): PointOutcome =
         when (val current = gameState) {
-            is GameState.Ongoing -> {
+            is GameState.Regular -> {
                 val nextLhs = current.lhs.next()
                 if (nextLhs != null) {
                     if (nextLhs == Points.FORTY && current.rhs == Points.FORTY) {
@@ -38,7 +38,7 @@ class MatchControllerImpl : MatchController {
 
     override fun addPointToRhs(): PointOutcome =
         when (val current = gameState) {
-            is GameState.Ongoing -> {
+            is GameState.Regular -> {
                 val nextRhs = current.rhs.next()
                 if (nextRhs != null) {
                     if (nextRhs == Points.FORTY && current.lhs == Points.FORTY) {

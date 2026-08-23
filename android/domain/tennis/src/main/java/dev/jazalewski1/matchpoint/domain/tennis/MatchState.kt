@@ -1,7 +1,7 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 sealed interface GameState {
-    data class Ongoing(val lhs: Points, val rhs: Points) : GameState
+    data class Regular(val lhs: Points, val rhs: Points) : GameState
 
     object Deuce : GameState
 
@@ -12,6 +12,6 @@ sealed interface GameState {
     }
 
     companion object {
-        fun default() = Ongoing(lhs = Points.LOVE, rhs = Points.LOVE)
+        fun default() = Regular(lhs = Points.LOVE, rhs = Points.LOVE)
     }
 }

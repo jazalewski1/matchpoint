@@ -42,10 +42,10 @@ private val sampleMatchUiState =
     MatchUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer)
 
 private val gameLoveAll = GameState.default()
-private val game0And15 = GameState.Ongoing(Points.LOVE, Points.FIFTEEN)
-private val game15And0 = GameState.Ongoing(Points.FIFTEEN, Points.LOVE)
-private val game15And40 = GameState.Ongoing(Points.FIFTEEN, Points.FORTY)
-private val game40And15 = GameState.Ongoing(Points.FORTY, Points.FIFTEEN)
+private val game0And15 = GameState.Regular(Points.LOVE, Points.FIFTEEN)
+private val game15And0 = GameState.Regular(Points.FIFTEEN, Points.LOVE)
+private val game15And40 = GameState.Regular(Points.FIFTEEN, Points.FORTY)
+private val game40And15 = GameState.Regular(Points.FORTY, Points.FIFTEEN)
 
 private val minorIndicationFinishedDuration = MINOR_INDICATION_DURATION + 1.milliseconds
 private val majorIndicationFinishedDuration = MAJOR_INDICATION_DURATION + 1.milliseconds

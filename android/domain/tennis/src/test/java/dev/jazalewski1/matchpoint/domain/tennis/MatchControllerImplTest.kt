@@ -34,7 +34,7 @@ class MatchControllerImplTest {
 
         fun assertLhsPoints(expectedPoints: Points) {
             assertThat(controller.getCurrentGame())
-                .isEqualTo(GameState.Ongoing(expectedPoints, Points.LOVE))
+                .isEqualTo(GameState.Regular(expectedPoints, Points.LOVE))
         }
 
         assertLhsPointScored(controller.addPointToLhs())
@@ -51,7 +51,7 @@ class MatchControllerImplTest {
 
         fun assertRhsPoints(expectedPoints: Points) {
             assertThat(controller.getCurrentGame())
-                .isEqualTo(GameState.Ongoing(Points.LOVE, expectedPoints))
+                .isEqualTo(GameState.Regular(Points.LOVE, expectedPoints))
         }
 
         assertRhsPointScored(controller.addPointToRhs())
