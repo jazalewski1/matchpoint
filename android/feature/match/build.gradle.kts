@@ -40,6 +40,7 @@ android {
                 showCauses = true
                 showStackTraces = true
             }
+            test.jvmArgs("--enable-native-access=ALL-UNNAMED")
         }
     }
 }
