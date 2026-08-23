@@ -8,7 +8,6 @@ import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchState
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
 import dev.jazalewski1.matchpoint.domain.tennis.Points
-import dev.jazalewski1.matchpoint.domain.tennis.Side
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,8 +53,8 @@ class FakeMatchController : MatchController {
         private set
 
     private var matchState = sampleMatchState
-    private var lhsPointOutcome: PointOutcome = PointOutcome.PointScored(Side.LHS)
-    private var rhsPointOutcome: PointOutcome = PointOutcome.PointScored(Side.RHS)
+    private var lhsPointOutcome: PointOutcome = PointOutcome.PointScored
+    private var rhsPointOutcome: PointOutcome = PointOutcome.PointScored
 
     fun setState(new: MatchState) {
         matchState = new
@@ -201,7 +200,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.setState(sampleMatchState.copy(game = GameState.default()))
-        matchController.returnAddPointToLhs(PointOutcome.GameWon(Side.LHS))
+        matchController.returnAddPointToLhs(PointOutcome.GameWon)
 
         viewModel.addPointToLhs()
         runCurrent()
@@ -231,7 +230,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.setState(sampleMatchState.copy(game = GameState.default()))
-        matchController.returnAddPointToRhs(PointOutcome.GameWon(Side.RHS))
+        matchController.returnAddPointToRhs(PointOutcome.GameWon)
 
         viewModel.addPointToRhs()
         runCurrent()
@@ -260,7 +259,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.setState(sampleMatchState.copy(game = game15And40))
-        matchController.returnAddPointToLhs(PointOutcome.PointScored(Side.LHS))
+        matchController.returnAddPointToLhs(PointOutcome.PointScored)
 
         viewModel.addPointToLhs()
         runCurrent()
@@ -278,7 +277,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.setState(sampleMatchState.copy(game = game40And15))
-        matchController.returnAddPointToRhs(PointOutcome.PointScored(Side.RHS))
+        matchController.returnAddPointToRhs(PointOutcome.PointScored)
 
         viewModel.addPointToRhs()
         runCurrent()

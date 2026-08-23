@@ -7,7 +7,6 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
-import dev.jazalewski1.matchpoint.domain.tennis.Side
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -47,9 +46,9 @@ constructor(
         if (isIndicationOngoing()) {
             return
         }
-        when (val outcome = matchController.addPointToLhs()) {
-            is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
-            is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
+        when (matchController.addPointToLhs()) {
+            is PointOutcome.PointScored -> updateFromPointScored(Side.LHS)
+            is PointOutcome.GameWon -> updateFromGameWon(Side.LHS)
         }
     }
 
@@ -57,9 +56,9 @@ constructor(
         if (isIndicationOngoing()) {
             return
         }
-        when (val outcome = matchController.addPointToRhs()) {
-            is PointOutcome.PointScored -> updateFromPointScored(outcome.side)
-            is PointOutcome.GameWon -> updateFromGameWon(outcome.side)
+        when (matchController.addPointToRhs()) {
+            is PointOutcome.PointScored -> updateFromPointScored(Side.RHS)
+            is PointOutcome.GameWon -> updateFromGameWon(Side.RHS)
         }
     }
 
@@ -123,4 +122,9 @@ constructor(
         val current = _uiState.value
         return current.lhsPlayer.indication != null || current.rhsPlayer.indication != null
     }
+}
+
+private enum class Side {
+    LHS,
+    RHS,
 }

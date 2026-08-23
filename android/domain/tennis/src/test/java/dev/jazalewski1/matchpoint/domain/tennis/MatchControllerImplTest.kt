@@ -5,19 +5,19 @@ import org.junit.Test
 
 class MatchControllerImplTest {
     private fun assertLhsPointScored(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.PointScored(Side.LHS))
+        assertThat(outcome).isEqualTo(PointOutcome.PointScored)
     }
 
     private fun assertRhsPointScored(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.PointScored(Side.RHS))
+        assertThat(outcome).isEqualTo(PointOutcome.PointScored)
     }
 
     private fun assertLhsGameWon(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.GameWon(Side.LHS))
+        assertThat(outcome).isEqualTo(PointOutcome.GameWon)
     }
 
     private fun assertRhsGameWon(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.GameWon(Side.RHS))
+        assertThat(outcome).isEqualTo(PointOutcome.GameWon)
     }
 
     @Test

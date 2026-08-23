@@ -12,27 +12,27 @@ class MatchControllerImpl : MatchController {
                 if (nextLhs != null) {
                     if (nextLhs == Points.FORTY && game.rhs == Points.FORTY) {
                         state = state.copy(game = GameState.Deuce)
-                        return PointOutcome.PointScored(Side.LHS)
+                        return PointOutcome.PointScored
                     } else {
                         state = state.copy(game = game.copy(lhs = nextLhs))
-                        return PointOutcome.PointScored(Side.LHS)
+                        return PointOutcome.PointScored
                     }
                 } else {
                     state = state.copy(game = GameState.default())
-                    return PointOutcome.GameWon(Side.LHS)
+                    return PointOutcome.GameWon
                 }
             }
             is GameState.Deuce -> {
                 state = state.copy(game = GameState.Advantage.Lhs)
-                return PointOutcome.PointScored(Side.LHS)
+                return PointOutcome.PointScored
             }
             is GameState.Advantage.Lhs -> {
                 state = state.copy(game = GameState.default())
-                return PointOutcome.GameWon(Side.LHS)
+                return PointOutcome.GameWon
             }
             is GameState.Advantage.Rhs -> {
                 state = state.copy(game = GameState.Deuce)
-                return PointOutcome.PointScored(Side.LHS)
+                return PointOutcome.PointScored
             }
         }
 
@@ -43,27 +43,27 @@ class MatchControllerImpl : MatchController {
                 if (nextRhs != null) {
                     if (nextRhs == Points.FORTY && game.lhs == Points.FORTY) {
                         state = state.copy(game = GameState.Deuce)
-                        return PointOutcome.PointScored(Side.RHS)
+                        return PointOutcome.PointScored
                     } else {
                         state = state.copy(game = game.copy(rhs = nextRhs))
-                        return PointOutcome.PointScored(Side.RHS)
+                        return PointOutcome.PointScored
                     }
                 } else {
                     state = state.copy(game = GameState.default())
-                    return PointOutcome.GameWon(Side.RHS)
+                    return PointOutcome.GameWon
                 }
             }
             is GameState.Deuce -> {
                 state = state.copy(game = GameState.Advantage.Rhs)
-                return PointOutcome.PointScored(Side.RHS)
+                return PointOutcome.PointScored
             }
             is GameState.Advantage.Lhs -> {
                 state = state.copy(game = GameState.Deuce)
-                return PointOutcome.PointScored(Side.RHS)
+                return PointOutcome.PointScored
             }
             is GameState.Advantage.Rhs -> {
                 state = state.copy(game = GameState.default())
-                return PointOutcome.GameWon(Side.RHS)
+                return PointOutcome.GameWon
             }
         }
 }
