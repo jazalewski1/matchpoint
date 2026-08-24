@@ -3,6 +3,8 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -25,6 +27,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
+import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
+import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
+import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -66,7 +71,7 @@ internal fun MatchScreen(
     }
 
     val (lhsBackgroundColor, rhsBackgroundColor) =
-        animateIndication(
+        animateIndications(
             events = events,
             onCompletion = onIndicationComplete,
         )
@@ -97,51 +102,26 @@ internal fun MatchScreen(
 private const val HALF_INDICATION_DURATION_MS = 600
 
 @Composable
-private fun animateIndication(
+private fun animateIndications(
     events: SharedFlow<MatchUiEvent>,
     onCompletion: (MatchUiEvent) -> Unit,
 ): Pair<Color, Color> {
-    val defaultColor = MaterialTheme.colorScheme.background
-    val minorColor = MaterialTheme.colorScheme.secondaryContainer
-    val majorColor = MaterialTheme.colorScheme.tertiaryContainer
-    val lhsColor = remember { Animatable(defaultColor) }
-    val rhsColor = remember { Animatable(defaultColor) }
+    val lhsColor = remember { Animatable(backgroundLight) }
+    val rhsColor = remember { Animatable(backgroundLight) }
 
     LaunchedEffect(Unit) {
         var animationJob: Job? = null
         events.collect { event ->
-            lhsColor.snapTo(defaultColor)
-            rhsColor.snapTo(defaultColor)
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
             animationJob?.cancel()
             val job = launch {
                 when (event) {
                     is MatchUiEvent.Indication -> {
-                        val targetColor =
-                            when (event.type) {
-                                is IndicationType.Minor -> minorColor
-                                is IndicationType.Major -> majorColor
-                            }
-                        val iterations =
-                            when (event.type) {
-                                is IndicationType.Minor -> 2
-                                is IndicationType.Major -> 4
-                            }
                         val colorToAnimate = if (event.side == Side.LHS) lhsColor else rhsColor
-                        val tweenSpec =
-                            tween<Color>(
-                                durationMillis = HALF_INDICATION_DURATION_MS,
-                                easing = EaseInOutCubic,
-                            )
-                        repeat(iterations) {
-                            colorToAnimate.animateTo(
-                                targetValue = targetColor,
-                                animationSpec = tweenSpec,
-                            )
-                            delay(HALF_INDICATION_DURATION_MS.milliseconds)
-                            colorToAnimate.animateTo(
-                                targetValue = defaultColor,
-                                animationSpec = tweenSpec,
-                            )
+                        when (event.type) {
+                            is IndicationType.Minor -> animateMinorIndication(colorToAnimate)
+                            is IndicationType.Major -> animateMajorIndication(colorToAnimate)
                         }
                     }
                 }
@@ -153,6 +133,39 @@ private fun animateIndication(
         }
     }
     return Pair(lhsColor.value, rhsColor.value)
+}
+
+typealias AnimatableColor = Animatable<Color, AnimationVector4D>
+
+private suspend fun animateMinorIndication(colorToAnimate: AnimatableColor) {
+    animateSingleIndication(colorToAnimate, iterations = 2, targetColor = secondaryContainerLight)
+}
+
+private suspend fun animateMajorIndication(colorToAnimate: AnimatableColor) {
+    animateSingleIndication(colorToAnimate, iterations = 4, targetColor = tertiaryLight)
+}
+
+private suspend fun animateSingleIndication(
+    colorToAnimate: AnimatableColor,
+    iterations: Int,
+    targetColor: Color,
+) {
+    val tweenSpec =
+        tween<Color>(
+            durationMillis = HALF_INDICATION_DURATION_MS,
+            easing = EaseInOutCubic,
+        )
+    repeat(iterations) {
+        colorToAnimate.animateTo(
+            targetValue = targetColor,
+            animationSpec = tweenSpec,
+        )
+        delay(HALF_INDICATION_DURATION_MS.milliseconds)
+        colorToAnimate.animateTo(
+            targetValue = backgroundLight,
+            animationSpec = tweenSpec,
+        )
+    }
 }
 
 @Composable
