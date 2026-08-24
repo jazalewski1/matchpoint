@@ -3,10 +3,7 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
-import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.EaseOutQuart
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,12 +25,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -68,10 +65,11 @@ internal fun MatchScreen(
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
 
-    val (lhsBackgroundColor, rhsBackgroundColor) = animateIndication(
-        events = events,
-        onCompletion = onIndicationComplete,
-    )
+    val (lhsBackgroundColor, rhsBackgroundColor) =
+        animateIndication(
+            events = events,
+            onCompletion = onIndicationComplete,
+        )
 
     Scaffold { innerPadding ->
         Row(modifier = Modifier.padding(innerPadding).fillMaxWidth()) {
@@ -128,8 +126,7 @@ private fun animateIndication(
                                 is IndicationType.Minor -> 2
                                 is IndicationType.Major -> 4
                             }
-                        val colorToAnimate =
-                            if (event.side == Side.LHS) lhsColor else rhsColor
+                        val colorToAnimate = if (event.side == Side.LHS) lhsColor else rhsColor
                         val tweenSpec =
                             tween<Color>(
                                 durationMillis = HALF_INDICATION_DURATION_MS,
