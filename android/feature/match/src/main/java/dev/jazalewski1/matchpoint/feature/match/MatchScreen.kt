@@ -4,7 +4,8 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.AnimationVector4D
+import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,7 +27,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
-import kotlin.time.DurationUnit
+import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
+import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
+import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -36,10 +45,10 @@ internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
         rhsPlayerName = uiState.rhsPlayer.name,
         lhsScore = uiState.lhsPlayer.score,
         rhsScore = uiState.rhsPlayer.score,
-        onLhsClick = viewModel::addPointToLhs,
-        onRhsClick = viewModel::addPointToRhs,
-        lhsIndication = uiState.lhsPlayer.indication,
-        rhsIndication = uiState.rhsPlayer.indication,
+        onLhsClick = viewModel::onLhsPressed,
+        onRhsClick = viewModel::onRhsPressed,
+        onIndicationComplete = viewModel::onIndicationCompletion,
+        events = viewModel.uiEvents,
     )
 }
 
@@ -51,8 +60,8 @@ internal fun MatchScreen(
     rhsScore: String,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
-    lhsIndication: Indication?,
-    rhsIndication: Indication?,
+    onIndicationComplete: (MatchUiEvent) -> Unit,
+    events: SharedFlow<MatchUiEvent>,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
@@ -60,6 +69,12 @@ internal fun MatchScreen(
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
+
+    val (lhsBackgroundColor, rhsBackgroundColor) =
+        animateIndications(
+            events = events,
+            onCompletion = onIndicationComplete,
+        )
 
     Scaffold { innerPadding ->
         Row(modifier = Modifier.padding(innerPadding).fillMaxWidth()) {
@@ -69,7 +84,7 @@ internal fun MatchScreen(
                 onClick = onLhsClick,
                 contentDescription = "Left Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                indication = lhsIndication,
+                backgroundColor = lhsBackgroundColor,
             )
             VerticalDivider(thickness = 2.dp)
             PointContainer(
@@ -78,9 +93,78 @@ internal fun MatchScreen(
                 onClick = onRhsClick,
                 contentDescription = "Right Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                indication = rhsIndication,
+                backgroundColor = rhsBackgroundColor,
             )
         }
+    }
+}
+
+private const val HALF_INDICATION_DURATION_MS = 600
+
+@Composable
+private fun animateIndications(
+    events: SharedFlow<MatchUiEvent>,
+    onCompletion: (MatchUiEvent) -> Unit,
+): Pair<Color, Color> {
+    val lhsColor = remember { Animatable(backgroundLight) }
+    val rhsColor = remember { Animatable(backgroundLight) }
+
+    LaunchedEffect(Unit) {
+        var animationJob: Job? = null
+        events.collect { event ->
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
+            animationJob?.cancel()
+            val job = launch {
+                when (event) {
+                    is MatchUiEvent.Indication -> {
+                        val colorToAnimate = if (event.side == Side.LHS) lhsColor else rhsColor
+                        when (event.type) {
+                            is IndicationType.Minor -> animateMinorIndication(colorToAnimate)
+                            is IndicationType.Major -> animateMajorIndication(colorToAnimate)
+                        }
+                    }
+                }
+            }
+            job.invokeOnCompletion {
+                onCompletion(event)
+            }
+            animationJob = job
+        }
+    }
+    return Pair(lhsColor.value, rhsColor.value)
+}
+
+typealias AnimatableColor = Animatable<Color, AnimationVector4D>
+
+private suspend fun animateMinorIndication(colorToAnimate: AnimatableColor) {
+    animateSingleIndication(colorToAnimate, iterations = 2, targetColor = secondaryContainerLight)
+}
+
+private suspend fun animateMajorIndication(colorToAnimate: AnimatableColor) {
+    animateSingleIndication(colorToAnimate, iterations = 4, targetColor = tertiaryLight)
+}
+
+private suspend fun animateSingleIndication(
+    colorToAnimate: AnimatableColor,
+    iterations: Int,
+    targetColor: Color,
+) {
+    val tweenSpec =
+        tween<Color>(
+            durationMillis = HALF_INDICATION_DURATION_MS,
+            easing = EaseInOutCubic,
+        )
+    repeat(iterations) {
+        colorToAnimate.animateTo(
+            targetValue = targetColor,
+            animationSpec = tweenSpec,
+        )
+        delay(HALF_INDICATION_DURATION_MS.milliseconds)
+        colorToAnimate.animateTo(
+            targetValue = backgroundLight,
+            animationSpec = tweenSpec,
+        )
     }
 }
 
@@ -90,33 +174,10 @@ private fun PointContainer(
     score: String,
     onClick: () -> Unit,
     contentDescription: String,
+    backgroundColor: Color,
     modifier: Modifier = Modifier,
-    indication: Indication?,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val defaultBackground = MaterialTheme.colorScheme.background
-    val minorIndicationBackground = MaterialTheme.colorScheme.secondaryContainer
-    val majorIndicationBackground = MaterialTheme.colorScheme.tertiaryContainer
-
-    val backgroundColor = remember { Animatable(defaultBackground) }
-
-    LaunchedEffect(indication) {
-        backgroundColor.snapTo(defaultBackground)
-        if (indication == null) {
-            return@LaunchedEffect
-        }
-        val targetColor =
-            when (indication) {
-                Indication.Minor -> minorIndicationBackground
-                Indication.Major -> majorIndicationBackground
-            }
-        val duration = HALF_PULSE_DURATION.toInt(DurationUnit.MILLISECONDS)
-        val tweenSpec = tween<Color>(duration, easing = FastOutSlowInEasing)
-        while (true) {
-            backgroundColor.animateTo(targetColor, tweenSpec)
-            backgroundColor.animateTo(defaultBackground, tweenSpec)
-        }
-    }
 
     Column(
         modifier =
@@ -127,7 +188,7 @@ private fun PointContainer(
                     indication = null,
                     interactionSource = interactionSource,
                 )
-                .drawBehind { drawRect(backgroundColor.value) }
+                .drawBehind { drawRect(backgroundColor) }
                 .semantics(properties = { this.contentDescription = contentDescription }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -158,8 +219,6 @@ private fun ScreenPreviewBase(
     rhsPlayerName: String = "Nadal",
     lhsScore: String = "40",
     rhsScore: String = "15",
-    lhsIndication: Indication? = null,
-    rhsIndication: Indication? = null,
 ) =
     MatchScreen(
         lhsPlayerName = lhsPlayerName,
@@ -168,8 +227,8 @@ private fun ScreenPreviewBase(
         rhsScore = rhsScore,
         onLhsClick = {},
         onRhsClick = {},
-        lhsIndication = lhsIndication,
-        rhsIndication = rhsIndication,
+        onIndicationComplete = {},
+        events = MutableSharedFlow(),
     )
 
 @HorizontalPreview
@@ -177,21 +236,5 @@ private fun ScreenPreviewBase(
 private fun Preview() {
     AppTheme {
         ScreenPreviewBase()
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun PreviewWithMinorIndication() {
-    AppTheme {
-        ScreenPreviewBase(lhsIndication = Indication.Minor)
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun PreviewWithMajorIndication() {
-    AppTheme {
-        ScreenPreviewBase(lhsIndication = Indication.Major)
     }
 }
