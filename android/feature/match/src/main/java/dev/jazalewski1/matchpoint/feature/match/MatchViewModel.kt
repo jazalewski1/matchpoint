@@ -14,10 +14,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-sealed interface MatchUiEvent {
-    data class Indication(val type: IndicationType, val side: Side) : MatchUiEvent
-}
-
 @HiltViewModel
 class MatchViewModel
 @Inject
