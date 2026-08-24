@@ -6,10 +6,11 @@ data class PlayerUiState(
 )
 
 enum class Side {
-    LHS, RHS;
+    LHS,
+    RHS,
 }
 
-sealed interface IndicationType{
+sealed interface IndicationType {
     data object Minor : IndicationType
 
     data object Major : IndicationType

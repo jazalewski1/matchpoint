@@ -8,7 +8,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
@@ -16,17 +15,20 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.time.Duration.Companion.seconds
 
 private const val LHS_PLAYER_NAME = "Left player"
 private const val RHS_PLAYER_NAME = "Right player"
 private const val LHS_SCORE = "40"
 private const val RHS_SCORE = "15"
 
-private val minorLhsIndication = MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.LHS)
-private val minorRhsIndication = MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.RHS)
-private val majorLhsIndication = MatchUiEvent.Indication(type = IndicationType.Major, side = Side.LHS)
-private val majorRhsIndication = MatchUiEvent.Indication(type = IndicationType.Major, side = Side.RHS)
+private val minorLhsIndication =
+    MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.LHS)
+private val minorRhsIndication =
+    MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.RHS)
+private val majorLhsIndication =
+    MatchUiEvent.Indication(type = IndicationType.Major, side = Side.LHS)
+private val majorRhsIndication =
+    MatchUiEvent.Indication(type = IndicationType.Major, side = Side.RHS)
 
 @RunWith(AndroidJUnit4::class)
 class MatchScreenTest {
@@ -99,9 +101,7 @@ class MatchScreenTest {
     }
 
     private fun MutableSharedFlow<MatchUiEvent>.emitAndWait(event: MatchUiEvent) {
-        println("emitting event")
         tryEmit(event)
-        println("emitted event")
         rule.mainClock.advanceTimeByFrame()
         rule.waitForIdle()
     }
