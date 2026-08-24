@@ -3,6 +3,9 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseOutQuart
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -25,11 +28,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
-import kotlin.time.DurationUnit
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -92,6 +96,8 @@ internal fun MatchScreen(
     }
 }
 
+private const val HALF_INDICATION_DURATION_MS = 600
+
 @Composable
 private fun animateIndication(
     events: SharedFlow<MatchUiEvent>,
@@ -119,19 +125,22 @@ private fun animateIndication(
                             }
                         val iterations =
                             when (event.type) {
-                                is IndicationType.Minor -> 1
-                                is IndicationType.Major -> 3
+                                is IndicationType.Minor -> 2
+                                is IndicationType.Major -> 4
                             }
                         val colorToAnimate =
                             if (event.side == Side.LHS) lhsColor else rhsColor
-                        val duration = HALF_PULSE_DURATION.toInt(DurationUnit.MILLISECONDS)
                         val tweenSpec =
-                            tween<Color>(durationMillis = duration, easing = FastOutSlowInEasing)
+                            tween<Color>(
+                                durationMillis = HALF_INDICATION_DURATION_MS,
+                                easing = EaseInOutCubic,
+                            )
                         repeat(iterations) {
                             colorToAnimate.animateTo(
                                 targetValue = targetColor,
                                 animationSpec = tweenSpec,
                             )
+                            delay(HALF_INDICATION_DURATION_MS.milliseconds)
                             colorToAnimate.animateTo(
                                 targetValue = defaultColor,
                                 animationSpec = tweenSpec,
