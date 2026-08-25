@@ -3,10 +3,18 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -16,7 +24,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -28,11 +39,16 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
+import dev.jazalewski1.matchpoint.core.ui.theme.primaryLight
 import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
+import dev.jazalewski1.matchpoint.core.ui.theme.secondaryLight
+import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryContainerLight
+import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -66,6 +82,7 @@ internal fun MatchScreen(
     }
 
     var pointIndication by remember { mutableStateOf<PointIndication?>(null) }
+    var isMajorIndicationDisplayed by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         var pointIndicationKey = 0
         events.collect { event ->
@@ -76,18 +93,27 @@ internal fun MatchScreen(
                     pointIndication = PointIndication(side = side, key = pointIndicationKey++)
                 }
                 is MatchUiEvent.GameFinished -> {
-                    // TODO
+                    pointIndication = null
+                    isMajorIndicationDisplayed = true
                 }
             }
         }
     }
 
+    LaunchedEffect(isMajorIndicationDisplayed) {
+        if (!isMajorIndicationDisplayed) {
+            return@LaunchedEffect
+        }
+        delay(5.seconds)
+        isMajorIndicationDisplayed = false
+    }
+
     val lhsBackgroundColor = remember { Animatable(backgroundLight) }
     val rhsBackgroundColor = remember { Animatable(backgroundLight) }
     LaunchedEffect(pointIndication) {
-        val indication = pointIndication ?: return@LaunchedEffect
         lhsBackgroundColor.snapTo(backgroundLight)
         rhsBackgroundColor.snapTo(backgroundLight)
+        val indication = pointIndication ?: return@LaunchedEffect
         val colorToAnimate =
             if (indication.side == IndicationSide.LHS) lhsBackgroundColor else rhsBackgroundColor
         animateMinorIndication(colorToAnimate = colorToAnimate)
@@ -112,6 +138,9 @@ internal fun MatchScreen(
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
                 backgroundColor = rhsBackgroundColor.value,
             )
+        }
+        if (isMajorIndicationDisplayed) {
+            MajorIndication(onClick = { isMajorIndicationDisplayed = false })
         }
     }
 }
@@ -143,6 +172,48 @@ private suspend fun animateMinorIndication(colorToAnimate: Animatable<Color, Ani
         colorToAnimate.animateTo(
             targetValue = backgroundLight,
             animationSpec = tweenSpec,
+        )
+    }
+}
+
+@Composable
+private fun MajorIndication(
+    onClick: () -> Unit,
+) {
+    val defaultColor = primaryLight
+    val indicatingColor = tertiaryLight
+    val animatedColor by rememberInfiniteTransition()
+        .animateColor(
+            initialValue = defaultColor,
+            targetValue = indicatingColor,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 1000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse,
+            )
+        )
+    val colors = listOf(animatedColor, defaultColor)
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(
+        modifier =
+            Modifier.fillMaxSize()
+                .clickable(
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource,
+                )
+                .background(
+                    Brush.horizontalGradient(
+                        colors = colors,
+                    )
+                )
+    ) {
+        Text(
+            text = "GAME",
+            style = MaterialTheme.typography.displayLarge,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = 182.sp,
+            modifier = Modifier.align(Alignment.Center),
         )
     }
 }
