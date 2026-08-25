@@ -4,13 +4,16 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
+import androidx.compose.animation.core.EaseInOutCirc
 import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.EaseOutCirc
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.EaseOutExpo
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -24,10 +27,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -41,13 +42,14 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
 import dev.jazalewski1.matchpoint.core.ui.theme.primaryLight
 import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
-import dev.jazalewski1.matchpoint.core.ui.theme.secondaryLight
-import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryContainerLight
 import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -81,42 +83,14 @@ internal fun MatchScreen(
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
 
-    var pointIndication by remember { mutableStateOf<PointIndication?>(null) }
-    var isMajorIndicationDisplayed by remember { mutableStateOf(false) }
+    val indicationState = rememberIndicationState()
     LaunchedEffect(Unit) {
-        var pointIndicationKey = 0
         events.collect { event ->
             when (event) {
-                is MatchUiEvent.PointScored -> {
-                    val side =
-                        if (event.winner == Side.LHS) IndicationSide.LHS else IndicationSide.RHS
-                    pointIndication = PointIndication(side = side, key = pointIndicationKey++)
-                }
-                is MatchUiEvent.GameFinished -> {
-                    pointIndication = null
-                    isMajorIndicationDisplayed = true
-                }
+                is MatchUiEvent.PointScored -> indicationState.onPointScored(side = event.winner)
+                is MatchUiEvent.GameFinished -> indicationState.onGameFinished(side = event.winner)
             }
         }
-    }
-
-    LaunchedEffect(isMajorIndicationDisplayed) {
-        if (!isMajorIndicationDisplayed) {
-            return@LaunchedEffect
-        }
-        delay(5.seconds)
-        isMajorIndicationDisplayed = false
-    }
-
-    val lhsBackgroundColor = remember { Animatable(backgroundLight) }
-    val rhsBackgroundColor = remember { Animatable(backgroundLight) }
-    LaunchedEffect(pointIndication) {
-        lhsBackgroundColor.snapTo(backgroundLight)
-        rhsBackgroundColor.snapTo(backgroundLight)
-        val indication = pointIndication ?: return@LaunchedEffect
-        val colorToAnimate =
-            if (indication.side == IndicationSide.LHS) lhsBackgroundColor else rhsBackgroundColor
-        animateMinorIndication(colorToAnimate = colorToAnimate)
     }
 
     Scaffold { innerPadding ->
@@ -127,7 +101,7 @@ internal fun MatchScreen(
                 onClick = onLhsClick,
                 contentDescription = "Left Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                backgroundColor = lhsBackgroundColor.value,
+                backgroundColor = indicationState.lhsColor.value,
             )
             VerticalDivider(thickness = 2.dp)
             PointContainer(
@@ -136,26 +110,65 @@ internal fun MatchScreen(
                 onClick = onRhsClick,
                 contentDescription = "Right Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                backgroundColor = rhsBackgroundColor.value,
+                backgroundColor = indicationState.rhsColor.value,
             )
         }
-        if (isMajorIndicationDisplayed) {
-            MajorIndication(onClick = { isMajorIndicationDisplayed = false })
+        indicationState.gameIndicationSide?.let { side ->
+            GameIndication(
+                side = side,
+                onClick = { indicationState.dismissGameIndication() },
+            )
         }
     }
 }
 
-private enum class IndicationSide {
-    LHS,
-    RHS,
+private class IndicationState(private val scope: CoroutineScope) {
+    private var job: Job? = null
+    var lhsColor = Animatable(backgroundLight)
+        private set
+    var rhsColor = Animatable(backgroundLight)
+        private set
+    var gameIndicationSide by mutableStateOf<Side?>(null)
+        private set
+
+    fun onPointScored(side: Side) {
+        job?.cancel()
+        job = scope.launch {
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
+            gameIndicationSide = null
+            val colorToAnimate = if (side == Side.LHS) lhsColor else rhsColor
+            animatePointIndication(colorToAnimate)
+        }
+    }
+
+    fun onGameFinished(side: Side) {
+        job?.cancel()
+        job = scope.launch {
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
+            gameIndicationSide = side
+            delay(5.seconds)
+            gameIndicationSide = null
+        }
+    }
+
+    fun dismissGameIndication() {
+        if (gameIndicationSide == null) {
+            return
+        }
+        job?.cancel()
+        gameIndicationSide = null
+    }
 }
 
-private data class PointIndication(
-    val side: IndicationSide,
-    val key: Int,
-)
+@Composable
+private fun rememberIndicationState(): IndicationState {
+    val scope = rememberCoroutineScope()
+    return remember { IndicationState(scope) }
+}
 
-private suspend fun animateMinorIndication(colorToAnimate: Animatable<Color, AnimationVector4D>) {
+private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, AnimationVector4D>) {
     val halfIndicationDurationMs = 600
     val iterations = 2
     val tweenSpec =
@@ -177,21 +190,27 @@ private suspend fun animateMinorIndication(colorToAnimate: Animatable<Color, Ani
 }
 
 @Composable
-private fun MajorIndication(
+private fun GameIndication(
+    side: Side,
     onClick: () -> Unit,
 ) {
     val defaultColor = primaryLight
     val indicatingColor = tertiaryLight
     val animatedColor by rememberInfiniteTransition()
         .animateColor(
-            initialValue = defaultColor,
+            initialValue = Color.Transparent,
             targetValue = indicatingColor,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 1000, easing = LinearEasing),
+                animation = tween(durationMillis = 1000, easing = EaseOutCirc),
                 repeatMode = RepeatMode.Reverse,
             )
         )
-    val colors = listOf(animatedColor, defaultColor)
+    val colors =
+        if (side == Side.LHS) {
+            listOf(animatedColor, defaultColor)
+        } else {
+            listOf(defaultColor, animatedColor)
+        }
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier =
@@ -201,11 +220,8 @@ private fun MajorIndication(
                     indication = null,
                     interactionSource = interactionSource,
                 )
-                .background(
-                    Brush.horizontalGradient(
-                        colors = colors,
-                    )
-                )
+                .background(defaultColor)
+                .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
     ) {
         Text(
             text = "GAME",
@@ -285,5 +301,16 @@ private fun ScreenPreviewBase(
 private fun Preview() {
     AppTheme {
         ScreenPreviewBase()
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun LhsGameIndicationPreview() {
+    AppTheme {
+        GameIndication(
+            side = Side.LHS,
+            onClick = {},
+        )
     }
 }
