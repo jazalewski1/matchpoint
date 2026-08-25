@@ -7,7 +7,7 @@ import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.EaseOutCirc
+import androidx.compose.animation.core.EaseOutQuad
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -35,11 +35,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
-import dev.jazalewski1.matchpoint.core.ui.theme.primaryLight
 import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
-import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -117,6 +114,11 @@ internal fun MatchScreen(
     }
 }
 
+private const val GAME_INDICATION_REPS = 5
+private const val GAME_INDICATION_PULSE_DURATION_MS = 800
+private const val GAME_INDICATION_TOTAL_DURATION_MS =
+    GAME_INDICATION_REPS * GAME_INDICATION_PULSE_DURATION_MS
+
 private class IndicationState(private val scope: CoroutineScope) {
     private var job: Job? = null
     var lhsColor = Animatable(backgroundLight)
@@ -145,7 +147,7 @@ private class IndicationState(private val scope: CoroutineScope) {
             lhsColor.snapTo(backgroundLight)
             rhsColor.snapTo(backgroundLight)
             gameIndicationSide = side
-            delay(5.seconds)
+            delay(GAME_INDICATION_TOTAL_DURATION_MS.milliseconds)
             gameIndicationSide = null
         }
     }
@@ -191,26 +193,31 @@ private fun GameIndication(
     side: Side,
     onClick: () -> Unit,
 ) {
-    val defaultColor = primaryLight
-    val indicatingColor = tertiaryLight
+    val interactionSource = remember { MutableInteractionSource() }
+    val defaultColor = MaterialTheme.colorScheme.primary
+    val loudColor = MaterialTheme.colorScheme.tertiary
+    val quietColor = Color.Transparent
     val animatedColor by
         rememberInfiniteTransition()
             .animateColor(
-                initialValue = Color.Transparent,
-                targetValue = indicatingColor,
+                initialValue = quietColor,
+                targetValue = loudColor,
                 animationSpec =
                     infiniteRepeatable(
-                        animation = tween(durationMillis = 1000, easing = EaseOutCirc),
+                        animation =
+                            tween(
+                                durationMillis = GAME_INDICATION_PULSE_DURATION_MS,
+                                easing = EaseOutQuad,
+                            ),
                         repeatMode = RepeatMode.Reverse,
                     ),
             )
     val colors =
         if (side == Side.LHS) {
-            listOf(animatedColor, defaultColor)
+            listOf(animatedColor, quietColor)
         } else {
-            listOf(defaultColor, animatedColor)
+            listOf(quietColor, animatedColor)
         }
-    val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier =
             Modifier.fillMaxSize()
