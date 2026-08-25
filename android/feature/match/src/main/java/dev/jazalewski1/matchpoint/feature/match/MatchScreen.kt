@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
-internal const val INDICATION_PULSE_HALF_DURATION_MS = 800
+internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
 internal const val GAME_INDICATION_PULSE_REPS = 5
 internal const val GAME_INDICATION_HALF_PULSE_COUNT = GAME_INDICATION_PULSE_REPS * 2
 internal const val GAME_INDICATION_TOTAL_DURATION_MS =
