@@ -2,15 +2,27 @@ package dev.jazalewski1.matchpoint.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val primaryLight = Color(0xFF2814E2)
+object AppColors {
+    val blueDark = Color(0xFF2814E2)
+
+    val purpleDark = Color(0xFF6414E3)
+    val purpleNormal = Color(0xFF9763EA)
+    val purpleLight = Color(0xFFCAB1F1)
+
+    val orangeDark = Color(0xFFE35113)
+
+    val white = Color(0xFFFBF8FF)
+}
+
+val primaryLight = AppColors.blueDark
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFC9C5F1)
 val onPrimaryContainerLight = Color(0xFF0B063B)
-val secondaryLight = Color(0xFF6414E3)
+val secondaryLight = AppColors.purpleDark
 val onSecondaryLight = Color(0xFFFFFFFF)
-val secondaryContainerLight = Color(0xFFCAB1F1)
+val secondaryContainerLight = AppColors.purpleLight
 val onSecondaryContainerLight = Color(0xFF201632)
-val tertiaryLight = Color(0xFFE35113)
+val tertiaryLight = AppColors.orangeDark
 val onTertiaryLight = Color(0xFFFFFFFF)
 val tertiaryContainerLight = Color(0xFFE35113)
 val onTertiaryContainerLight = Color(0xFFFFFFFF)
@@ -18,7 +30,7 @@ val errorLight = Color(0xFF940F0F)
 val onErrorLight = Color(0xFFFFFFFF)
 val errorContainerLight = Color(0xFFC28383)
 val onErrorContainerLight = Color(0xFF691515)
-val backgroundLight = Color(0xFFFBF8FF)
+val backgroundLight = AppColors.white
 val onBackgroundLight = Color(0xFF1A1B21)
 val surfaceLight = Color(0xFFFBF8FF)
 val onSurfaceLight = Color(0xFF1A1B21)
