@@ -16,7 +16,14 @@ class HomeScreenTest {
     @get:Rule val rule = createComposeRule()
 
     @Composable
-    private fun SutScreen(onStartClick: () -> Unit = {}) = HomeScreen(onStartClick = onStartClick)
+    private fun SutScreen(
+        onStartClick: () -> Unit = {},
+        onStartDemoClick: () -> Unit = {},
+    ) =
+        HomeScreen(
+            onStartClick = onStartClick,
+            onStartDemoClick = onStartDemoClick,
+        )
 
     @Test
     fun `displays logo`() {
@@ -41,6 +48,16 @@ class HomeScreenTest {
         rule.setContent { SutScreen(onStartClick = { triggered = true }) }
 
         rule.onNodeWithText("Start New Match").performClick()
+
+        assertTrue(triggered)
+    }
+
+    @Test
+    fun `when start demo button is clicked then callback is triggered`() {
+        var triggered = false
+        rule.setContent { SutScreen(onStartDemoClick = { triggered = true }) }
+
+        rule.onNodeWithText("Start Demo Match").performClick()
 
         assertTrue(triggered)
     }
