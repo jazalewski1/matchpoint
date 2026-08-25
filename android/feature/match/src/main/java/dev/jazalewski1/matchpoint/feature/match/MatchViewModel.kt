@@ -44,32 +44,22 @@ constructor(
     val uiEvents = _uiEvents.asSharedFlow()
 
     fun onLhsPressed() {
-        when (matchController.addPointToLhs()) {
-            is PointOutcome.PointScored -> processPointScored(Side.LHS)
-            is PointOutcome.GameWon -> processGameWon(Side.LHS)
-        }
+        val outcome = matchController.addPointToLhs()
+        process(outcome, Side.LHS)
     }
 
     fun onRhsPressed() {
-        when (matchController.addPointToRhs()) {
-            is PointOutcome.PointScored -> processPointScored(Side.RHS)
-            is PointOutcome.GameWon -> processGameWon(Side.RHS)
-        }
+        val outcome = matchController.addPointToRhs()
+        process(outcome, Side.RHS)
     }
 
-    fun onIndicationCompletion(event: MatchUiEvent) {
-        if (event is MatchUiEvent.Indication && event.type == IndicationType.Major) {
-            updateScores()
-        }
-    }
-
-    private fun processPointScored(side: Side) {
+    private fun process(outcome: PointOutcome, side: Side) {
         updateScores()
-        _uiEvents.tryEmit(MatchUiEvent.Indication(type = IndicationType.Minor, side = side))
-    }
-
-    private fun processGameWon(side: Side) {
-        _uiEvents.tryEmit(MatchUiEvent.Indication(type = IndicationType.Major, side = side))
+        val event = when (outcome) {
+            is PointOutcome.PointScored -> MatchUiEvent.PointScored(winner = side)
+            is PointOutcome.GameWon -> MatchUiEvent.GameFinished(winner = side)
+        }
+        _uiEvents.tryEmit(event)
     }
 
     private fun updateScores() {
