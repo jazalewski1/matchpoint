@@ -55,10 +55,11 @@ constructor(
 
     private fun process(outcome: PointOutcome, side: Side) {
         updateScores()
-        val event = when (outcome) {
-            is PointOutcome.PointScored -> MatchUiEvent.PointScored(winner = side)
-            is PointOutcome.GameWon -> MatchUiEvent.GameFinished(winner = side)
-        }
+        val event =
+            when (outcome) {
+                is PointOutcome.PointScored -> MatchUiEvent.PointScored(winner = side)
+                is PointOutcome.GameWon -> MatchUiEvent.GameFinished(winner = side)
+            }
         _uiEvents.tryEmit(event)
     }
 

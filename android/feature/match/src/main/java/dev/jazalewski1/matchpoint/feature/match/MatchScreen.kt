@@ -6,13 +6,8 @@ import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.EaseInOutCirc
 import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.EaseOutCirc
-import androidx.compose.animation.core.EaseOutCubic
-import androidx.compose.animation.core.EaseOutExpo
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -43,14 +38,14 @@ import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
 import dev.jazalewski1.matchpoint.core.ui.theme.primaryLight
 import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
 import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -126,8 +121,10 @@ private class IndicationState(private val scope: CoroutineScope) {
     private var job: Job? = null
     var lhsColor = Animatable(backgroundLight)
         private set
+
     var rhsColor = Animatable(backgroundLight)
         private set
+
     var gameIndicationSide by mutableStateOf<Side?>(null)
         private set
 
@@ -196,15 +193,17 @@ private fun GameIndication(
 ) {
     val defaultColor = primaryLight
     val indicatingColor = tertiaryLight
-    val animatedColor by rememberInfiniteTransition()
-        .animateColor(
-            initialValue = Color.Transparent,
-            targetValue = indicatingColor,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 1000, easing = EaseOutCirc),
-                repeatMode = RepeatMode.Reverse,
+    val animatedColor by
+        rememberInfiniteTransition()
+            .animateColor(
+                initialValue = Color.Transparent,
+                targetValue = indicatingColor,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(durationMillis = 1000, easing = EaseOutCirc),
+                        repeatMode = RepeatMode.Reverse,
+                    ),
             )
-        )
     val colors =
         if (side == Side.LHS) {
             listOf(animatedColor, defaultColor)
