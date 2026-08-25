@@ -6,7 +6,7 @@ import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.EaseOutQuad
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
@@ -34,9 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.jazalewski1.matchpoint.core.ui.theme.AppColors
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
-import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -50,6 +50,7 @@ internal const val GAME_INDICATION_PULSE_REPS = 5
 internal const val GAME_INDICATION_HALF_PULSE_COUNT = GAME_INDICATION_PULSE_REPS * 2
 internal const val GAME_INDICATION_TOTAL_DURATION_MS =
     GAME_INDICATION_HALF_PULSE_COUNT * INDICATION_PULSE_HALF_DURATION_MS
+internal const val POINT_INDICATION_PULSE_REPS = 3
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -183,24 +184,17 @@ private fun rememberIndicationState(): IndicationState {
 }
 
 private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, AnimationVector4D>) {
-    val halfIndicationDurationMs = 600
-    val iterations = 2
-    val tweenSpec =
-        tween<Color>(
-            durationMillis = halfIndicationDurationMs,
-            easing = EaseInOutCubic,
-        )
-    repeat(iterations) {
-        colorToAnimate.animateTo(
-            targetValue = secondaryContainerLight,
-            animationSpec = tweenSpec,
-        )
-        delay(halfIndicationDurationMs.milliseconds)
-        colorToAnimate.animateTo(
-            targetValue = backgroundLight,
-            animationSpec = tweenSpec,
-        )
+    val repetitionsWithoutEntryAndExit = POINT_INDICATION_PULSE_REPS - 1
+    val easeIn =
+        tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
+    val easeOut =
+        tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
+    colorToAnimate.animateTo(targetValue = AppColors.purpleNormal, animationSpec = easeIn)
+    repeat(repetitionsWithoutEntryAndExit) {
+        colorToAnimate.animateTo(targetValue = AppColors.purpleLight, animationSpec = easeOut)
+        colorToAnimate.animateTo(targetValue = AppColors.purpleNormal, animationSpec = easeIn)
     }
+    colorToAnimate.animateTo(targetValue = AppColors.white, animationSpec = easeOut)
 }
 
 @Composable
