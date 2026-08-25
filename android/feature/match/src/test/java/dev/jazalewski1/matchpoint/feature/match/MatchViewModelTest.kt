@@ -118,7 +118,7 @@ class MatchViewModelTest {
     }
 
     @Test
-    fun `sends minor indication event when lhs scores`() = runTest {
+    fun `notifies about point scored when lhs scores`() = runTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
@@ -127,13 +127,13 @@ class MatchViewModelTest {
         viewModel.uiEvents.test {
             viewModel.onLhsPressed()
 
-            val expected = MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.LHS)
+            val expected = MatchUiEvent.PointScored(winner = Side.LHS)
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
 
     @Test
-    fun `sends minor indication event when rhs scores`() = runTest {
+    fun `notifies about point scored when rhs scores`() = runTest {
         val matchController = FakeMatchController()
         matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
@@ -143,13 +143,13 @@ class MatchViewModelTest {
         viewModel.uiEvents.test {
             viewModel.onRhsPressed()
 
-            val expected = MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.RHS)
+            val expected = MatchUiEvent.PointScored(winner = Side.RHS)
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
 
     @Test
-    fun `does not update scores when lhs wins`() = runTest {
+    fun `updates score when lhs wins game`() = runTest {
         val matchController = FakeMatchController()
         matchController.returnGetCurrentGame(game40And15)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
@@ -162,15 +162,15 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "40"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "15"),
+                    lhsPlayer = sampleLhsPlayer.copy(score = "0"),
+                    rhsPlayer = sampleRhsPlayer.copy(score = "0"),
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
 
     @Test
-    fun `does not update scores when rhs wins`() = runTest {
+    fun `updates score when rhs wins game`() = runTest {
         val matchController = FakeMatchController()
         matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
@@ -183,15 +183,15 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "15"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "40"),
+                    lhsPlayer = sampleLhsPlayer.copy(score = "0"),
+                    rhsPlayer = sampleRhsPlayer.copy(score = "0"),
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
 
     @Test
-    fun `sends major indication event when lhs wins`() = runTest {
+    fun `notifies about game finished when lhs wins game`() = runTest {
         val matchController = FakeMatchController()
         matchController.returnGetCurrentGame(game40And15)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
@@ -201,13 +201,18 @@ class MatchViewModelTest {
         viewModel.uiEvents.test {
             viewModel.onLhsPressed()
 
-            val expected = MatchUiEvent.Indication(type = IndicationType.Major, side = Side.LHS)
+            val expected =
+                MatchUiEvent.GameFinished(
+                    winner = Side.LHS,
+                    lhsScore = "40",
+                    rhsScore = "15",
+                )
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
 
     @Test
-    fun `sends major indication event when rhs wins`() = runTest {
+    fun `notifies about game finished when rhs wins game`() = runTest {
         val matchController = FakeMatchController()
         matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
@@ -217,48 +222,11 @@ class MatchViewModelTest {
         viewModel.uiEvents.test {
             viewModel.onRhsPressed()
 
-            val expected = MatchUiEvent.Indication(type = IndicationType.Major, side = Side.RHS)
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
-    }
-
-    @Test
-    fun `updates scores on indication completion after major lhs indication`() = runTest {
-        val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game15And40)
-        val viewModel = MatchViewModel(matchController, savedStateHandle)
-
-        matchController.returnGetCurrentGame(gameLoveAll)
-
-        val event = MatchUiEvent.Indication(type = IndicationType.Major, side = Side.LHS)
-        viewModel.onIndicationCompletion(event)
-
-        viewModel.uiState.test {
             val expected =
-                sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "0"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "0"),
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
-    }
-
-    @Test
-    fun `updates scores on indication completion after major rhs indication`() = runTest {
-        val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game15And40)
-        val viewModel = MatchViewModel(matchController, savedStateHandle)
-
-        matchController.returnGetCurrentGame(gameLoveAll)
-
-        val event = MatchUiEvent.Indication(type = IndicationType.Major, side = Side.RHS)
-        viewModel.onIndicationCompletion(event)
-
-        viewModel.uiState.test {
-            val expected =
-                sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "0"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "0"),
+                MatchUiEvent.GameFinished(
+                    winner = Side.RHS,
+                    lhsScore = "15",
+                    rhsScore = "40",
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }

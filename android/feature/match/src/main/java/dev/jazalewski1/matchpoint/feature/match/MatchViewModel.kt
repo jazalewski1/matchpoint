@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
 import dev.jazalewski1.matchpoint.feature.match.util.*
@@ -45,18 +44,20 @@ constructor(
     val uiEvents = _uiEvents.asSharedFlow()
 
     fun onLhsPressed() {
-        val game = matchController.getCurrentGame()
-        val outcome = matchController.addPointToLhs()
-        process(outcome = outcome, previousGame = game, side = Side.LHS)
+        process(side = Side.LHS)
     }
 
     fun onRhsPressed() {
-        val game = matchController.getCurrentGame()
-        val outcome = matchController.addPointToRhs()
-        process(outcome = outcome, previousGame = game, side = Side.RHS)
+        process(side = Side.RHS)
     }
 
-    private fun process(outcome: PointOutcome, previousGame: GameState, side: Side) {
+    private fun process(side: Side) {
+        val previousGame = matchController.getCurrentGame()
+        val outcome =
+            when (side) {
+                Side.LHS -> matchController.addPointToLhs()
+                Side.RHS -> matchController.addPointToRhs()
+            }
         updateScores()
         val event =
             when (outcome) {

@@ -45,6 +45,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
+internal const val GAME_INDICATION_REPS = 5
+internal const val GAME_INDICATION_PULSE_DURATION_MS = 800
+internal const val GAME_INDICATION_TOTAL_DURATION_MS =
+    GAME_INDICATION_REPS * GAME_INDICATION_PULSE_DURATION_MS
+
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -116,11 +121,6 @@ internal fun MatchScreen(
         }
     }
 }
-
-private const val GAME_INDICATION_REPS = 5
-private const val GAME_INDICATION_PULSE_DURATION_MS = 800
-private const val GAME_INDICATION_TOTAL_DURATION_MS =
-    GAME_INDICATION_REPS * GAME_INDICATION_PULSE_DURATION_MS
 
 private data class GameIndication(
     val side: Side,

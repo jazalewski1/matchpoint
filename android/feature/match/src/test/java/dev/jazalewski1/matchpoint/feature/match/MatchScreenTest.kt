@@ -4,12 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.test.runTest
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -19,15 +16,6 @@ private const val LHS_PLAYER_NAME = "Left player"
 private const val RHS_PLAYER_NAME = "Right player"
 private const val LHS_SCORE = "40"
 private const val RHS_SCORE = "15"
-
-private val minorLhsIndication =
-    MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.LHS)
-private val minorRhsIndication =
-    MatchUiEvent.Indication(type = IndicationType.Minor, side = Side.RHS)
-private val majorLhsIndication =
-    MatchUiEvent.Indication(type = IndicationType.Major, side = Side.LHS)
-private val majorRhsIndication =
-    MatchUiEvent.Indication(type = IndicationType.Major, side = Side.RHS)
 
 @RunWith(AndroidJUnit4::class)
 class MatchScreenTest {
@@ -41,7 +29,6 @@ class MatchScreenTest {
         rhsScore: String = RHS_SCORE,
         onLhsClick: () -> Unit = {},
         onRhsClick: () -> Unit = {},
-        onIndicationComplete: (MatchUiEvent) -> Unit = {},
         events: SharedFlow<MatchUiEvent> = MutableSharedFlow(),
     ) =
         MatchScreen(
@@ -51,7 +38,6 @@ class MatchScreenTest {
             rhsScore = rhsScore,
             onLhsClick = onLhsClick,
             onRhsClick = onRhsClick,
-            onIndicationComplete = onIndicationComplete,
             events = events,
         )
 
@@ -110,103 +96,55 @@ class MatchScreenTest {
         rule.waitForIdle()
     }
 
-    private fun testCompletion(event: MatchUiEvent) {
+    @Test
+    fun `when received lhs finished game then displays game indication`() = runTest {
         rule.mainClock.autoAdvance = false
 
-        var actualEvent: MatchUiEvent? = null
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
-        rule.setContent {
-            SutScreen(
-                onIndicationComplete = { incoming -> actualEvent = incoming },
-                events = events,
+        rule.setContent { SutScreen(events = events) }
+
+        val sentLhsScore = "30"
+        val sentRhsScore = "15"
+        val event =
+            MatchUiEvent.GameFinished(
+                winner = Side.LHS,
+                lhsScore = sentLhsScore,
+                rhsScore = sentRhsScore,
             )
-        }
+
+        rule.onNodeWithText("GAME").assertIsNotDisplayed()
+        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
         events.emitAndWait(event)
-        advance(milliseconds = 10_000)
-
-        assertEquals(event, actualEvent)
+        rule.onNodeWithText("GAME").assertIsDisplayed()
+        rule.onNodeWithText("30 : 15").assertIsDisplayed()
+        advance(milliseconds = GAME_INDICATION_TOTAL_DURATION_MS.toLong())
+        rule.onNodeWithText("GAME").assertIsNotDisplayed()
+        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when minor lhs indication event arrives then completes animation`() = runTest {
-        testCompletion(event = minorLhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when minor rhs indication event arrives then completes animation`() = runTest {
-        testCompletion(event = minorRhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when major lhs indication event arrives then completes animation`() = runTest {
-        testCompletion(event = majorLhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when major rhs indication event arrives then completes animation`() = runTest {
-        testCompletion(event = majorRhsIndication)
-    }
-
-    private fun testInterruption(
-        firstEvent: MatchUiEvent,
-        secondEvent: MatchUiEvent,
-    ) {
+    fun `when received rhs finished game then displays game indication`() = runTest {
         rule.mainClock.autoAdvance = false
 
-        val completedEvents = mutableListOf<MatchUiEvent>()
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
-        rule.setContent {
-            SutScreen(
-                onIndicationComplete = { incoming -> completedEvents.add(incoming) },
-                events = events,
+        rule.setContent { SutScreen(events = events) }
+
+        val sentLhsScore = "15"
+        val sentRhsScore = "30"
+        val event =
+            MatchUiEvent.GameFinished(
+                winner = Side.RHS,
+                lhsScore = sentLhsScore,
+                rhsScore = sentRhsScore,
             )
-        }
-        events.emitAndWait(firstEvent)
-        advance(milliseconds = 100)
 
-        events.emitAndWait(secondEvent)
-        advance(milliseconds = 10_000)
-
-        assertThat(completedEvents).containsExactly(firstEvent, secondEvent)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when minor lhs indication event interrupts lhs indication then both complete`() = runTest {
-        testInterruption(firstEvent = minorLhsIndication, secondEvent = minorLhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when minor rhs indication event interrupts rhs indication then both complete`() = runTest {
-        testInterruption(firstEvent = minorRhsIndication, secondEvent = minorRhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when major lhs indication event interrupts lhs indication then both complete`() = runTest {
-        testInterruption(firstEvent = minorLhsIndication, secondEvent = minorLhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when major rhs indication event interrupts lhs indication then both complete`() = runTest {
-        testInterruption(firstEvent = minorRhsIndication, secondEvent = minorRhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when minor lhs indication event interrupts rhs indication then both complete`() = runTest {
-        testInterruption(firstEvent = minorLhsIndication, secondEvent = minorRhsIndication)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `when minor rhs indication event interrupts lhs indication then both complete`() = runTest {
-        testInterruption(firstEvent = minorRhsIndication, secondEvent = minorLhsIndication)
+        rule.onNodeWithText("GAME").assertIsNotDisplayed()
+        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
+        events.emitAndWait(event)
+        rule.onNodeWithText("GAME").assertIsDisplayed()
+        rule.onNodeWithText("15 : 30").assertIsDisplayed()
+        advance(milliseconds = GAME_INDICATION_TOTAL_DURATION_MS.toLong())
+        rule.onNodeWithText("GAME").assertIsNotDisplayed()
+        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
     }
 }
