@@ -3,14 +3,18 @@ package dev.jazalewski1.matchpoint.core.ui.theme
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
+    val blueDark = Color(0xFF2814E2)
+
     val purpleDark = Color(0xFF6414E3)
     val purpleNormal = Color(0xFF9763EA)
     val purpleLight = Color(0xFFCAB1F1)
 
+    val orangeDark = Color(0xFFE35113)
+
     val white = Color(0xFFFBF8FF)
 }
 
-val primaryLight = Color(0xFF2814E2)
+val primaryLight = AppColors.blueDark
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFC9C5F1)
 val onPrimaryContainerLight = Color(0xFF0B063B)
@@ -18,7 +22,7 @@ val secondaryLight = AppColors.purpleDark
 val onSecondaryLight = Color(0xFFFFFFFF)
 val secondaryContainerLight = AppColors.purpleLight
 val onSecondaryContainerLight = Color(0xFF201632)
-val tertiaryLight = Color(0xFFE35113)
+val tertiaryLight = AppColors.orangeDark
 val onTertiaryLight = Color(0xFFFFFFFF)
 val tertiaryContainerLight = Color(0xFFE35113)
 val onTertiaryContainerLight = Color(0xFFFFFFFF)

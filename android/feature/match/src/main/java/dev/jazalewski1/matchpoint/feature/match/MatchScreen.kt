@@ -3,14 +3,12 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.EaseOutQuad
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -205,24 +203,25 @@ private fun GameIndication(
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val defaultColor = MaterialTheme.colorScheme.primary
-    val loudColor = MaterialTheme.colorScheme.tertiary
+    val backgroundColor = AppColors.blueDark
+    val loudColor = AppColors.orangeDark
     val quietColor = Color.Transparent
-    val animatedColor by
-        rememberInfiniteTransition()
-            .animateColor(
-                initialValue = quietColor,
-                targetValue = loudColor,
-                animationSpec =
-                    infiniteRepeatable(
-                        animation =
-                            tween(
-                                durationMillis = INDICATION_PULSE_HALF_DURATION_MS,
-                                easing = EaseOutQuad,
-                            ),
-                        repeatMode = RepeatMode.Reverse,
-                    ),
-            )
+    val alpha = remember { Animatable(0.3f) }
+    val animatedColor = loudColor.copy(alpha = alpha.value)
+    LaunchedEffect(Unit) {
+        alpha.animateTo(
+            targetValue = 1f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation =
+                        tween(
+                            durationMillis = INDICATION_PULSE_HALF_DURATION_MS,
+                            easing = EaseOutQuad,
+                        ),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+        )
+    }
     val colors =
         if (side == Side.LHS) {
             listOf(animatedColor, quietColor)
@@ -237,7 +236,7 @@ private fun GameIndication(
                     indication = null,
                     interactionSource = interactionSource,
                 )
-                .background(defaultColor)
+                .background(backgroundColor)
                 .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
     ) {
         Column(
