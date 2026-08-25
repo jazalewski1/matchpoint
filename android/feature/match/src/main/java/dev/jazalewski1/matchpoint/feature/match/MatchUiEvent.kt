@@ -5,12 +5,12 @@ enum class Side {
     RHS,
 }
 
-sealed interface IndicationType {
-    data object Minor : IndicationType
-
-    data object Major : IndicationType
-}
-
 sealed interface MatchUiEvent {
-    data class Indication(val type: IndicationType, val side: Side) : MatchUiEvent
+    data class PointScored(val winner: Side) : MatchUiEvent
+
+    data class GameFinished(
+        val winner: Side,
+        val lhsScore: String,
+        val rhsScore: String,
+    ) : MatchUiEvent
 }

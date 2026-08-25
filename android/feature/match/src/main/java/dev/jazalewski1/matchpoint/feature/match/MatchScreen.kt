@@ -3,19 +3,27 @@ package dev.jazalewski1.matchpoint.feature.match
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseOutQuad
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
@@ -29,13 +37,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
 import dev.jazalewski1.matchpoint.core.ui.theme.secondaryContainerLight
-import dev.jazalewski1.matchpoint.core.ui.theme.tertiaryLight
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+
+internal const val GAME_INDICATION_REPS = 5
+internal const val GAME_INDICATION_PULSE_DURATION_MS = 800
+internal const val GAME_INDICATION_TOTAL_DURATION_MS =
+    GAME_INDICATION_REPS * GAME_INDICATION_PULSE_DURATION_MS
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -47,7 +60,6 @@ internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
         rhsScore = uiState.rhsPlayer.score,
         onLhsClick = viewModel::onLhsPressed,
         onRhsClick = viewModel::onRhsPressed,
-        onIndicationComplete = viewModel::onIndicationCompletion,
         events = viewModel.uiEvents,
     )
 }
@@ -60,7 +72,6 @@ internal fun MatchScreen(
     rhsScore: String,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
-    onIndicationComplete: (MatchUiEvent) -> Unit,
     events: SharedFlow<MatchUiEvent>,
 ) {
     val context = LocalContext.current
@@ -70,11 +81,15 @@ internal fun MatchScreen(
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
 
-    val (lhsBackgroundColor, rhsBackgroundColor) =
-        animateIndications(
-            events = events,
-            onCompletion = onIndicationComplete,
-        )
+    val indicationState = rememberIndicationState()
+    LaunchedEffect(Unit) {
+        events.collect { event ->
+            when (event) {
+                is MatchUiEvent.PointScored -> indicationState.process(event)
+                is MatchUiEvent.GameFinished -> indicationState.process(event)
+            }
+        }
+    }
 
     Scaffold { innerPadding ->
         Row(modifier = Modifier.padding(innerPadding).fillMaxWidth()) {
@@ -84,7 +99,7 @@ internal fun MatchScreen(
                 onClick = onLhsClick,
                 contentDescription = "Left Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                backgroundColor = lhsBackgroundColor,
+                backgroundColor = indicationState.lhsColor.value,
             )
             VerticalDivider(thickness = 2.dp)
             PointContainer(
@@ -93,78 +108,163 @@ internal fun MatchScreen(
                 onClick = onRhsClick,
                 contentDescription = "Right Score",
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                backgroundColor = rhsBackgroundColor,
+                backgroundColor = indicationState.rhsColor.value,
+            )
+        }
+        indicationState.gameIndication?.let {
+            GameIndication(
+                side = it.side,
+                lhsScore = it.lhsScore,
+                rhsScore = it.rhsScore,
+                onClick = { indicationState.dismissGameIndication() },
             )
         }
     }
 }
 
-private const val HALF_INDICATION_DURATION_MS = 600
+private data class GameIndication(
+    val side: Side,
+    val lhsScore: String,
+    val rhsScore: String,
+)
 
-@Composable
-private fun animateIndications(
-    events: SharedFlow<MatchUiEvent>,
-    onCompletion: (MatchUiEvent) -> Unit,
-): Pair<Color, Color> {
-    val lhsColor = remember { Animatable(backgroundLight) }
-    val rhsColor = remember { Animatable(backgroundLight) }
+private class IndicationState(private val scope: CoroutineScope) {
+    private var job: Job? = null
+    var lhsColor = Animatable(backgroundLight)
+        private set
 
-    LaunchedEffect(Unit) {
-        var animationJob: Job? = null
-        events.collect { event ->
+    var rhsColor = Animatable(backgroundLight)
+        private set
+
+    var gameIndication by mutableStateOf<GameIndication?>(null)
+        private set
+
+    fun process(event: MatchUiEvent.PointScored) {
+        job?.cancel()
+        job = scope.launch {
             lhsColor.snapTo(backgroundLight)
             rhsColor.snapTo(backgroundLight)
-            animationJob?.cancel()
-            val job = launch {
-                when (event) {
-                    is MatchUiEvent.Indication -> {
-                        val colorToAnimate = if (event.side == Side.LHS) lhsColor else rhsColor
-                        when (event.type) {
-                            is IndicationType.Minor -> animateMinorIndication(colorToAnimate)
-                            is IndicationType.Major -> animateMajorIndication(colorToAnimate)
-                        }
-                    }
-                }
-            }
-            job.invokeOnCompletion {
-                onCompletion(event)
-            }
-            animationJob = job
+            gameIndication = null
+            val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
+            animatePointIndication(colorToAnimate)
         }
     }
-    return Pair(lhsColor.value, rhsColor.value)
+
+    fun process(event: MatchUiEvent.GameFinished) {
+        job?.cancel()
+        job = scope.launch {
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
+            gameIndication =
+                GameIndication(
+                    side = event.winner,
+                    lhsScore = event.lhsScore,
+                    rhsScore = event.rhsScore,
+                )
+            delay(GAME_INDICATION_TOTAL_DURATION_MS.milliseconds)
+            gameIndication = null
+        }
+    }
+
+    fun dismissGameIndication() {
+        if (gameIndication == null) {
+            return
+        }
+        job?.cancel()
+        gameIndication = null
+    }
 }
 
-typealias AnimatableColor = Animatable<Color, AnimationVector4D>
-
-private suspend fun animateMinorIndication(colorToAnimate: AnimatableColor) {
-    animateSingleIndication(colorToAnimate, iterations = 2, targetColor = secondaryContainerLight)
+@Composable
+private fun rememberIndicationState(): IndicationState {
+    val scope = rememberCoroutineScope()
+    return remember { IndicationState(scope) }
 }
 
-private suspend fun animateMajorIndication(colorToAnimate: AnimatableColor) {
-    animateSingleIndication(colorToAnimate, iterations = 4, targetColor = tertiaryLight)
-}
-
-private suspend fun animateSingleIndication(
-    colorToAnimate: AnimatableColor,
-    iterations: Int,
-    targetColor: Color,
-) {
+private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, AnimationVector4D>) {
+    val halfIndicationDurationMs = 600
+    val iterations = 2
     val tweenSpec =
         tween<Color>(
-            durationMillis = HALF_INDICATION_DURATION_MS,
+            durationMillis = halfIndicationDurationMs,
             easing = EaseInOutCubic,
         )
     repeat(iterations) {
         colorToAnimate.animateTo(
-            targetValue = targetColor,
+            targetValue = secondaryContainerLight,
             animationSpec = tweenSpec,
         )
-        delay(HALF_INDICATION_DURATION_MS.milliseconds)
+        delay(halfIndicationDurationMs.milliseconds)
         colorToAnimate.animateTo(
             targetValue = backgroundLight,
             animationSpec = tweenSpec,
         )
+    }
+}
+
+@Composable
+private fun GameIndication(
+    side: Side,
+    lhsScore: String,
+    rhsScore: String,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val defaultColor = MaterialTheme.colorScheme.primary
+    val loudColor = MaterialTheme.colorScheme.tertiary
+    val quietColor = Color.Transparent
+    val animatedColor by
+        rememberInfiniteTransition()
+            .animateColor(
+                initialValue = quietColor,
+                targetValue = loudColor,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation =
+                            tween(
+                                durationMillis = GAME_INDICATION_PULSE_DURATION_MS,
+                                easing = EaseOutQuad,
+                            ),
+                        repeatMode = RepeatMode.Reverse,
+                    ),
+            )
+    val colors =
+        if (side == Side.LHS) {
+            listOf(animatedColor, quietColor)
+        } else {
+            listOf(quietColor, animatedColor)
+        }
+    Box(
+        modifier =
+            Modifier.fillMaxSize()
+                .clickable(
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource,
+                )
+                .background(defaultColor)
+                .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Text(
+                text = "GAME",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 182.sp,
+            )
+            Text(
+                text = "$lhsScore : $rhsScore",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 92.sp,
+            )
+        }
     }
 }
 
@@ -227,7 +327,6 @@ private fun ScreenPreviewBase(
         rhsScore = rhsScore,
         onLhsClick = {},
         onRhsClick = {},
-        onIndicationComplete = {},
         events = MutableSharedFlow(),
     )
 
@@ -236,5 +335,18 @@ private fun ScreenPreviewBase(
 private fun Preview() {
     AppTheme {
         ScreenPreviewBase()
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun LhsGameIndicationPreview() {
+    AppTheme {
+        GameIndication(
+            side = Side.LHS,
+            lhsScore = "40",
+            rhsScore = "15",
+            onClick = {},
+        )
     }
 }
