@@ -30,7 +30,12 @@ class MainActivity : ComponentActivity() {
 private fun App() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = HomeRoute) {
-        homeDestination(onStartClick = { navController.navigateToMatchSetupScreen() })
+        homeDestination(
+            onStartClick = { navController.navigateToMatchSetupScreen() },
+            onStartDemoClick = {
+                navController.navigateToMatchScreen(player1Name = "Nadal", player2Name = "Federer")
+            },
+        )
 
         matchSetupDestination(
             onStart = { player1Name, player2Name ->
