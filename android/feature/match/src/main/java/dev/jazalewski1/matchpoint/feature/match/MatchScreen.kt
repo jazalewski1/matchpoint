@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -79,8 +80,8 @@ internal fun MatchScreen(
     LaunchedEffect(Unit) {
         events.collect { event ->
             when (event) {
-                is MatchUiEvent.PointScored -> indicationState.onPointScored(side = event.winner)
-                is MatchUiEvent.GameFinished -> indicationState.onGameFinished(side = event.winner)
+                is MatchUiEvent.PointScored -> indicationState.process(event)
+                is MatchUiEvent.GameFinished -> indicationState.process(event)
             }
         }
     }
@@ -105,9 +106,11 @@ internal fun MatchScreen(
                 backgroundColor = indicationState.rhsColor.value,
             )
         }
-        indicationState.gameIndicationSide?.let { side ->
+        indicationState.gameIndication?.let {
             GameIndication(
-                side = side,
+                side = it.side,
+                lhsScore = it.lhsScore,
+                rhsScore = it.rhsScore,
                 onClick = { indicationState.dismissGameIndication() },
             )
         }
@@ -119,6 +122,12 @@ private const val GAME_INDICATION_PULSE_DURATION_MS = 800
 private const val GAME_INDICATION_TOTAL_DURATION_MS =
     GAME_INDICATION_REPS * GAME_INDICATION_PULSE_DURATION_MS
 
+private data class GameIndication(
+    val side: Side,
+    val lhsScore: String,
+    val rhsScore: String,
+)
+
 private class IndicationState(private val scope: CoroutineScope) {
     private var job: Job? = null
     var lhsColor = Animatable(backgroundLight)
@@ -127,37 +136,42 @@ private class IndicationState(private val scope: CoroutineScope) {
     var rhsColor = Animatable(backgroundLight)
         private set
 
-    var gameIndicationSide by mutableStateOf<Side?>(null)
+    var gameIndication by mutableStateOf<GameIndication?>(null)
         private set
 
-    fun onPointScored(side: Side) {
+    fun process(event: MatchUiEvent.PointScored) {
         job?.cancel()
         job = scope.launch {
             lhsColor.snapTo(backgroundLight)
             rhsColor.snapTo(backgroundLight)
-            gameIndicationSide = null
-            val colorToAnimate = if (side == Side.LHS) lhsColor else rhsColor
+            gameIndication = null
+            val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
             animatePointIndication(colorToAnimate)
         }
     }
 
-    fun onGameFinished(side: Side) {
+    fun process(event: MatchUiEvent.GameFinished) {
         job?.cancel()
         job = scope.launch {
             lhsColor.snapTo(backgroundLight)
             rhsColor.snapTo(backgroundLight)
-            gameIndicationSide = side
+            gameIndication =
+                GameIndication(
+                    side = event.winner,
+                    lhsScore = event.lhsScore,
+                    rhsScore = event.rhsScore,
+                )
             delay(GAME_INDICATION_TOTAL_DURATION_MS.milliseconds)
-            gameIndicationSide = null
+            gameIndication = null
         }
     }
 
     fun dismissGameIndication() {
-        if (gameIndicationSide == null) {
+        if (gameIndication == null) {
             return
         }
         job?.cancel()
-        gameIndicationSide = null
+        gameIndication = null
     }
 }
 
@@ -191,6 +205,8 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
 @Composable
 private fun GameIndication(
     side: Side,
+    lhsScore: String,
+    rhsScore: String,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -229,14 +245,26 @@ private fun GameIndication(
                 .background(defaultColor)
                 .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
     ) {
-        Text(
-            text = "GAME",
-            style = MaterialTheme.typography.displayLarge,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 182.sp,
-            modifier = Modifier.align(Alignment.Center),
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Text(
+                text = "GAME",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 182.sp,
+            )
+            Text(
+                text = "$lhsScore : $rhsScore",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 92.sp,
+            )
+        }
     }
 }
 
@@ -316,6 +344,8 @@ private fun LhsGameIndicationPreview() {
     AppTheme {
         GameIndication(
             side = Side.LHS,
+            lhsScore = "40",
+            rhsScore = "15",
             onClick = {},
         )
     }

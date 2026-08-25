@@ -8,5 +8,9 @@ enum class Side {
 sealed interface MatchUiEvent {
     data class PointScored(val winner: Side) : MatchUiEvent
 
-    data class GameFinished(val winner: Side) : MatchUiEvent
+    data class GameFinished(
+        val winner: Side,
+        val lhsScore: String,
+        val rhsScore: String,
+    ) : MatchUiEvent
 }
