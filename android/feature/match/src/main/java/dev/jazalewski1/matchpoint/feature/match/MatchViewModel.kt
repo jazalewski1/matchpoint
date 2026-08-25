@@ -61,11 +61,12 @@ constructor(
         val event =
             when (outcome) {
                 is PointOutcome.PointScored -> MatchUiEvent.PointScored(winner = side)
-                is PointOutcome.GameWon -> MatchUiEvent.GameFinished(
-                    winner = side,
-                    lhsScore = previousGame.lhsToString(),
-                    rhsScore = previousGame.rhsToString(),
-                )
+                is PointOutcome.GameWon ->
+                    MatchUiEvent.GameFinished(
+                        winner = side,
+                        lhsScore = previousGame.lhsToString(),
+                        rhsScore = previousGame.rhsToString(),
+                    )
             }
         _uiEvents.tryEmit(event)
     }
