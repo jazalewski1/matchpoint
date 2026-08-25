@@ -45,10 +45,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
-internal const val GAME_INDICATION_REPS = 5
-internal const val GAME_INDICATION_PULSE_DURATION_MS = 800
+internal const val INDICATION_PULSE_HALF_DURATION_MS = 800
+internal const val GAME_INDICATION_PULSE_REPS = 5
+internal const val GAME_INDICATION_HALF_PULSE_COUNT = GAME_INDICATION_PULSE_REPS * 2
 internal const val GAME_INDICATION_TOTAL_DURATION_MS =
-    GAME_INDICATION_REPS * GAME_INDICATION_PULSE_DURATION_MS
+    GAME_INDICATION_HALF_PULSE_COUNT * INDICATION_PULSE_HALF_DURATION_MS
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
@@ -222,7 +223,7 @@ private fun GameIndication(
                     infiniteRepeatable(
                         animation =
                             tween(
-                                durationMillis = GAME_INDICATION_PULSE_DURATION_MS,
+                                durationMillis = INDICATION_PULSE_HALF_DURATION_MS,
                                 easing = EaseOutQuad,
                             ),
                         repeatMode = RepeatMode.Reverse,
