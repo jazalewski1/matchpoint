@@ -68,6 +68,7 @@ constructor(
                         lhsScore = previousGame.lhsToString(),
                         rhsScore = previousGame.rhsToString(),
                     )
+                is MatchEvent.SetWon -> TODO()
             }
         _uiEvents.tryEmit(event)
     }

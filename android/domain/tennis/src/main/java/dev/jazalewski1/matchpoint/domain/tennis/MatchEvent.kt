@@ -4,4 +4,6 @@ sealed interface MatchEvent {
     data object PointScored : MatchEvent
 
     data object GameWon : MatchEvent
+
+    data object SetWon : MatchEvent
 }

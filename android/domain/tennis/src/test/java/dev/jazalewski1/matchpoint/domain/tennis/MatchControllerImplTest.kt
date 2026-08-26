@@ -20,6 +20,14 @@ class MatchControllerImplTest {
         assertThat(event).isEqualTo(MatchEvent.GameWon)
     }
 
+    private fun assertLhsSetWon(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.SetWon)
+    }
+
+    private fun assertRhsSetWon(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.SetWon)
+    }
+
     @Test
     fun `when initialized then has love all`() {
         val controller = MatchControllerImpl()
@@ -170,4 +178,113 @@ class MatchControllerImplTest {
         val expected = GameState.Deuce
         assertThat(controller.getCurrentGame()).isEqualTo(expected)
     }
+
+    private fun scorePointsForLhs(controller: MatchController, numOfPoints: Int) {
+        repeat(numOfPoints) { controller.addPointToLhs() }
+    }
+
+    private fun scorePointsForRhs(controller: MatchController, numOfPoints: Int) {
+        repeat(numOfPoints) { controller.addPointToRhs() }
+    }
+
+    private fun winGameForLhs(controller: MatchController) {
+        scorePointsForLhs(controller, numOfPoints = 4)
+    }
+
+    private fun winGameForRhs(controller: MatchController) {
+        scorePointsForRhs(controller, numOfPoints = 4)
+    }
+
+    @Test
+    fun `when lhs wins 6 games first then lhs wins set`() {
+        (0..4).forEach { rhsGames ->
+            val controller = MatchControllerImpl()
+
+            repeat(rhsGames) { winGameForRhs(controller) }
+            repeat(5) { winGameForLhs(controller) }
+            scorePointsForLhs(controller, numOfPoints = 3)
+            assertLhsSetWon(controller.addPointToLhs())
+        }
+    }
+
+    @Test
+    fun `when rhs wins 6 games first then rhs wins set`() {
+        (0..4).forEach { lhsGames ->
+            val controller = MatchControllerImpl()
+
+            repeat(lhsGames) { winGameForLhs(controller) }
+            repeat(5) { winGameForRhs(controller) }
+            scorePointsForRhs(controller, numOfPoints = 3)
+            assertRhsSetWon(controller.addPointToRhs())
+        }
+    }
+
+    @Test
+    fun `when lhs wins 6 games over 5 then lhs does not win set`() {
+        val controller = MatchControllerImpl()
+
+        repeat(5) { winGameForRhs(controller) }
+        repeat(5) { winGameForLhs(controller) }
+        scorePointsForLhs(controller, numOfPoints = 3)
+        assertLhsGameWon(controller.addPointToLhs())
+    }
+
+    @Test
+    fun `when rhs wins 6 games over 5 then rhs does not win set`() {
+        val controller = MatchControllerImpl()
+
+        repeat(5) { winGameForLhs(controller) }
+        repeat(5) { winGameForRhs(controller) }
+        scorePointsForRhs(controller, numOfPoints = 3)
+        assertRhsGameWon(controller.addPointToRhs())
+    }
+
+    @Test
+    fun `when lhs wins 7 games over 5 then lhs wins set`() {
+        val controller = MatchControllerImpl()
+
+        repeat(5) { winGameForRhs(controller) }
+        repeat(6) { winGameForLhs(controller) }
+        scorePointsForLhs(controller, numOfPoints = 3)
+        assertLhsSetWon(controller.addPointToLhs())
+    }
+
+    @Test
+    fun `when rhs wins 7 games over 5 then rhs wins set`() {
+        val controller = MatchControllerImpl()
+
+        repeat(5) { winGameForLhs(controller) }
+        repeat(6) { winGameForRhs(controller) }
+        scorePointsForRhs(controller, numOfPoints = 3)
+        assertRhsSetWon(controller.addPointToRhs())
+    }
+
+    /*
+    @Test
+    fun `when lhs wins 6 games and ties to 6 then it is tiebreak`() {
+        val controller = MatchControllerImpl()
+
+        repeat(5) { winGameForLhs(controller) }
+        repeat(6) { winGameForRhs(controller) }
+        scorePointsForLhs(controller, numOfPoints = 3)
+        assertLhsGameWon(controller.addPointToLhs())
+        TODO("test current game for tiebreak")
+    }
+
+    @Test
+    fun `when rhs wins 6 games and ties to 6 then it is tiebreak`() {
+        val controller = MatchControllerImpl()
+
+        repeat(5) { winGameForRhs(controller) }
+        repeat(6) { winGameForLhs(controller) }
+        scorePointsForRhs(controller, numOfPoints = 3)
+        assertRhsGameWon(controller.addPointToRhs())
+        TODO("test current game for tiebreak")
+    }
+
+    @Test
+    fun `more tiebreak tests`() {
+        TODO()
+    }
+    */
 }
