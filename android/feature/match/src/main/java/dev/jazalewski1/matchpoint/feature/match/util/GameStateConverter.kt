@@ -4,16 +4,18 @@ import dev.jazalewski1.matchpoint.domain.tennis.GameState
 
 internal fun GameState.lhsToString() =
     when (this) {
-        is GameState.Regular -> this.lhs.value.toString()
-        is GameState.Deuce -> "40"
-        is GameState.Advantage.Lhs -> "AD"
-        is GameState.Advantage.Rhs -> "40"
+        is GameState.Regular.Main -> this.lhs.value.toString()
+        is GameState.Regular.Deuce -> "40"
+        is GameState.Regular.Advantage.Lhs -> "AD"
+        is GameState.Regular.Advantage.Rhs -> "40"
+        is GameState.TieBreak -> TODO()
     }
 
 internal fun GameState.rhsToString() =
     when (this) {
-        is GameState.Regular -> this.rhs.value.toString()
-        is GameState.Deuce -> "40"
-        is GameState.Advantage.Lhs -> "40"
-        is GameState.Advantage.Rhs -> "AD"
+        is GameState.Regular.Main -> this.rhs.value.toString()
+        is GameState.Regular.Deuce -> "40"
+        is GameState.Regular.Advantage.Lhs -> "40"
+        is GameState.Regular.Advantage.Rhs -> "AD"
+        is GameState.TieBreak -> TODO()
     }

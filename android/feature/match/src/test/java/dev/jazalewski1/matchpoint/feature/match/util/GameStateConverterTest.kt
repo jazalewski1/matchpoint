@@ -9,7 +9,7 @@ class GameStateConverterTest {
     @Test
     fun `converts lhs in regular game`() {
         fun assertLhsConverted(points: Points, expected: String) {
-            val actual = GameState.Regular(points, Points.LOVE).lhsToString()
+            val actual = GameState.Regular.Main(points, Points.LOVE).lhsToString()
             assertThat(actual).isEqualTo(expected)
         }
         assertLhsConverted(Points.LOVE, "0")
@@ -21,7 +21,7 @@ class GameStateConverterTest {
     @Test
     fun `converts rhs in regular game`() {
         fun assertRhsConverted(points: Points, expected: String) {
-            val actual = GameState.Regular(Points.LOVE, points).rhsToString()
+            val actual = GameState.Regular.Main(Points.LOVE, points).rhsToString()
             assertThat(actual).isEqualTo(expected)
         }
         assertRhsConverted(Points.LOVE, "0")
@@ -32,22 +32,27 @@ class GameStateConverterTest {
 
     @Test
     fun `converts deuce`() {
-        val game = GameState.Deuce
+        val game = GameState.Regular.Deuce
         assertThat(game.lhsToString()).isEqualTo("40")
         assertThat(game.rhsToString()).isEqualTo("40")
     }
 
     @Test
     fun `converts lhs advantage`() {
-        val game = GameState.Advantage.Lhs
+        val game = GameState.Regular.Advantage.Lhs
         assertThat(game.lhsToString()).isEqualTo("AD")
         assertThat(game.rhsToString()).isEqualTo("40")
     }
 
     @Test
     fun `converts rhs advantage`() {
-        val game = GameState.Advantage.Rhs
+        val game = GameState.Regular.Advantage.Rhs
         assertThat(game.lhsToString()).isEqualTo("40")
         assertThat(game.rhsToString()).isEqualTo("AD")
+    }
+
+    @Test
+    fun `tie breaks`() {
+        TODO()
     }
 }

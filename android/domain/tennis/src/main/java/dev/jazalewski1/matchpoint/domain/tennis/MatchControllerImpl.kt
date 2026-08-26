@@ -1,44 +1,42 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
+import dev.jazalewski1.matchpoint.domain.tennis.RegularGame.State
+
 class MatchControllerImpl : MatchController {
-    private val game = Game()
+    private var game: Game = RegularGame()
     private val set = Set()
 
-    override fun getCurrentGame() =
-        when (val gameState = game.state) {
-            is Game.State.Regular ->
-                GameState.Regular(
-                    lhs = gameState.player1,
-                    rhs = gameState.player2,
-                )
-            is Game.State.Deuce -> GameState.Deuce
-            is Game.State.Advantage ->
-                when (gameState.player) {
-                    Player.ONE -> GameState.Advantage.Lhs
-                    Player.TWO -> GameState.Advantage.Rhs
-                }
-        }
+    override fun getCurrentGame(): GameState = game.toState()
 
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
 
     override fun addPointToRhs(): MatchEvent = processPointScored(Player.TWO)
 
     private fun processPointScored(winner: Player): MatchEvent =
-        when (game.addPoint(winner)) {
+        when (val gameOutcome = game.addPoint(winner)) {
             is GameOutcome.PointScored -> MatchEvent.PointScored
-            is GameOutcome.Finished -> processGameFinished(winner)
+            is GameOutcome.Finished ->
+                processGameFinished(winner = winner, isTieBreak = gameOutcome.isTieBreak)
         }
 
-    private fun processGameFinished(winner: Player): MatchEvent {
-        game.reset()
+    private fun processGameFinished(winner: Player, isTieBreak: Boolean): MatchEvent {
+        if (isTieBreak) {
+            game = RegularGame()
+            return MatchEvent.SetWon
+        }
         when (set.addGame(winner)) {
-            is SetOutcome.None -> return MatchEvent.GameWon
+            is SetOutcome.None -> {
+                game = RegularGame()
+                return MatchEvent.GameWon
+            }
             is SetOutcome.Finished -> {
+                game = RegularGame()
                 set.reset()
                 return MatchEvent.SetWon
             }
             is SetOutcome.Tiebreak -> {
-                TODO()
+                game = TieBreakGame()
+                return MatchEvent.GameWon
             }
         }
     }
@@ -52,14 +50,20 @@ private enum class Player {
 private sealed interface GameOutcome {
     data class PointScored(val winner: Player) : GameOutcome
 
-    data class Finished(val winner: Player) : GameOutcome
+    data class Finished(val winner: Player, val isTieBreak: Boolean) : GameOutcome
 }
 
-private class Game {
+private sealed interface Game {
+    fun addPoint(winner: Player): GameOutcome
+
+    fun toState(): GameState
+}
+
+private class RegularGame : Game {
     sealed interface State {
         fun next(pointWinner: Player): State?
 
-        data class Regular(val player1: Points, val player2: Points) : State {
+        data class Main(val player1: Points, val player2: Points) : State {
             override fun next(pointWinner: Player): State? =
                 when (pointWinner) {
                     Player.ONE -> {
@@ -95,20 +99,55 @@ private class Game {
         }
     }
 
-    var state: State = State.Regular(Points.LOVE, Points.LOVE)
-        private set
+    private var state: State = State.Main(Points.LOVE, Points.LOVE)
 
-    fun addPoint(player: Player): GameOutcome {
-        state.next(pointWinner = player)?.let { nextState ->
+    override fun addPoint(winner: Player): GameOutcome {
+        state.next(pointWinner = winner)?.let { nextState ->
             state = nextState
-            return GameOutcome.PointScored(winner = player)
+            return GameOutcome.PointScored(winner = winner)
         }
-        return GameOutcome.Finished(winner = player)
+        return GameOutcome.Finished(winner = winner, isTieBreak = false)
     }
 
-    fun reset() {
-        state = State.Regular(Points.LOVE, Points.LOVE)
+    override fun toState(): GameState =
+        when (val current = state) {
+            is State.Main ->
+                GameState.Regular.Main(
+                    lhs = current.player1,
+                    rhs = current.player2,
+                )
+            is State.Deuce -> GameState.Regular.Deuce
+            is State.Advantage ->
+                when (current.player) {
+                    Player.ONE -> GameState.Regular.Advantage.Lhs
+                    Player.TWO -> GameState.Regular.Advantage.Rhs
+                }
+        }
+}
+
+private class TieBreakGame : Game {
+    private var player1 = 0
+    private var player2 = 0
+
+    override fun addPoint(winner: Player): GameOutcome {
+        when (winner) {
+            Player.ONE -> player1 += 1
+            Player.TWO -> player2 += 1
+        }
+        if (player1 >= 7 && player1 >= (player2 + 2)) {
+            return GameOutcome.Finished(winner = Player.ONE, isTieBreak = true)
+        }
+        if (player2 >= 7 && player2 >= (player1 + 2)) {
+            return GameOutcome.Finished(winner = Player.TWO, isTieBreak = true)
+        }
+        return GameOutcome.PointScored(winner = winner)
     }
+
+    override fun toState(): GameState =
+        GameState.TieBreak(
+            lhs = player1,
+            rhs = player2,
+        )
 }
 
 private sealed interface SetOutcome {
