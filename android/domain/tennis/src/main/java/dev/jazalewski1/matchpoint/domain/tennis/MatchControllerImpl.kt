@@ -18,22 +18,22 @@ class MatchControllerImpl : MatchController {
                 }
         }
 
-    override fun addPointToLhs(): PointOutcome {
+    override fun addPointToLhs(): MatchEvent {
         return when (game.addPointToPlayer1()) {
-            is GameOutcome.PointScored -> PointOutcome.PointScored
+            is GameOutcome.PointScored -> MatchEvent.PointScored
             is GameOutcome.Finished -> {
                 game.reset()
-                PointOutcome.GameWon
+                MatchEvent.GameWon
             }
         }
     }
 
-    override fun addPointToRhs(): PointOutcome {
+    override fun addPointToRhs(): MatchEvent {
         return when (game.addPointToPlayer2()) {
-            is GameOutcome.PointScored -> PointOutcome.PointScored
+            is GameOutcome.PointScored -> MatchEvent.PointScored
             is GameOutcome.Finished -> {
                 game.reset()
-                PointOutcome.GameWon
+                MatchEvent.GameWon
             }
         }
     }

@@ -3,7 +3,7 @@ package dev.jazalewski1.matchpoint.feature.match
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
+import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
 import kotlinx.coroutines.Dispatchers
@@ -122,7 +122,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnAddPointToLhs(PointOutcome.PointScored)
+        matchController.returnAddPointToLhs(MatchEvent.PointScored)
 
         viewModel.uiEvents.test {
             viewModel.onLhsPressed()
@@ -138,7 +138,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnAddPointToRhs(PointOutcome.PointScored)
+        matchController.returnAddPointToRhs(MatchEvent.PointScored)
 
         viewModel.uiEvents.test {
             viewModel.onRhsPressed()
@@ -154,7 +154,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game40And15)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnAddPointToLhs(PointOutcome.GameWon)
+        matchController.returnAddPointToLhs(MatchEvent.GameWon)
         matchController.returnGetCurrentGame(gameLoveAll)
 
         viewModel.onLhsPressed()
@@ -175,7 +175,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnAddPointToRhs(PointOutcome.GameWon)
+        matchController.returnAddPointToRhs(MatchEvent.GameWon)
         matchController.returnGetCurrentGame(gameLoveAll)
 
         viewModel.onRhsPressed()
@@ -196,7 +196,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game40And15)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnAddPointToLhs(PointOutcome.GameWon)
+        matchController.returnAddPointToLhs(MatchEvent.GameWon)
 
         viewModel.uiEvents.test {
             viewModel.onLhsPressed()
@@ -217,7 +217,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnAddPointToRhs(PointOutcome.GameWon)
+        matchController.returnAddPointToRhs(MatchEvent.GameWon)
 
         viewModel.uiEvents.test {
             viewModel.onRhsPressed()

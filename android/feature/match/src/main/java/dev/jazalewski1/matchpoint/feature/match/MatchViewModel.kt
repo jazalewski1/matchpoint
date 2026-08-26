@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
-import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
+import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -53,16 +53,16 @@ constructor(
 
     private fun process(side: Side) {
         val previousGame = matchController.getCurrentGame()
-        val outcome =
+        val matchEvent =
             when (side) {
                 Side.LHS -> matchController.addPointToLhs()
                 Side.RHS -> matchController.addPointToRhs()
             }
         updateScores()
         val event =
-            when (outcome) {
-                is PointOutcome.PointScored -> MatchUiEvent.PointScored(winner = side)
-                is PointOutcome.GameWon ->
+            when (matchEvent) {
+                is MatchEvent.PointScored -> MatchUiEvent.PointScored(winner = side)
+                is MatchEvent.GameWon ->
                     MatchUiEvent.GameFinished(
                         winner = side,
                         lhsScore = previousGame.lhsToString(),

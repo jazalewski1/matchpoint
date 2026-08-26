@@ -4,20 +4,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class MatchControllerImplTest {
-    private fun assertLhsPointScored(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.PointScored)
+    private fun assertLhsPointScored(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.PointScored)
     }
 
-    private fun assertRhsPointScored(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.PointScored)
+    private fun assertRhsPointScored(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.PointScored)
     }
 
-    private fun assertLhsGameWon(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.GameWon)
+    private fun assertLhsGameWon(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.GameWon)
     }
 
-    private fun assertRhsGameWon(outcome: PointOutcome) {
-        assertThat(outcome).isEqualTo(PointOutcome.GameWon)
+    private fun assertRhsGameWon(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.GameWon)
     }
 
     @Test
