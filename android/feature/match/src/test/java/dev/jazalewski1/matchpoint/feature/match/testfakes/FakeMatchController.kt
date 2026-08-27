@@ -22,6 +22,9 @@ class FakeMatchController : MatchController {
     private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
     private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
 
+    private var addPointToLhsCallback: (() -> Unit)? = null
+    private var addPointToRhsCallback: (() -> Unit)? = null
+
     fun returnGetState(new: MatchState) {
         matchState = new
     }
@@ -34,15 +37,25 @@ class FakeMatchController : MatchController {
         rhsMatchEvent = event
     }
 
+    fun afterAddPointToLhs(callback: () -> Unit) {
+        addPointToLhsCallback = callback
+    }
+
+    fun afterAddPointToRhs(callback: () -> Unit) {
+        addPointToRhsCallback = callback
+    }
+
     override fun getState(): MatchState = matchState
 
     override fun addPointToLhs(): MatchEvent {
         addPointToLhsCount += 1
+        addPointToLhsCallback?.invoke()
         return lhsMatchEvent
     }
 
     override fun addPointToRhs(): MatchEvent {
         addPointToRhsCount += 1
+        addPointToRhsCallback?.invoke()
         return rhsMatchEvent
     }
 }

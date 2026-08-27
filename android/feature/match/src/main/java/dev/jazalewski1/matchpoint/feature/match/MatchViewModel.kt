@@ -58,12 +58,17 @@ constructor(
     }
 
     private fun process(side: Side) {
-        val matchState = matchController.getState()
         val matchEvent =
             when (side) {
                 Side.LHS -> matchController.addPointToLhs()
                 Side.RHS -> matchController.addPointToRhs()
             }
+        val matchState = matchController.getState()
+        sendEvent(matchState, matchEvent, side)
+        updateScores(matchState)
+    }
+
+    private fun sendEvent(matchState: MatchState, matchEvent: MatchEvent, side: Side) {
         val event =
             when (matchEvent) {
                 is MatchEvent.PointScored -> MatchUiEvent.PointScored(winner = side)
@@ -82,7 +87,6 @@ constructor(
                 }
             }
         _uiEvents.tryEmit(event)
-        updateScores(matchState)
     }
 
     private fun updateScores(matchState: MatchState) {
