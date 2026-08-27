@@ -1,10 +1,8 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
-import dev.jazalewski1.matchpoint.domain.tennis.RegularGame.State
-
 class MatchControllerImpl : MatchController {
     private var game: Game = RegularGame()
-    private val set = Set()
+    private var set = Set()
 
     override fun getCurrentGame(): GameState = game.toState()
 
@@ -31,7 +29,7 @@ class MatchControllerImpl : MatchController {
             }
             is SetOutcome.Finished -> {
                 game = RegularGame()
-                set.reset()
+                set = Set()
                 return MatchEvent.SetWon
             }
             is SetOutcome.Tiebreak -> {
@@ -60,7 +58,7 @@ private sealed interface Game {
 }
 
 private class RegularGame : Game {
-    sealed interface State {
+    private sealed interface State {
         fun next(pointWinner: Player): State?
 
         data class Main(val player1: Points, val player2: Points) : State {
@@ -168,11 +166,6 @@ private class Set {
             Player.TWO -> player2Games += 1
         }
         return evaluate()
-    }
-
-    fun reset() {
-        player1Games = 0
-        player2Games = 0
     }
 
     private fun evaluate(): SetOutcome {
