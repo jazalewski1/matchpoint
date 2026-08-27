@@ -458,8 +458,8 @@ private fun LhsGameIndicationPreview() {
     AppTheme {
         GameIndication(
             side = Side.LHS,
-            lhsScore = "40",
-            rhsScore = "15",
+            lhsScore = "5",
+            rhsScore = "2",
             onClick = {},
         )
     }

@@ -3,10 +3,17 @@ package dev.jazalewski1.matchpoint.domain.tennis
 class MatchControllerImpl : MatchController {
     private var game: Game = RegularGame()
     private var set = Set()
+    // To be handled by Match class
+    private var player1Sets = 0
+    private var player2Sets = 0
 
-    override fun getCurrentGame(): GameState = game.toState()
-
-    override fun getCurrentSet(): SetState = set.toState()
+    override fun getState(): MatchState =
+        MatchState(
+            game = game.toState(),
+            set = set.toState(),
+            lhsSets = player1Sets,
+            rhsSets = player2Sets,
+        )
 
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
 
@@ -22,6 +29,10 @@ class MatchControllerImpl : MatchController {
         if (game is TieBreakGame) {
             game = RegularGame()
             set = Set()
+            when (winner) {
+                Player.ONE -> player1Sets += 1
+                Player.TWO -> player2Sets += 1
+            }
             return MatchEvent.SetWon
         }
         when (set.addGame(winner)) {
@@ -32,6 +43,10 @@ class MatchControllerImpl : MatchController {
             is SetOutcome.Finished -> {
                 game = RegularGame()
                 set = Set()
+                when (winner) {
+                    Player.ONE -> player1Sets += 1
+                    Player.TWO -> player2Sets += 1
+                }
                 return MatchEvent.SetWon
             }
             is SetOutcome.Tiebreak -> {
@@ -114,8 +129,8 @@ private class RegularGame : Game {
         when (val current = state) {
             is State.Main ->
                 GameState.Regular.Main(
-                    lhs = current.player1,
-                    rhs = current.player2,
+                    lhsPoints = current.player1,
+                    rhsPoints = current.player2,
                 )
             is State.Deuce -> GameState.Regular.Deuce
             is State.Advantage ->
@@ -147,8 +162,8 @@ private class TieBreakGame : Game {
     // TODO: Should be done by MC when changing sides is implemented
     override fun toState(): GameState =
         GameState.TieBreak(
-            lhs = player1,
-            rhs = player2,
+            lhsPoints = player1,
+            rhsPoints = player2,
         )
 }
 
@@ -173,7 +188,7 @@ private class Set {
     }
 
     // TODO: Should be done by MC when changing sides is implemented
-    fun toState() = SetState(lhs = player1Games, rhs = player2Games)
+    fun toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
 
     private fun evaluate(): SetOutcome {
         if (player1Games == 6 && player2Games <= 4) {

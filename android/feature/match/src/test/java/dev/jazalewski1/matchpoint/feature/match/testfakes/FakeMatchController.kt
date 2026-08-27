@@ -1,9 +1,8 @@
 package dev.jazalewski1.matchpoint.feature.match.testfakes
 
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
-import dev.jazalewski1.matchpoint.domain.tennis.SetState
+import dev.jazalewski1.matchpoint.domain.tennis.MatchState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 
 class FakeMatchController : MatchController {
@@ -13,17 +12,18 @@ class FakeMatchController : MatchController {
     var addPointToRhsCount = 0
         private set
 
-    private var gameState: GameState = gameLoveAll
-    private var setState: SetState = set0To0
+    private var matchState: MatchState =
+        MatchState(
+            game = gameLoveAll,
+            set = set0To0,
+            lhsSets = 0,
+            rhsSets = 0,
+        )
     private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
     private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
 
-    fun returnGetCurrentGame(new: GameState) {
-        gameState = new
-    }
-
-    fun returnGetCurrentSet(new: SetState) {
-        setState = new
+    fun returnGetState(new: MatchState) {
+        matchState = new
     }
 
     fun returnAddPointToLhs(event: MatchEvent) {
@@ -34,9 +34,7 @@ class FakeMatchController : MatchController {
         rhsMatchEvent = event
     }
 
-    override fun getCurrentGame() = gameState
-
-    override fun getCurrentSet() = setState
+    override fun getState(): MatchState = matchState
 
     override fun addPointToLhs(): MatchEvent {
         addPointToLhsCount += 1

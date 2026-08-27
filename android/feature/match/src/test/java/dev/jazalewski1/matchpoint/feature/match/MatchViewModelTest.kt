@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
+import dev.jazalewski1.matchpoint.domain.tennis.SetState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +86,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnGetCurrentGame(game15And40)
+        matchController.returnGetState(initialMatch.copy(game = game15And40))
 
         viewModel.onLhsPressed()
 
@@ -107,7 +108,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnGetCurrentGame(game40And15)
+        matchController.returnGetState(initialMatch.copy(game = game40And15))
 
         viewModel.onRhsPressed()
 
@@ -142,7 +143,6 @@ class MatchViewModelTest {
     @Test
     fun `notifies about point scored when rhs scores`() = runTest {
         val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.returnAddPointToRhs(MatchEvent.PointScored)
@@ -158,11 +158,11 @@ class MatchViewModelTest {
     @Test
     fun `updates score when lhs wins game`() = runTest {
         val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game40And15)
+        matchController.returnGetState(initialMatch.copy(game = game40And15))
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.returnAddPointToLhs(MatchEvent.GameWon)
-        matchController.returnGetCurrentGame(gameLoveAll)
+        matchController.returnGetState(initialMatch.copy(game = gameLoveAll, set = set1To0))
 
         viewModel.onLhsPressed()
 
@@ -175,11 +175,11 @@ class MatchViewModelTest {
     @Test
     fun `updates score when rhs wins game`() = runTest {
         val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game15And40)
+        matchController.returnGetState(initialMatch.copy(game = game15And40))
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
         matchController.returnAddPointToRhs(MatchEvent.GameWon)
-        matchController.returnGetCurrentGame(gameLoveAll)
+        matchController.returnGetState(initialMatch.copy(game = gameLoveAll, set = set0To1))
 
         viewModel.onRhsPressed()
 
@@ -192,9 +192,11 @@ class MatchViewModelTest {
     @Test
     fun `notifies about game finished when lhs wins game`() = runTest {
         val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game40And15)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
+        matchController.returnGetState(
+            initialMatch.copy(game = gameLoveAll, set = SetState(lhsGames = 5, rhsGames = 3))
+        )
         matchController.returnAddPointToLhs(MatchEvent.GameWon)
 
         viewModel.uiEvents.test {
@@ -203,8 +205,8 @@ class MatchViewModelTest {
             val expected =
                 MatchUiEvent.GameFinished(
                     winner = Side.LHS,
-                    lhsScore = "40",
-                    rhsScore = "15",
+                    lhsScore = "5",
+                    rhsScore = "3",
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -213,9 +215,11 @@ class MatchViewModelTest {
     @Test
     fun `notifies about game finished when rhs wins game`() = runTest {
         val matchController = FakeMatchController()
-        matchController.returnGetCurrentGame(game15And40)
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
+        matchController.returnGetState(
+            initialMatch.copy(game = gameLoveAll, set = SetState(lhsGames = 3, rhsGames = 5))
+        )
         matchController.returnAddPointToRhs(MatchEvent.GameWon)
 
         viewModel.uiEvents.test {
@@ -224,8 +228,8 @@ class MatchViewModelTest {
             val expected =
                 MatchUiEvent.GameFinished(
                     winner = Side.RHS,
-                    lhsScore = "15",
-                    rhsScore = "40",
+                    lhsScore = "3",
+                    rhsScore = "5",
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -236,7 +240,9 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnGetCurrentSet(set1To0)
+        matchController.returnGetState(
+            initialMatch.copy(game = gameLoveAll, set = set0To0, lhsSets = 1, rhsSets = 0)
+        )
         matchController.returnAddPointToLhs(MatchEvent.SetWon)
 
         viewModel.uiEvents.test {
@@ -257,7 +263,9 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnGetCurrentSet(set0To1)
+        matchController.returnGetState(
+            initialMatch.copy(game = gameLoveAll, set = set0To0, lhsSets = 0, rhsSets = 1)
+        )
         matchController.returnAddPointToRhs(MatchEvent.SetWon)
 
         viewModel.uiEvents.test {
@@ -278,7 +286,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnGetCurrentGame(tiebreak2To5)
+        matchController.returnGetState(initialMatch.copy(game = tiebreak2To5))
 
         viewModel.onLhsPressed()
 
@@ -301,7 +309,7 @@ class MatchViewModelTest {
         val matchController = FakeMatchController()
         val viewModel = MatchViewModel(matchController, savedStateHandle)
 
-        matchController.returnGetCurrentGame(tiebreak5To2)
+        matchController.returnGetState(initialMatch.copy(game = tiebreak5To2))
 
         viewModel.onRhsPressed()
 

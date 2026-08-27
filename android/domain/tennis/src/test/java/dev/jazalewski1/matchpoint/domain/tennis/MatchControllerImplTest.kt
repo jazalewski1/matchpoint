@@ -3,6 +3,14 @@ package dev.jazalewski1.matchpoint.domain.tennis
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
+private val sampleMatchState =
+    MatchState(
+        game = GameState.default(),
+        set = SetState.default(),
+        lhsSets = 0,
+        rhsSets = 0,
+    )
+
 class MatchControllerImplTest {
     private fun assertLhsPointScored(event: MatchEvent) {
         assertThat(event).isEqualTo(MatchEvent.PointScored)
@@ -32,8 +40,8 @@ class MatchControllerImplTest {
     fun `when initialized then has love all`() {
         val controller = MatchControllerImpl()
 
-        val expected = GameState.default()
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        val expected = sampleMatchState
+        assertThat(controller.getState()).isEqualTo(expected)
     }
 
     @Test
@@ -41,7 +49,7 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         fun assertLhsPoints(expectedPoints: Points) {
-            assertThat(controller.getCurrentGame())
+            assertThat(controller.getState().game)
                 .isEqualTo(GameState.Regular.Main(expectedPoints, Points.LOVE))
         }
 
@@ -58,7 +66,7 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         fun assertRhsPoints(expectedPoints: Points) {
-            assertThat(controller.getCurrentGame())
+            assertThat(controller.getState().game)
                 .isEqualTo(GameState.Regular.Main(Points.LOVE, expectedPoints))
         }
 
@@ -78,8 +86,8 @@ class MatchControllerImplTest {
         repeat(3) { controller.addPointToLhs() }
         assertLhsGameWon(controller.addPointToLhs())
 
-        val expected = GameState.default()
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState())
+            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 1, rhsGames = 0)))
     }
 
     @Test
@@ -90,8 +98,8 @@ class MatchControllerImplTest {
         repeat(3) { controller.addPointToRhs() }
         assertRhsGameWon(controller.addPointToRhs())
 
-        val expected = GameState.default()
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState())
+            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 0, rhsGames = 1)))
     }
 
     private fun advanceToDeuce(controller: MatchControllerImpl) {
@@ -106,7 +114,7 @@ class MatchControllerImplTest {
         advanceToDeuce(controller)
 
         val expected = GameState.Regular.Deuce
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     @Test
@@ -117,7 +125,7 @@ class MatchControllerImplTest {
         assertLhsPointScored(controller.addPointToLhs())
 
         val expected = GameState.Regular.Advantage.Lhs
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     @Test
@@ -128,7 +136,7 @@ class MatchControllerImplTest {
         assertRhsPointScored(controller.addPointToRhs())
 
         val expected = GameState.Regular.Advantage.Rhs
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     @Test
@@ -140,7 +148,7 @@ class MatchControllerImplTest {
         assertLhsGameWon(controller.addPointToLhs())
 
         val expected = GameState.default()
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     @Test
@@ -152,7 +160,7 @@ class MatchControllerImplTest {
         assertRhsGameWon(controller.addPointToRhs())
 
         val expected = GameState.default()
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     @Test
@@ -164,7 +172,7 @@ class MatchControllerImplTest {
         assertRhsPointScored(controller.addPointToRhs())
 
         val expected = GameState.Regular.Deuce
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     @Test
@@ -176,7 +184,7 @@ class MatchControllerImplTest {
         assertLhsPointScored(controller.addPointToLhs())
 
         val expected = GameState.Regular.Deuce
-        assertThat(controller.getCurrentGame()).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(expected)
     }
 
     private fun scorePointsForLhs(controller: MatchController, numOfPoints: Int) {
@@ -200,8 +208,8 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         fun assertGames(expectedLhs: Int, expectedRhs: Int) {
-            assertThat(controller.getCurrentSet())
-                .isEqualTo(SetState(lhs = expectedLhs, rhs = expectedRhs))
+            assertThat(controller.getState().set)
+                .isEqualTo(SetState(lhsGames = expectedLhs, rhsGames = expectedRhs))
         }
 
         repeat(3) { winGameForLhs(controller) }
@@ -230,8 +238,7 @@ class MatchControllerImplTest {
             scorePointsForLhs(controller, numOfPoints = 3)
             assertLhsSetWon(controller.addPointToLhs())
 
-            assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
-            assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
+            assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(lhsSets = 1))
         }
     }
 
@@ -245,8 +252,7 @@ class MatchControllerImplTest {
             scorePointsForRhs(controller, numOfPoints = 3)
             assertRhsSetWon(controller.addPointToRhs())
 
-            assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
-            assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
+            assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(rhsSets = 1))
         }
     }
 
@@ -259,7 +265,8 @@ class MatchControllerImplTest {
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsGameWon(controller.addPointToLhs())
 
-        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+        assertThat(controller.getState())
+            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 6, rhsGames = 5)))
     }
 
     @Test
@@ -271,7 +278,8 @@ class MatchControllerImplTest {
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsGameWon(controller.addPointToRhs())
 
-        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+        assertThat(controller.getState())
+            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 5, rhsGames = 6)))
     }
 
     @Test
@@ -283,8 +291,7 @@ class MatchControllerImplTest {
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsSetWon(controller.addPointToLhs())
 
-        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
-        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
+        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(lhsSets = 1))
     }
 
     @Test
@@ -296,8 +303,7 @@ class MatchControllerImplTest {
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsSetWon(controller.addPointToRhs())
 
-        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
-        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
+        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(rhsSets = 1))
     }
 
     @Test
@@ -309,8 +315,13 @@ class MatchControllerImplTest {
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsGameWon(controller.addPointToLhs())
 
-        val state = controller.getCurrentGame()
-        assertThat(state).isEqualTo(GameState.TieBreak(0, 0))
+        assertThat(controller.getState())
+            .isEqualTo(
+                sampleMatchState.copy(
+                    game = GameState.TieBreak(lhsPoints = 0, rhsPoints = 0),
+                    set = SetState(lhsGames = 6, rhsGames = 6),
+                )
+            )
     }
 
     @Test
@@ -322,8 +333,13 @@ class MatchControllerImplTest {
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsGameWon(controller.addPointToRhs())
 
-        val state = controller.getCurrentGame()
-        assertThat(state).isEqualTo(GameState.TieBreak(0, 0))
+        assertThat(controller.getState())
+            .isEqualTo(
+                sampleMatchState.copy(
+                    game = GameState.TieBreak(lhsPoints = 0, rhsPoints = 0),
+                    set = SetState(lhsGames = 6, rhsGames = 6),
+                )
+            )
     }
 
     private fun advanceToTieBreak(controller: MatchController) {
@@ -337,8 +353,8 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl()
 
         fun assertPoints(expectedLhs: Int, expectedRhs: Int) {
-            assertThat(controller.getCurrentGame())
-                .isEqualTo(GameState.TieBreak(lhs = expectedLhs, rhs = expectedRhs))
+            assertThat(controller.getState().game)
+                .isEqualTo(GameState.TieBreak(lhsPoints = expectedLhs, rhsPoints = expectedRhs))
         }
 
         advanceToTieBreak(controller)
@@ -365,8 +381,7 @@ class MatchControllerImplTest {
 
         assertLhsSetWon(controller.addPointToLhs())
 
-        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
-        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
+        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(lhsSets = 1))
     }
 
     @Test
@@ -379,7 +394,6 @@ class MatchControllerImplTest {
 
         assertRhsSetWon(controller.addPointToRhs())
 
-        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
-        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
+        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(rhsSets = 1))
     }
 }
