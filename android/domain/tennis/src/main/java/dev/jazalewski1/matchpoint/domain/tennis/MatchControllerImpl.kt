@@ -11,14 +11,13 @@ class MatchControllerImpl : MatchController {
     override fun addPointToRhs(): MatchEvent = processPointScored(Player.TWO)
 
     private fun processPointScored(winner: Player): MatchEvent =
-        when (val gameOutcome = game.addPoint(winner)) {
+        when (game.addPoint(winner)) {
             is GameOutcome.PointScored -> MatchEvent.PointScored
-            is GameOutcome.Finished ->
-                processGameFinished(winner = winner, isTieBreak = gameOutcome.isTieBreak)
+            is GameOutcome.Finished -> processGameFinished(winner = winner)
         }
 
-    private fun processGameFinished(winner: Player, isTieBreak: Boolean): MatchEvent {
-        if (isTieBreak) {
+    private fun processGameFinished(winner: Player): MatchEvent {
+        if (game is TieBreakGame) {
             game = RegularGame()
             return MatchEvent.SetWon
         }
@@ -48,7 +47,7 @@ private enum class Player {
 private sealed interface GameOutcome {
     data class PointScored(val winner: Player) : GameOutcome
 
-    data class Finished(val winner: Player, val isTieBreak: Boolean) : GameOutcome
+    data class Finished(val winner: Player) : GameOutcome
 }
 
 private sealed interface Game {
@@ -104,7 +103,7 @@ private class RegularGame : Game {
             state = nextState
             return GameOutcome.PointScored(winner = winner)
         }
-        return GameOutcome.Finished(winner = winner, isTieBreak = false)
+        return GameOutcome.Finished(winner = winner)
     }
 
     override fun toState(): GameState =
@@ -133,10 +132,10 @@ private class TieBreakGame : Game {
             Player.TWO -> player2 += 1
         }
         if (player1 >= 7 && player1 >= (player2 + 2)) {
-            return GameOutcome.Finished(winner = Player.ONE, isTieBreak = true)
+            return GameOutcome.Finished(winner = Player.ONE)
         }
         if (player2 >= 7 && player2 >= (player1 + 2)) {
-            return GameOutcome.Finished(winner = Player.TWO, isTieBreak = true)
+            return GameOutcome.Finished(winner = Player.TWO)
         }
         return GameOutcome.PointScored(winner = winner)
     }
