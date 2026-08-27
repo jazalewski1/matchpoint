@@ -29,6 +29,7 @@ class MatchScreenTest {
         rhsScore: String = RHS_SCORE,
         onLhsClick: () -> Unit = {},
         onRhsClick: () -> Unit = {},
+        isTieBreak: Boolean = false,
         events: SharedFlow<MatchUiEvent> = MutableSharedFlow(),
     ) =
         MatchScreen(
@@ -38,11 +39,12 @@ class MatchScreenTest {
             rhsScore = rhsScore,
             onLhsClick = onLhsClick,
             onRhsClick = onRhsClick,
+            isTieBreak = isTieBreak,
             events = events,
         )
 
     @Test
-    fun `displays initial points`() {
+    fun `displays points in regular game`() {
         rule.setContent { SutScreen() }
 
         rule
@@ -56,6 +58,25 @@ class MatchScreenTest {
             .assertIsDisplayed()
             .assert(hasText(RHS_SCORE))
             .assertHasClickAction()
+    }
+
+    @Test
+    fun `displays points in tiebreak`() {
+        rule.setContent { SutScreen(isTieBreak = true) }
+
+        rule
+            .onNodeWithContentDescription("Left Score")
+            .assertIsDisplayed()
+            .assert(hasText(LHS_SCORE))
+            .assertHasClickAction()
+
+        rule
+            .onNodeWithContentDescription("Right Score")
+            .assertIsDisplayed()
+            .assert(hasText(RHS_SCORE))
+            .assertHasClickAction()
+
+        rule.onNodeWithText("TIE-BREAK").assertIsDisplayed()
     }
 
     @Test

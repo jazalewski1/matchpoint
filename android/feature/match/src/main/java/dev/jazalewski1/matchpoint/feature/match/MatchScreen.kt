@@ -54,12 +54,13 @@ internal const val POINT_INDICATION_PULSE_REPS = 3
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     MatchScreen(
-        lhsPlayerName = uiState.lhsPlayer.name,
-        rhsPlayerName = uiState.rhsPlayer.name,
-        lhsScore = uiState.lhsPlayer.score,
-        rhsScore = uiState.rhsPlayer.score,
+        lhsPlayerName = uiState.game.lhsPlayer.name,
+        rhsPlayerName = uiState.game.rhsPlayer.name,
+        lhsScore = uiState.game.lhsPlayer.score,
+        rhsScore = uiState.game.rhsPlayer.score,
         onLhsClick = viewModel::onLhsPressed,
         onRhsClick = viewModel::onRhsPressed,
+        isTieBreak = uiState.game.isTieBreak,
         events = viewModel.uiEvents,
     )
 }
@@ -72,6 +73,7 @@ internal fun MatchScreen(
     rhsScore: String,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
+    isTieBreak: Boolean,
     events: SharedFlow<MatchUiEvent>,
 ) {
     val context = LocalContext.current
@@ -111,6 +113,21 @@ internal fun MatchScreen(
                 modifier = Modifier.weight(0.5f).fillMaxHeight(),
                 backgroundColor = indicationState.rhsColor.value,
             )
+        }
+        if (isTieBreak) {
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Surface(
+                    modifier = Modifier.padding(top = 24.dp),
+                ) {
+                    Text(
+                        text = "TIE-BREAK",
+                        style = MaterialTheme.typography.displaySmall,
+                    )
+                }
+            }
         }
         indicationState.dialogIndicationParams?.let {
             when (it) {
@@ -397,6 +414,7 @@ private fun ScreenPreviewBase(
     rhsPlayerName: String = "Nadal",
     lhsScore: String = "40",
     rhsScore: String = "15",
+    isTieBreak: Boolean = false,
 ) =
     MatchScreen(
         lhsPlayerName = lhsPlayerName,
@@ -405,6 +423,7 @@ private fun ScreenPreviewBase(
         rhsScore = rhsScore,
         onLhsClick = {},
         onRhsClick = {},
+        isTieBreak = isTieBreak,
         events = MutableSharedFlow(),
     )
 
@@ -413,6 +432,18 @@ private fun ScreenPreviewBase(
 private fun Preview() {
     AppTheme {
         ScreenPreviewBase()
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun PreviewWithTieBreak() {
+    AppTheme {
+        ScreenPreviewBase(
+            lhsScore = "6",
+            rhsScore = "3",
+            isTieBreak = true,
+        )
     }
 }
 

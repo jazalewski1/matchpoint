@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.feature.match.util.*
@@ -26,16 +27,19 @@ constructor(
             run {
                 val game = matchController.getCurrentGame()
                 MatchUiState(
-                    lhsPlayer =
-                        PlayerUiState(
-                            name = savedStateHandle.toRoute<MatchRoute>().player1Name,
-                            score = game.lhsToString(),
-                        ),
-                    rhsPlayer =
-                        PlayerUiState(
-                            name = savedStateHandle.toRoute<MatchRoute>().player2Name,
-                            score = game.rhsToString(),
-                        ),
+                    game = GameUiState(
+                        lhsPlayer =
+                            PlayerUiState(
+                                name = savedStateHandle.toRoute<MatchRoute>().player1Name,
+                                score = game.lhsToString(),
+                            ),
+                        rhsPlayer =
+                            PlayerUiState(
+                                name = savedStateHandle.toRoute<MatchRoute>().player2Name,
+                                score = game.rhsToString(),
+                            ),
+                        isTieBreak = game is GameState.TieBreak,
+                    )
                 )
             }
         )
@@ -83,10 +87,14 @@ constructor(
     private fun updateScores() {
         val game = matchController.getCurrentGame()
         _uiState.update { current ->
-            current.copy(
-                lhsPlayer = current.lhsPlayer.copy(score = game.lhsToString()),
-                rhsPlayer = current.rhsPlayer.copy(score = game.rhsToString()),
+            val lhsPlayer = current.game.lhsPlayer.copy(score = game.lhsToString())
+            val rhsPlayer = current.game.rhsPlayer.copy(score = game.rhsToString())
+            val gameUiState = current.game.copy(
+                lhsPlayer = lhsPlayer,
+                rhsPlayer = rhsPlayer,
+                isTieBreak = game is GameState.TieBreak,
             )
+            current.copy(game = gameUiState)
         }
     }
 }

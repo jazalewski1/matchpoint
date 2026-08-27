@@ -34,8 +34,8 @@ private const val RHS_PLAYER_NAME = "Right player"
 private val sampleLhsPlayer = PlayerUiState(name = LHS_PLAYER_NAME, score = "0")
 private val sampleRhsPlayer = PlayerUiState(name = RHS_PLAYER_NAME, score = "0")
 
-private val sampleMatchUiState =
-    MatchUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer)
+private val sampleGameUiState = GameUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
+private val sampleMatchUiState = MatchUiState(game = sampleGameUiState)
 
 @RunWith(AndroidJUnit4::class)
 class MatchViewModelTest {
@@ -91,8 +91,10 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "15"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "40"),
+                    game = sampleGameUiState.copy(
+                        lhsPlayer = sampleLhsPlayer.copy(score = "15"),
+                        rhsPlayer = sampleRhsPlayer.copy(score = "40"),
+                    ),
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -110,8 +112,10 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "40"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "15"),
+                    game = sampleGameUiState.copy(
+                        lhsPlayer = sampleLhsPlayer.copy(score = "40"),
+                        rhsPlayer = sampleRhsPlayer.copy(score = "15"),
+                    ),
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -160,11 +164,7 @@ class MatchViewModelTest {
         viewModel.onLhsPressed()
 
         viewModel.uiState.test {
-            val expected =
-                sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "0"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "0"),
-                )
+            val expected = sampleMatchUiState
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
@@ -181,11 +181,7 @@ class MatchViewModelTest {
         viewModel.onRhsPressed()
 
         viewModel.uiState.test {
-            val expected =
-                sampleMatchUiState.copy(
-                    lhsPlayer = sampleLhsPlayer.copy(score = "0"),
-                    rhsPlayer = sampleRhsPlayer.copy(score = "0"),
-                )
+            val expected = sampleMatchUiState
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
@@ -269,6 +265,50 @@ class MatchViewModelTest {
                     winner = Side.RHS,
                     lhsScore = "0",
                     rhsScore = "1",
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @Test
+    fun `updates ui state when adding lhs score in tiebreak`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.returnGetCurrentGame(tiebreak2To5)
+
+        viewModel.onLhsPressed()
+
+        viewModel.uiState.test {
+            val expected =
+                sampleMatchUiState.copy(
+                    game = sampleGameUiState.copy(
+                        lhsPlayer = sampleLhsPlayer.copy(score = "2"),
+                        rhsPlayer = sampleRhsPlayer.copy(score = "5"),
+                        isTieBreak = true,
+                    ),
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @Test
+    fun `updates ui state when adding rhs score in tiebreak`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.returnGetCurrentGame(tiebreak5To2)
+
+        viewModel.onRhsPressed()
+
+        viewModel.uiState.test {
+            val expected =
+                sampleMatchUiState.copy(
+                    game = sampleGameUiState.copy(
+                        lhsPlayer = sampleLhsPlayer.copy(score = "5"),
+                        rhsPlayer = sampleRhsPlayer.copy(score = "2"),
+                        isTieBreak = true,
+                    ),
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }

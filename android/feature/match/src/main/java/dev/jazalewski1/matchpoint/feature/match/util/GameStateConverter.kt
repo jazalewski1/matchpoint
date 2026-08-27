@@ -8,7 +8,7 @@ internal fun GameState.lhsToString() =
         is GameState.Regular.Deuce -> "40"
         is GameState.Regular.Advantage.Lhs -> "AD"
         is GameState.Regular.Advantage.Rhs -> "40"
-        is GameState.TieBreak -> TODO()
+        is GameState.TieBreak -> this.lhs.toString()
     }
 
 internal fun GameState.rhsToString() =
@@ -17,5 +17,5 @@ internal fun GameState.rhsToString() =
         is GameState.Regular.Deuce -> "40"
         is GameState.Regular.Advantage.Lhs -> "40"
         is GameState.Regular.Advantage.Rhs -> "AD"
-        is GameState.TieBreak -> TODO()
+        is GameState.TieBreak -> this.rhs.toString()
     }

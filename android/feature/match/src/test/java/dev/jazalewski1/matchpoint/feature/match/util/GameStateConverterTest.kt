@@ -52,7 +52,18 @@ class GameStateConverterTest {
     }
 
     @Test
-    fun `tie breaks`() {
-        TODO()
+    fun `converts lhs in tiebreak`() {
+        assertThat(GameState.TieBreak(lhs = 0, rhs = 0).lhsToString()).isEqualTo("0")
+        assertThat(GameState.TieBreak(lhs = 1, rhs = 0).lhsToString()).isEqualTo("1")
+        assertThat(GameState.TieBreak(lhs = 3, rhs = 0).lhsToString()).isEqualTo("3")
+        assertThat(GameState.TieBreak(lhs = 12, rhs = 0).lhsToString()).isEqualTo("12")
+    }
+
+    @Test
+    fun `converts rhs in tiebreak`() {
+        assertThat(GameState.TieBreak(lhs = 0, rhs = 0).rhsToString()).isEqualTo("0")
+        assertThat(GameState.TieBreak(lhs = 0, rhs = 1).rhsToString()).isEqualTo("1")
+        assertThat(GameState.TieBreak(lhs = 0, rhs = 3).rhsToString()).isEqualTo("3")
+        assertThat(GameState.TieBreak(lhs = 0, rhs = 12).rhsToString()).isEqualTo("12")
     }
 }

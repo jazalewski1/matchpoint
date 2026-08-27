@@ -5,7 +5,12 @@ data class PlayerUiState(
     val score: String,
 )
 
-data class MatchUiState(
+data class GameUiState(
     val lhsPlayer: PlayerUiState,
     val rhsPlayer: PlayerUiState,
+    val isTieBreak: Boolean,
+)
+
+data class MatchUiState(
+    val game: GameUiState,
 )
