@@ -14,11 +14,16 @@ class FakeMatchController : MatchController {
         private set
 
     private var gameState: GameState = gameLoveAll
+    private var setState: SetState = set0To0
     private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
     private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
 
     fun returnGetCurrentGame(new: GameState) {
         gameState = new
+    }
+
+    fun returnGetCurrentSet(new: SetState) {
+        setState = new
     }
 
     fun returnAddPointToLhs(event: MatchEvent) {
@@ -31,9 +36,7 @@ class FakeMatchController : MatchController {
 
     override fun getCurrentGame() = gameState
 
-    override fun getCurrentSet(): SetState {
-        TODO("Not yet implemented")
-    }
+    override fun getCurrentSet() = setState
 
     override fun addPointToLhs(): MatchEvent {
         addPointToLhsCount += 1

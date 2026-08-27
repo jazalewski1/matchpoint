@@ -53,6 +53,7 @@ constructor(
 
     private fun process(side: Side) {
         val previousGame = matchController.getCurrentGame()
+        val previousSet = matchController.getCurrentSet()
         val matchEvent =
             when (side) {
                 Side.LHS -> matchController.addPointToLhs()
@@ -68,7 +69,13 @@ constructor(
                         lhsScore = previousGame.lhsToString(),
                         rhsScore = previousGame.rhsToString(),
                     )
-                is MatchEvent.SetWon -> TODO()
+                is MatchEvent.SetWon -> {
+                    MatchUiEvent.SetFinished(
+                        winner = side,
+                        lhsScore = previousSet.lhs.toString(),
+                        rhsScore = previousSet.rhs.toString(),
+                    )
+                }
             }
         _uiEvents.tryEmit(event)
     }

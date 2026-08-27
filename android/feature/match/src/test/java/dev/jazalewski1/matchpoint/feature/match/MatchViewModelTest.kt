@@ -231,4 +231,46 @@ class MatchViewModelTest {
             assertThat(awaitItem()).isEqualTo(expected)
         }
     }
+
+    @Test
+    fun `notifies about set finished when lhs wins set`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.returnGetCurrentSet(set1To0)
+        matchController.returnAddPointToLhs(MatchEvent.SetWon)
+
+        viewModel.uiEvents.test {
+            viewModel.onLhsPressed()
+
+            val expected =
+                MatchUiEvent.SetFinished(
+                    winner = Side.LHS,
+                    lhsScore = "1",
+                    rhsScore = "0",
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @Test
+    fun `notifies about set finished when rhs wins set`() = runTest {
+        val matchController = FakeMatchController()
+        val viewModel = MatchViewModel(matchController, savedStateHandle)
+
+        matchController.returnGetCurrentSet(set0To1)
+        matchController.returnAddPointToRhs(MatchEvent.SetWon)
+
+        viewModel.uiEvents.test {
+            viewModel.onRhsPressed()
+
+            val expected =
+                MatchUiEvent.SetFinished(
+                    winner = Side.RHS,
+                    lhsScore = "0",
+                    rhsScore = "1",
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
 }
