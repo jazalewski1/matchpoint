@@ -333,6 +333,29 @@ class MatchControllerImplTest {
     }
 
     @Test
+    fun `when players score during tiebreak then game state is updated`() {
+        val controller = MatchControllerImpl()
+
+        fun assertPoints(expectedLhs: Int, expectedRhs: Int) {
+            assertThat(controller.getCurrentGame())
+                .isEqualTo(GameState.TieBreak(lhs = expectedLhs, rhs = expectedRhs))
+        }
+
+        advanceToTieBreak(controller)
+        scorePointsForLhs(controller, numOfPoints = 3)
+        assertPoints(expectedLhs = 3, expectedRhs = 0)
+
+        scorePointsForRhs(controller, numOfPoints = 2)
+        assertPoints(expectedLhs = 3, expectedRhs = 2)
+
+        scorePointsForLhs(controller, numOfPoints = 1)
+        assertPoints(expectedLhs = 4, expectedRhs = 2)
+
+        scorePointsForRhs(controller, numOfPoints = 3)
+        assertPoints(expectedLhs = 4, expectedRhs = 5)
+    }
+
+    @Test
     fun `when lhs scores at least 7 points with 2 difference then lhs wins tiebreak`() {
         val controller = MatchControllerImpl()
 
