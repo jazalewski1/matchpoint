@@ -6,6 +6,8 @@ class MatchControllerImpl : MatchController {
 
     override fun getCurrentGame(): GameState = game.toState()
 
+    override fun getCurrentSet(): SetState = set.toState()
+
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
 
     override fun addPointToRhs(): MatchEvent = processPointScored(Player.TWO)
@@ -19,6 +21,7 @@ class MatchControllerImpl : MatchController {
     private fun processGameFinished(winner: Player): MatchEvent {
         if (game is TieBreakGame) {
             game = RegularGame()
+            set = Set()
             return MatchEvent.SetWon
         }
         when (set.addGame(winner)) {
@@ -106,6 +109,7 @@ private class RegularGame : Game {
         return GameOutcome.Finished(winner = winner)
     }
 
+    // TODO: Should be done by MC when changing sides is implemented
     override fun toState(): GameState =
         when (val current = state) {
             is State.Main ->
@@ -140,6 +144,7 @@ private class TieBreakGame : Game {
         return GameOutcome.PointScored(winner = winner)
     }
 
+    // TODO: Should be done by MC when changing sides is implemented
     override fun toState(): GameState =
         GameState.TieBreak(
             lhs = player1,
@@ -166,6 +171,9 @@ private class Set {
         }
         return evaluate()
     }
+
+    // TODO: Should be done by MC when changing sides is implemented
+    fun toState() = SetState(lhs = player1Games, rhs = player2Games)
 
     private fun evaluate(): SetOutcome {
         if (player1Games == 6 && player2Games <= 4) {

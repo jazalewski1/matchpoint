@@ -3,6 +3,7 @@ package dev.jazalewski1.matchpoint.feature.match.testfakes
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
+import dev.jazalewski1.matchpoint.domain.tennis.SetState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 
 class FakeMatchController : MatchController {
@@ -29,6 +30,10 @@ class FakeMatchController : MatchController {
     }
 
     override fun getCurrentGame() = gameState
+
+    override fun getCurrentSet(): SetState {
+        TODO("Not yet implemented")
+    }
 
     override fun addPointToLhs(): MatchEvent {
         addPointToLhsCount += 1

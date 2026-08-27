@@ -204,6 +204,9 @@ class MatchControllerImplTest {
             repeat(5) { winGameForLhs(controller) }
             scorePointsForLhs(controller, numOfPoints = 3)
             assertLhsSetWon(controller.addPointToLhs())
+
+            assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+            assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
         }
     }
 
@@ -216,6 +219,9 @@ class MatchControllerImplTest {
             repeat(5) { winGameForRhs(controller) }
             scorePointsForRhs(controller, numOfPoints = 3)
             assertRhsSetWon(controller.addPointToRhs())
+
+            assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+            assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
         }
     }
 
@@ -227,6 +233,8 @@ class MatchControllerImplTest {
         repeat(5) { winGameForLhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsGameWon(controller.addPointToLhs())
+
+        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
     }
 
     @Test
@@ -237,6 +245,8 @@ class MatchControllerImplTest {
         repeat(5) { winGameForRhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsGameWon(controller.addPointToRhs())
+
+        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
     }
 
     @Test
@@ -247,6 +257,9 @@ class MatchControllerImplTest {
         repeat(6) { winGameForLhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsSetWon(controller.addPointToLhs())
+
+        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
     }
 
     @Test
@@ -257,6 +270,9 @@ class MatchControllerImplTest {
         repeat(6) { winGameForRhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsSetWon(controller.addPointToRhs())
+
+        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
     }
 
     @Test
@@ -300,6 +316,9 @@ class MatchControllerImplTest {
         scorePointsForLhs(controller, numOfPoints = 6)
 
         assertLhsSetWon(controller.addPointToLhs())
+
+        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
     }
 
     @Test
@@ -311,5 +330,8 @@ class MatchControllerImplTest {
         scorePointsForRhs(controller, numOfPoints = 6)
 
         assertRhsSetWon(controller.addPointToRhs())
+
+        assertThat(controller.getCurrentGame()).isEqualTo(GameState.default())
+        assertThat(controller.getCurrentSet()).isEqualTo(SetState.default())
     }
 }
