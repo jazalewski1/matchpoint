@@ -29,6 +29,7 @@ class MatchScreenTest {
         rhsScore: String = RHS_SCORE,
         onLhsClick: () -> Unit = {},
         onRhsClick: () -> Unit = {},
+        isTieBreak: Boolean = false,
         events: SharedFlow<MatchUiEvent> = MutableSharedFlow(),
     ) =
         MatchScreen(
@@ -38,11 +39,12 @@ class MatchScreenTest {
             rhsScore = rhsScore,
             onLhsClick = onLhsClick,
             onRhsClick = onRhsClick,
+            isTieBreak = isTieBreak,
             events = events,
         )
 
     @Test
-    fun `displays initial points`() {
+    fun `displays points in regular game`() {
         rule.setContent { SutScreen() }
 
         rule
@@ -56,6 +58,25 @@ class MatchScreenTest {
             .assertIsDisplayed()
             .assert(hasText(RHS_SCORE))
             .assertHasClickAction()
+    }
+
+    @Test
+    fun `displays points in tiebreak`() {
+        rule.setContent { SutScreen(isTieBreak = true) }
+
+        rule
+            .onNodeWithContentDescription("Left Score")
+            .assertIsDisplayed()
+            .assert(hasText(LHS_SCORE))
+            .assertHasClickAction()
+
+        rule
+            .onNodeWithContentDescription("Right Score")
+            .assertIsDisplayed()
+            .assert(hasText(RHS_SCORE))
+            .assertHasClickAction()
+
+        rule.onNodeWithText("TIE-BREAK").assertIsDisplayed()
     }
 
     @Test
@@ -117,7 +138,7 @@ class MatchScreenTest {
         events.emitAndWait(event)
         rule.onNodeWithText("GAME").assertIsDisplayed()
         rule.onNodeWithText("30 : 15").assertIsDisplayed()
-        advance(milliseconds = GAME_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithText("GAME").assertIsNotDisplayed()
         rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
     }
@@ -143,8 +164,66 @@ class MatchScreenTest {
         events.emitAndWait(event)
         rule.onNodeWithText("GAME").assertIsDisplayed()
         rule.onNodeWithText("15 : 30").assertIsDisplayed()
-        advance(milliseconds = GAME_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithText("GAME").assertIsNotDisplayed()
         rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
+    }
+
+    @Test
+    fun `when received lhs finished set then displays set indication`() = runTest {
+        rule.mainClock.autoAdvance = false
+
+        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+        rule.setContent { SutScreen(events = events) }
+
+        val sentLhsScore = "3"
+        val sentRhsScore = "1"
+        val event =
+            MatchUiEvent.SetFinished(
+                winner = Side.LHS,
+                lhsScore = sentLhsScore,
+                rhsScore = sentRhsScore,
+            )
+
+        val header = "SET"
+        val scoreText = "3 : 1"
+
+        rule.onNodeWithText(header).assertIsNotDisplayed()
+        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        events.emitAndWait(event)
+        rule.onNodeWithText(header).assertIsDisplayed()
+        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        rule.onNodeWithText(header).assertIsNotDisplayed()
+        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+    }
+
+    @Test
+    fun `when received rhs finished set then displays set indication`() = runTest {
+        rule.mainClock.autoAdvance = false
+
+        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+        rule.setContent { SutScreen(events = events) }
+
+        val sentLhsScore = "1"
+        val sentRhsScore = "3"
+        val event =
+            MatchUiEvent.SetFinished(
+                winner = Side.RHS,
+                lhsScore = sentLhsScore,
+                rhsScore = sentRhsScore,
+            )
+
+        val header = "SET"
+        val scoreText = "1 : 3"
+
+        rule.onNodeWithText(header).assertIsNotDisplayed()
+        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        events.emitAndWait(event)
+        rule.onNodeWithText(header).assertIsDisplayed()
+        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        rule.onNodeWithText(header).assertIsNotDisplayed()
+        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
     }
 }

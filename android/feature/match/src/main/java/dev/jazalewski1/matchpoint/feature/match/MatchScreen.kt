@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,22 +45,23 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
 internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
-internal const val GAME_INDICATION_PULSE_REPS = 5
-internal const val GAME_INDICATION_HALF_PULSE_COUNT = GAME_INDICATION_PULSE_REPS * 2
-internal const val GAME_INDICATION_TOTAL_DURATION_MS =
-    GAME_INDICATION_HALF_PULSE_COUNT * INDICATION_PULSE_HALF_DURATION_MS
+internal const val DIALOG_INDICATION_PULSE_REPS = 5
+internal const val DIALOG_INDICATION_HALF_PULSE_COUNT = DIALOG_INDICATION_PULSE_REPS * 2
+internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
+    DIALOG_INDICATION_HALF_PULSE_COUNT * INDICATION_PULSE_HALF_DURATION_MS
 internal const val POINT_INDICATION_PULSE_REPS = 3
 
 @Composable
 internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     MatchScreen(
-        lhsPlayerName = uiState.lhsPlayer.name,
-        rhsPlayerName = uiState.rhsPlayer.name,
-        lhsScore = uiState.lhsPlayer.score,
-        rhsScore = uiState.rhsPlayer.score,
+        lhsPlayerName = uiState.game.lhsPlayer.name,
+        rhsPlayerName = uiState.game.rhsPlayer.name,
+        lhsScore = uiState.game.lhsPlayer.score,
+        rhsScore = uiState.game.rhsPlayer.score,
         onLhsClick = viewModel::onLhsPressed,
         onRhsClick = viewModel::onRhsPressed,
+        isTieBreak = uiState.game.isTieBreak,
         events = viewModel.uiEvents,
     )
 }
@@ -72,6 +74,7 @@ internal fun MatchScreen(
     rhsScore: String,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
+    isTieBreak: Boolean,
     events: SharedFlow<MatchUiEvent>,
 ) {
     val context = LocalContext.current
@@ -87,6 +90,7 @@ internal fun MatchScreen(
             when (event) {
                 is MatchUiEvent.PointScored -> indicationState.process(event)
                 is MatchUiEvent.GameFinished -> indicationState.process(event)
+                is MatchUiEvent.SetFinished -> indicationState.process(event)
             }
         }
     }
@@ -111,22 +115,60 @@ internal fun MatchScreen(
                 backgroundColor = indicationState.rhsColor.value,
             )
         }
-        indicationState.gameIndication?.let {
-            GameIndication(
-                side = it.side,
-                lhsScore = it.lhsScore,
-                rhsScore = it.rhsScore,
-                onClick = { indicationState.dismissGameIndication() },
-            )
+        if (isTieBreak) {
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Surface(
+                    modifier = Modifier.padding(top = 24.dp),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(
+                        text = "TIE-BREAK",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier.padding(6.dp),
+                    )
+                }
+            }
+        }
+        indicationState.dialogIndicationParams?.let {
+            when (it) {
+                is DialogIndicationParams.Game ->
+                    GameIndication(
+                        side = it.side,
+                        lhsScore = it.lhsScore,
+                        rhsScore = it.rhsScore,
+                        onClick = { indicationState.dismissDialogIndication() },
+                    )
+
+                is DialogIndicationParams.Set ->
+                    SetIndication(
+                        side = it.side,
+                        lhsScore = it.lhsScore,
+                        rhsScore = it.rhsScore,
+                        onClick = { indicationState.dismissDialogIndication() },
+                    )
+            }
         }
     }
 }
 
-private data class GameIndication(
-    val side: Side,
-    val lhsScore: String,
-    val rhsScore: String,
-)
+private sealed interface DialogIndicationParams {
+    data class Game(
+        val side: Side,
+        val lhsScore: String,
+        val rhsScore: String,
+    ) : DialogIndicationParams
+
+    data class Set(
+        val side: Side,
+        val lhsScore: String,
+        val rhsScore: String,
+    ) : DialogIndicationParams
+}
 
 private class IndicationState(private val scope: CoroutineScope) {
     private var job: Job? = null
@@ -136,7 +178,7 @@ private class IndicationState(private val scope: CoroutineScope) {
     var rhsColor = Animatable(backgroundLight)
         private set
 
-    var gameIndication by mutableStateOf<GameIndication?>(null)
+    var dialogIndicationParams by mutableStateOf<DialogIndicationParams?>(null)
         private set
 
     fun process(event: MatchUiEvent.PointScored) {
@@ -144,7 +186,7 @@ private class IndicationState(private val scope: CoroutineScope) {
         job = scope.launch {
             lhsColor.snapTo(backgroundLight)
             rhsColor.snapTo(backgroundLight)
-            gameIndication = null
+            dialogIndicationParams = null
             val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
             animatePointIndication(colorToAnimate)
         }
@@ -155,23 +197,39 @@ private class IndicationState(private val scope: CoroutineScope) {
         job = scope.launch {
             lhsColor.snapTo(backgroundLight)
             rhsColor.snapTo(backgroundLight)
-            gameIndication =
-                GameIndication(
+            dialogIndicationParams =
+                DialogIndicationParams.Game(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
                 )
-            delay(GAME_INDICATION_TOTAL_DURATION_MS.milliseconds)
-            gameIndication = null
+            delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
+            dialogIndicationParams = null
         }
     }
 
-    fun dismissGameIndication() {
-        if (gameIndication == null) {
+    fun process(event: MatchUiEvent.SetFinished) {
+        job?.cancel()
+        job = scope.launch {
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
+            dialogIndicationParams =
+                DialogIndicationParams.Set(
+                    side = event.winner,
+                    lhsScore = event.lhsScore,
+                    rhsScore = event.rhsScore,
+                )
+            delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
+            dialogIndicationParams = null
+        }
+    }
+
+    fun dismissDialogIndication() {
+        if (dialogIndicationParams == null) {
             return
         }
         job?.cancel()
-        gameIndication = null
+        dialogIndicationParams = null
     }
 }
 
@@ -201,6 +259,73 @@ private fun GameIndication(
     lhsScore: String,
     rhsScore: String,
     onClick: () -> Unit,
+) {
+    DialogIndication(
+        side = side,
+        onClick = onClick,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Text(
+                text = "GAME",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 182.sp,
+            )
+            Text(
+                text = "$lhsScore : $rhsScore",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 92.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SetIndication(
+    side: Side,
+    lhsScore: String,
+    rhsScore: String,
+    onClick: () -> Unit,
+) {
+    DialogIndication(
+        side = side,
+        onClick = onClick,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Text(
+                text = "SET",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 182.sp,
+            )
+            Text(
+                text = "$lhsScore : $rhsScore",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 92.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DialogIndication(
+    side: Side,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val backgroundColor = AppColors.blueDark
@@ -239,26 +364,7 @@ private fun GameIndication(
                 .background(backgroundColor)
                 .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Text(
-                text = "GAME",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 182.sp,
-            )
-            Text(
-                text = "$lhsScore : $rhsScore",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 92.sp,
-            )
-        }
+        content()
     }
 }
 
@@ -313,6 +419,7 @@ private fun ScreenPreviewBase(
     rhsPlayerName: String = "Nadal",
     lhsScore: String = "40",
     rhsScore: String = "15",
+    isTieBreak: Boolean = false,
 ) =
     MatchScreen(
         lhsPlayerName = lhsPlayerName,
@@ -321,6 +428,7 @@ private fun ScreenPreviewBase(
         rhsScore = rhsScore,
         onLhsClick = {},
         onRhsClick = {},
+        isTieBreak = isTieBreak,
         events = MutableSharedFlow(),
     )
 
@@ -334,12 +442,37 @@ private fun Preview() {
 
 @HorizontalPreview
 @Composable
+private fun PreviewWithTieBreak() {
+    AppTheme {
+        ScreenPreviewBase(
+            lhsScore = "6",
+            rhsScore = "3",
+            isTieBreak = true,
+        )
+    }
+}
+
+@HorizontalPreview
+@Composable
 private fun LhsGameIndicationPreview() {
     AppTheme {
         GameIndication(
             side = Side.LHS,
-            lhsScore = "40",
-            rhsScore = "15",
+            lhsScore = "5",
+            rhsScore = "2",
+            onClick = {},
+        )
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun RhsSetIndicationPreview() {
+    AppTheme {
+        SetIndication(
+            side = Side.LHS,
+            lhsScore = "2",
+            rhsScore = "1",
             onClick = {},
         )
     }

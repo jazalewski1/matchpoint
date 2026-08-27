@@ -1,8 +1,8 @@
 package dev.jazalewski1.matchpoint.feature.match.testfakes
 
-import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
-import dev.jazalewski1.matchpoint.domain.tennis.PointOutcome
+import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
+import dev.jazalewski1.matchpoint.domain.tennis.MatchState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 
 class FakeMatchController : MatchController {
@@ -12,31 +12,50 @@ class FakeMatchController : MatchController {
     var addPointToRhsCount = 0
         private set
 
-    private var gameState: GameState = gameLoveAll
-    private var lhsPointOutcome: PointOutcome = PointOutcome.PointScored
-    private var rhsPointOutcome: PointOutcome = PointOutcome.PointScored
+    private var matchState: MatchState =
+        MatchState(
+            game = gameLoveAll,
+            set = set0To0,
+            lhsSets = 0,
+            rhsSets = 0,
+        )
+    private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
+    private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
 
-    fun returnGetCurrentGame(new: GameState) {
-        gameState = new
+    private var addPointToLhsCallback: (() -> Unit)? = null
+    private var addPointToRhsCallback: (() -> Unit)? = null
+
+    fun returnGetState(new: MatchState) {
+        matchState = new
     }
 
-    fun returnAddPointToLhs(outcome: PointOutcome) {
-        lhsPointOutcome = outcome
+    fun returnAddPointToLhs(event: MatchEvent) {
+        lhsMatchEvent = event
     }
 
-    fun returnAddPointToRhs(outcome: PointOutcome) {
-        rhsPointOutcome = outcome
+    fun returnAddPointToRhs(event: MatchEvent) {
+        rhsMatchEvent = event
     }
 
-    override fun getCurrentGame() = gameState
+    fun afterAddPointToLhs(callback: () -> Unit) {
+        addPointToLhsCallback = callback
+    }
 
-    override fun addPointToLhs(): PointOutcome {
+    fun afterAddPointToRhs(callback: () -> Unit) {
+        addPointToRhsCallback = callback
+    }
+
+    override fun getState(): MatchState = matchState
+
+    override fun addPointToLhs(): MatchEvent {
         addPointToLhsCount += 1
-        return lhsPointOutcome
+        addPointToLhsCallback?.invoke()
+        return lhsMatchEvent
     }
 
-    override fun addPointToRhs(): PointOutcome {
+    override fun addPointToRhs(): MatchEvent {
         addPointToRhsCount += 1
-        return rhsPointOutcome
+        addPointToRhsCallback?.invoke()
+        return rhsMatchEvent
     }
 }
