@@ -196,6 +196,31 @@ class MatchControllerImplTest {
     }
 
     @Test
+    fun `when players win games then set state is updated`() {
+        val controller = MatchControllerImpl()
+
+        fun assertGames(expectedLhs: Int, expectedRhs: Int) {
+            assertThat(controller.getCurrentSet())
+                .isEqualTo(SetState(lhs = expectedLhs, rhs = expectedRhs))
+        }
+
+        repeat(3) { winGameForLhs(controller) }
+        assertGames(expectedLhs = 3, expectedRhs = 0)
+
+        winGameForRhs(controller)
+        assertGames(expectedLhs = 3, expectedRhs = 1)
+
+        winGameForLhs(controller)
+        assertGames(expectedLhs = 4, expectedRhs = 1)
+
+        repeat(3) { winGameForRhs(controller) }
+        assertGames(expectedLhs = 4, expectedRhs = 4)
+
+        winGameForLhs(controller)
+        assertGames(expectedLhs = 5, expectedRhs = 4)
+    }
+
+    @Test
     fun `when lhs wins 6 games first then lhs wins set`() {
         (0..4).forEach { rhsGames ->
             val controller = MatchControllerImpl()
