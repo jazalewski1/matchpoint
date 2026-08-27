@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -119,10 +120,16 @@ internal fun MatchScreen(
                 contentAlignment = Alignment.TopCenter,
                 modifier = Modifier.fillMaxSize(),
             ) {
-                Surface(modifier = Modifier.padding(top = 24.dp)) {
+                Surface(
+                    modifier = Modifier.padding(top = 24.dp),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
                     Text(
                         text = "TIE-BREAK",
                         style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier.padding(6.dp),
                     )
                 }
             }
