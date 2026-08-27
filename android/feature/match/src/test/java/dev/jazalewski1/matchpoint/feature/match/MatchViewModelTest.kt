@@ -34,7 +34,8 @@ private const val RHS_PLAYER_NAME = "Right player"
 private val sampleLhsPlayer = PlayerUiState(name = LHS_PLAYER_NAME, score = "0")
 private val sampleRhsPlayer = PlayerUiState(name = RHS_PLAYER_NAME, score = "0")
 
-private val sampleGameUiState = GameUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
+private val sampleGameUiState =
+    GameUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
 private val sampleMatchUiState = MatchUiState(game = sampleGameUiState)
 
 @RunWith(AndroidJUnit4::class)
@@ -91,10 +92,11 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    game = sampleGameUiState.copy(
-                        lhsPlayer = sampleLhsPlayer.copy(score = "15"),
-                        rhsPlayer = sampleRhsPlayer.copy(score = "40"),
-                    ),
+                    game =
+                        sampleGameUiState.copy(
+                            lhsPlayer = sampleLhsPlayer.copy(score = "15"),
+                            rhsPlayer = sampleRhsPlayer.copy(score = "40"),
+                        )
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -112,10 +114,11 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    game = sampleGameUiState.copy(
-                        lhsPlayer = sampleLhsPlayer.copy(score = "40"),
-                        rhsPlayer = sampleRhsPlayer.copy(score = "15"),
-                    ),
+                    game =
+                        sampleGameUiState.copy(
+                            lhsPlayer = sampleLhsPlayer.copy(score = "40"),
+                            rhsPlayer = sampleRhsPlayer.copy(score = "15"),
+                        )
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -282,11 +285,12 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    game = sampleGameUiState.copy(
-                        lhsPlayer = sampleLhsPlayer.copy(score = "2"),
-                        rhsPlayer = sampleRhsPlayer.copy(score = "5"),
-                        isTieBreak = true,
-                    ),
+                    game =
+                        sampleGameUiState.copy(
+                            lhsPlayer = sampleLhsPlayer.copy(score = "2"),
+                            rhsPlayer = sampleRhsPlayer.copy(score = "5"),
+                            isTieBreak = true,
+                        )
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }
@@ -304,11 +308,12 @@ class MatchViewModelTest {
         viewModel.uiState.test {
             val expected =
                 sampleMatchUiState.copy(
-                    game = sampleGameUiState.copy(
-                        lhsPlayer = sampleLhsPlayer.copy(score = "5"),
-                        rhsPlayer = sampleRhsPlayer.copy(score = "2"),
-                        isTieBreak = true,
-                    ),
+                    game =
+                        sampleGameUiState.copy(
+                            lhsPlayer = sampleLhsPlayer.copy(score = "5"),
+                            rhsPlayer = sampleRhsPlayer.copy(score = "2"),
+                            isTieBreak = true,
+                        )
                 )
             assertThat(awaitItem()).isEqualTo(expected)
         }

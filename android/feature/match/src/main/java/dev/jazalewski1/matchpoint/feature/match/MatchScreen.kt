@@ -119,9 +119,7 @@ internal fun MatchScreen(
                 contentAlignment = Alignment.TopCenter,
                 modifier = Modifier.fillMaxSize(),
             ) {
-                Surface(
-                    modifier = Modifier.padding(top = 24.dp),
-                ) {
+                Surface(modifier = Modifier.padding(top = 24.dp)) {
                     Text(
                         text = "TIE-BREAK",
                         style = MaterialTheme.typography.displaySmall,

@@ -11,6 +11,4 @@ data class GameUiState(
     val isTieBreak: Boolean,
 )
 
-data class MatchUiState(
-    val game: GameUiState,
-)
+data class MatchUiState(val game: GameUiState)

@@ -27,19 +27,20 @@ constructor(
             run {
                 val game = matchController.getCurrentGame()
                 MatchUiState(
-                    game = GameUiState(
-                        lhsPlayer =
-                            PlayerUiState(
-                                name = savedStateHandle.toRoute<MatchRoute>().player1Name,
-                                score = game.lhsToString(),
-                            ),
-                        rhsPlayer =
-                            PlayerUiState(
-                                name = savedStateHandle.toRoute<MatchRoute>().player2Name,
-                                score = game.rhsToString(),
-                            ),
-                        isTieBreak = game is GameState.TieBreak,
-                    )
+                    game =
+                        GameUiState(
+                            lhsPlayer =
+                                PlayerUiState(
+                                    name = savedStateHandle.toRoute<MatchRoute>().player1Name,
+                                    score = game.lhsToString(),
+                                ),
+                            rhsPlayer =
+                                PlayerUiState(
+                                    name = savedStateHandle.toRoute<MatchRoute>().player2Name,
+                                    score = game.rhsToString(),
+                                ),
+                            isTieBreak = game is GameState.TieBreak,
+                        )
                 )
             }
         )
@@ -89,11 +90,12 @@ constructor(
         _uiState.update { current ->
             val lhsPlayer = current.game.lhsPlayer.copy(score = game.lhsToString())
             val rhsPlayer = current.game.rhsPlayer.copy(score = game.rhsToString())
-            val gameUiState = current.game.copy(
-                lhsPlayer = lhsPlayer,
-                rhsPlayer = rhsPlayer,
-                isTieBreak = game is GameState.TieBreak,
-            )
+            val gameUiState =
+                current.game.copy(
+                    lhsPlayer = lhsPlayer,
+                    rhsPlayer = rhsPlayer,
+                    isTieBreak = game is GameState.TieBreak,
+                )
             current.copy(game = gameUiState)
         }
     }
