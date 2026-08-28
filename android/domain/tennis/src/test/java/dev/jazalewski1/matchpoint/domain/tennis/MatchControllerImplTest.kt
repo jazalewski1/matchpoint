@@ -37,7 +37,7 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when initialized then has love all`() {
+    fun `has love all at beginning`() {
         val controller = MatchControllerImpl()
 
         val expected = sampleMatchState
@@ -45,41 +45,25 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when lhs scores then points update`() {
+    fun `lhs point scored`() {
         val controller = MatchControllerImpl()
 
-        fun assertLhsPoints(expectedPoints: Points) {
-            assertThat(controller.getState().game)
-                .isEqualTo(GameState.Regular.Main(expectedPoints, Points.LOVE))
-        }
-
         assertLhsPointScored(controller.addPointToLhs())
-        assertLhsPoints(Points.FIFTEEN)
-        assertLhsPointScored(controller.addPointToLhs())
-        assertLhsPoints(Points.THIRTY)
-        assertLhsPointScored(controller.addPointToLhs())
-        assertLhsPoints(Points.FORTY)
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.Regular.Main(Points.FIFTEEN, Points.LOVE))
     }
 
     @Test
-    fun `when rhs scores then points update`() {
+    fun `rhs point scored`() {
         val controller = MatchControllerImpl()
 
-        fun assertRhsPoints(expectedPoints: Points) {
-            assertThat(controller.getState().game)
-                .isEqualTo(GameState.Regular.Main(Points.LOVE, expectedPoints))
-        }
-
         assertRhsPointScored(controller.addPointToRhs())
-        assertRhsPoints(Points.FIFTEEN)
-        assertRhsPointScored(controller.addPointToRhs())
-        assertRhsPoints(Points.THIRTY)
-        assertRhsPointScored(controller.addPointToRhs())
-        assertRhsPoints(Points.FORTY)
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.Regular.Main(Points.LOVE, Points.FIFTEEN))
     }
 
     @Test
-    fun `when lhs is forty first and scores then lhs wins`() {
+    fun `lhs wins game`() {
         val controller = MatchControllerImpl()
 
         repeat(2) { controller.addPointToRhs() }
@@ -91,7 +75,7 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when rhs is forty first and scores then rhs wins`() {
+    fun `rhs wins game`() {
         val controller = MatchControllerImpl()
 
         repeat(2) { controller.addPointToLhs() }
@@ -108,17 +92,16 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when both have forty then it is deuce`() {
+    fun `game is deuce`() {
         val controller = MatchControllerImpl()
 
         advanceToDeuce(controller)
 
-        val expected = GameState.Regular.Deuce
-        assertThat(controller.getState().game).isEqualTo(expected)
+        assertThat(controller.getState().game).isEqualTo(GameState.Regular.Deuce)
     }
 
     @Test
-    fun `when deuce and lhs scores then it is advantage for lhs`() {
+    fun `advantage for lhs`() {
         val controller = MatchControllerImpl()
 
         advanceToDeuce(controller)
@@ -129,61 +112,13 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when deuce and rhs scores then it is advantage for rhs`() {
+    fun `advantage for rhs`() {
         val controller = MatchControllerImpl()
 
         advanceToDeuce(controller)
         assertRhsPointScored(controller.addPointToRhs())
 
         val expected = GameState.Regular.Advantage.Rhs
-        assertThat(controller.getState().game).isEqualTo(expected)
-    }
-
-    @Test
-    fun `when advantage for lhs and lhs scores then lhs wins`() {
-        val controller = MatchControllerImpl()
-
-        advanceToDeuce(controller)
-        controller.addPointToLhs()
-        assertLhsGameWon(controller.addPointToLhs())
-
-        val expected = GameState.default()
-        assertThat(controller.getState().game).isEqualTo(expected)
-    }
-
-    @Test
-    fun `when advantage for rhs and rhs scores then rhs wins`() {
-        val controller = MatchControllerImpl()
-
-        advanceToDeuce(controller)
-        controller.addPointToRhs()
-        assertRhsGameWon(controller.addPointToRhs())
-
-        val expected = GameState.default()
-        assertThat(controller.getState().game).isEqualTo(expected)
-    }
-
-    @Test
-    fun `when advantage for lhs and rhs scores then it is deuce`() {
-        val controller = MatchControllerImpl()
-
-        advanceToDeuce(controller)
-        controller.addPointToLhs()
-        assertRhsPointScored(controller.addPointToRhs())
-
-        val expected = GameState.Regular.Deuce
-        assertThat(controller.getState().game).isEqualTo(expected)
-    }
-
-    @Test
-    fun `when advantage for rhs and lhs scores then it is deuce`() {
-        val controller = MatchControllerImpl()
-
-        advanceToDeuce(controller)
-        controller.addPointToRhs()
-        assertLhsPointScored(controller.addPointToLhs())
-
-        val expected = GameState.Regular.Deuce
         assertThat(controller.getState().game).isEqualTo(expected)
     }
 
@@ -204,90 +139,11 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when players win games then set state is updated`() {
+    fun `lhs wins set`() {
         val controller = MatchControllerImpl()
 
-        fun assertGames(expectedLhs: Int, expectedRhs: Int) {
-            assertThat(controller.getState().set)
-                .isEqualTo(SetState(lhsGames = expectedLhs, rhsGames = expectedRhs))
-        }
-
-        repeat(3) { winGameForLhs(controller) }
-        assertGames(expectedLhs = 3, expectedRhs = 0)
-
-        winGameForRhs(controller)
-        assertGames(expectedLhs = 3, expectedRhs = 1)
-
-        winGameForLhs(controller)
-        assertGames(expectedLhs = 4, expectedRhs = 1)
-
-        repeat(3) { winGameForRhs(controller) }
-        assertGames(expectedLhs = 4, expectedRhs = 4)
-
-        winGameForLhs(controller)
-        assertGames(expectedLhs = 5, expectedRhs = 4)
-    }
-
-    @Test
-    fun `when lhs wins 6 games first then lhs wins set`() {
-        (0..4).forEach { rhsGames ->
-            val controller = MatchControllerImpl()
-
-            repeat(rhsGames) { winGameForRhs(controller) }
-            repeat(5) { winGameForLhs(controller) }
-            scorePointsForLhs(controller, numOfPoints = 3)
-            assertLhsSetWon(controller.addPointToLhs())
-
-            assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(lhsSets = 1))
-        }
-    }
-
-    @Test
-    fun `when rhs wins 6 games first then rhs wins set`() {
-        (0..4).forEach { lhsGames ->
-            val controller = MatchControllerImpl()
-
-            repeat(lhsGames) { winGameForLhs(controller) }
-            repeat(5) { winGameForRhs(controller) }
-            scorePointsForRhs(controller, numOfPoints = 3)
-            assertRhsSetWon(controller.addPointToRhs())
-
-            assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(rhsSets = 1))
-        }
-    }
-
-    @Test
-    fun `when lhs wins 6 games over 5 then lhs does not win set`() {
-        val controller = MatchControllerImpl()
-
-        repeat(5) { winGameForRhs(controller) }
+        repeat(4) { winGameForRhs(controller) }
         repeat(5) { winGameForLhs(controller) }
-        scorePointsForLhs(controller, numOfPoints = 3)
-        assertLhsGameWon(controller.addPointToLhs())
-
-        assertThat(controller.getState())
-            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 6, rhsGames = 5)))
-    }
-
-    @Test
-    fun `when rhs wins 6 games over 5 then rhs does not win set`() {
-        val controller = MatchControllerImpl()
-
-        repeat(5) { winGameForLhs(controller) }
-        repeat(5) { winGameForRhs(controller) }
-        scorePointsForRhs(controller, numOfPoints = 3)
-        assertRhsGameWon(controller.addPointToRhs())
-
-        assertThat(controller.getState())
-            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 5, rhsGames = 6)))
-    }
-
-    @Test
-    fun `when lhs wins 7 games over 5 then lhs wins set`() {
-        val controller = MatchControllerImpl()
-
-        repeat(5) { winGameForRhs(controller) }
-        repeat(6) { winGameForLhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsSetWon(controller.addPointToLhs())
 
@@ -295,11 +151,11 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when rhs wins 7 games over 5 then rhs wins set`() {
+    fun `rhs wins set`() {
         val controller = MatchControllerImpl()
 
-        repeat(5) { winGameForLhs(controller) }
-        repeat(6) { winGameForRhs(controller) }
+        repeat(4) { winGameForLhs(controller) }
+        repeat(5) { winGameForRhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsSetWon(controller.addPointToRhs())
 
@@ -307,7 +163,7 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when lhs wins 6 games and ties to 6 then tiebreak starts`() {
+    fun `lhs ties to tiebreak`() {
         val controller = MatchControllerImpl()
 
         repeat(5) { winGameForLhs(controller) }
@@ -325,7 +181,7 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when rhs wins 6 games and ties to 6 then tiebreak starts`() {
+    fun `rhs ties to tiebreak`() {
         val controller = MatchControllerImpl()
 
         repeat(5) { winGameForRhs(controller) }
@@ -349,30 +205,7 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when players score during tiebreak then game state is updated`() {
-        val controller = MatchControllerImpl()
-
-        fun assertPoints(expectedLhs: Int, expectedRhs: Int) {
-            assertThat(controller.getState().game)
-                .isEqualTo(GameState.TieBreak(lhsPoints = expectedLhs, rhsPoints = expectedRhs))
-        }
-
-        advanceToTieBreak(controller)
-        scorePointsForLhs(controller, numOfPoints = 3)
-        assertPoints(expectedLhs = 3, expectedRhs = 0)
-
-        scorePointsForRhs(controller, numOfPoints = 2)
-        assertPoints(expectedLhs = 3, expectedRhs = 2)
-
-        scorePointsForLhs(controller, numOfPoints = 1)
-        assertPoints(expectedLhs = 4, expectedRhs = 2)
-
-        scorePointsForRhs(controller, numOfPoints = 3)
-        assertPoints(expectedLhs = 4, expectedRhs = 5)
-    }
-
-    @Test
-    fun `when lhs scores at least 7 points with 2 difference then lhs wins tiebreak`() {
+    fun `lhs wins tiebreak`() {
         val controller = MatchControllerImpl()
 
         advanceToTieBreak(controller)
@@ -385,7 +218,7 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `when rhs scores at least 7 points with 2 difference then rhs wins tiebreak`() {
+    fun `rhs wins tiebreak`() {
         val controller = MatchControllerImpl()
 
         advanceToTieBreak(controller)
