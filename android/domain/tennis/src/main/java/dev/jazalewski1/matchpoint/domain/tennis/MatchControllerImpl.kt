@@ -56,15 +56,6 @@ class MatchControllerImpl : MatchController {
         }
 
     private fun processGameFinished(winner: Player): MatchEvent {
-        if (game is TieBreakGame) {
-            game = RegularGame()
-            set = Set()
-            when (winner) {
-                Player.ONE -> player1Sets += 1
-                Player.TWO -> player2Sets += 1
-            }
-            return MatchEvent.SetWon
-        }
         when (set.addGame(winner)) {
             is SetOutcome.None -> {
                 game = RegularGame()
