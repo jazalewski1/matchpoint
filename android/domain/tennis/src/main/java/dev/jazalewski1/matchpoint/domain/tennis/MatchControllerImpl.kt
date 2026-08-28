@@ -1,6 +1,7 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
+import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
 import dev.jazalewski1.matchpoint.domain.tennis.details.*
 
 class MatchControllerImpl : MatchController {
@@ -86,45 +87,4 @@ class MatchControllerImpl : MatchController {
     }
 }
 
-private sealed interface SetOutcome {
-    data object None : SetOutcome
-
-    data class Finished(val winner: Player) : SetOutcome
-
-    data object Tiebreak : SetOutcome
-}
-
-private class Set {
-    private var player1Games = 0
-    private var player2Games = 0
-
-    fun addGame(winner: Player): SetOutcome {
-        when (winner) {
-            Player.ONE -> player1Games += 1
-            Player.TWO -> player2Games += 1
-        }
-        return evaluate()
-    }
-
-    // TODO: Should be done by MC when changing sides is implemented
-    fun toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
-
-    private fun evaluate(): SetOutcome {
-        if (player1Games == 6 && player2Games <= 4) {
-            return SetOutcome.Finished(winner = Player.ONE)
-        }
-        if (player2Games == 6 && player1Games <= 4) {
-            return SetOutcome.Finished(winner = Player.TWO)
-        }
-        if (player1Games == 7 && player2Games <= 5) {
-            return SetOutcome.Finished(winner = Player.ONE)
-        }
-        if (player2Games == 7 && player1Games <= 5) {
-            return SetOutcome.Finished(winner = Player.TWO)
-        }
-        if (player1Games == 6 && player2Games == 6) {
-            return SetOutcome.Tiebreak
-        }
-        return SetOutcome.None
-    }
-}
+private fun Set.toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
