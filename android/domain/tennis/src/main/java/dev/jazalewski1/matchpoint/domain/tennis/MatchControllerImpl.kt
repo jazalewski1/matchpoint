@@ -12,33 +12,8 @@ class MatchControllerImpl : MatchController {
     private var player2Sets = 0
 
     override fun getState(): MatchState {
-        val gameState =
-            when (val kind = game) {
-                is RegularGame -> {
-                    when (val current = kind.phase) {
-                        is Phase.Main ->
-                            GameState.Regular.Main(
-                                lhsPoints = current.player1,
-                                rhsPoints = current.player2,
-                            )
-
-                        is Phase.Deuce -> GameState.Regular.Deuce
-                        is Phase.Advantage ->
-                            when (current.player) {
-                                Player.ONE -> GameState.Regular.Advantage.Lhs
-                                Player.TWO -> GameState.Regular.Advantage.Rhs
-                            }
-                    }
-                }
-                is TieBreakGame -> {
-                    GameState.TieBreak(
-                        lhsPoints = kind.player1,
-                        rhsPoints = kind.player2,
-                    )
-                }
-            }
         return MatchState(
-            game = gameState,
+            game = game.toState(),
             set = set.toState(),
             lhsSets = player1Sets,
             rhsSets = player2Sets,
@@ -77,5 +52,31 @@ class MatchControllerImpl : MatchController {
         }
     }
 }
+
+private fun Game.toState() =
+    when (this) {
+        is RegularGame -> {
+            when (val current = phase) {
+                is Phase.Main ->
+                    GameState.Regular.Main(
+                        lhsPoints = current.player1,
+                        rhsPoints = current.player2,
+                    )
+
+                is Phase.Deuce -> GameState.Regular.Deuce
+                is Phase.Advantage ->
+                    when (current.player) {
+                        Player.ONE -> GameState.Regular.Advantage.Lhs
+                        Player.TWO -> GameState.Regular.Advantage.Rhs
+                    }
+            }
+        }
+        is TieBreakGame -> {
+            GameState.TieBreak(
+                lhsPoints = player1,
+                rhsPoints = player2,
+            )
+        }
+    }
 
 private fun Set.toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
