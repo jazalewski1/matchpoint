@@ -25,25 +25,12 @@ constructor(
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
-            run {
-                val game = matchController.getState().game
-                MatchUiState(
-                    game =
-                        GameUiState(
-                            lhsPlayer =
-                                PlayerUiState(
-                                    name = savedStateHandle.toRoute<MatchRoute>().player1Name,
-                                    score = game.lhsToString(),
-                                ),
-                            rhsPlayer =
-                                PlayerUiState(
-                                    name = savedStateHandle.toRoute<MatchRoute>().player2Name,
-                                    score = game.rhsToString(),
-                                ),
-                            isTieBreak = game is GameState.TieBreak,
-                        )
+            matchController
+                .getState()
+                .toUiState(
+                    lhsName = savedStateHandle.toRoute<MatchRoute>().player1Name,
+                    rhsName = savedStateHandle.toRoute<MatchRoute>().player2Name,
                 )
-            }
         )
     val uiState = _uiState.asStateFlow()
     private val _uiEvents = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -103,3 +90,13 @@ constructor(
         }
     }
 }
+
+private fun MatchState.toUiState(lhsName: String, rhsName: String) =
+    MatchUiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))
+
+private fun GameState.toUiState(lhsName: String, rhsName: String) =
+    GameUiState(
+        lhsPlayer = PlayerUiState(name = lhsName, score = this.lhsToString()),
+        rhsPlayer = PlayerUiState(name = rhsName, score = this.rhsToString()),
+        isTieBreak = this is GameState.TieBreak,
+    )
