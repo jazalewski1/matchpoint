@@ -16,7 +16,7 @@ internal val set1To0 = SetState(lhsGames = 1, rhsGames = 0)
 internal val set0To1 = SetState(lhsGames = 0, rhsGames = 1)
 
 internal val initialMatch =
-    MatchState(
+    TotalMatchState(
         game = gameLoveAll,
         set = set0To0,
         lhsSets = 0,

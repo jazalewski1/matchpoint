@@ -6,4 +6,6 @@ sealed interface MatchEvent {
     data object GameWon : MatchEvent
 
     data object SetWon : MatchEvent
+
+    data object MatchWon : MatchEvent
 }

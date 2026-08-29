@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
-import dev.jazalewski1.matchpoint.domain.tennis.MatchState
+import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -55,43 +55,43 @@ constructor(
         updateScores(matchState)
     }
 
-    private fun sendEvent(matchState: MatchState, matchEvent: MatchEvent, side: Side) {
+    private fun sendEvent(totalMatchState: TotalMatchState, matchEvent: MatchEvent, side: Side) {
         val event =
             when (matchEvent) {
                 is MatchEvent.PointScored -> MatchUiEvent.PointScored(winner = side)
                 is MatchEvent.GameWon ->
                     MatchUiEvent.GameFinished(
                         winner = side,
-                        lhsScore = matchState.set.lhsGames.toString(),
-                        rhsScore = matchState.set.rhsGames.toString(),
+                        lhsScore = totalMatchState.set.lhsGames.toString(),
+                        rhsScore = totalMatchState.set.rhsGames.toString(),
                     )
                 is MatchEvent.SetWon -> {
                     MatchUiEvent.SetFinished(
                         winner = side,
-                        lhsScore = matchState.lhsSets.toString(),
-                        rhsScore = matchState.rhsSets.toString(),
+                        lhsScore = totalMatchState.lhsSets.toString(),
+                        rhsScore = totalMatchState.rhsSets.toString(),
                     )
                 }
             }
         _uiEvents.tryEmit(event)
     }
 
-    private fun updateScores(matchState: MatchState) {
+    private fun updateScores(totalMatchState: TotalMatchState) {
         _uiState.update { current ->
-            val lhsPlayer = current.game.lhsPlayer.copy(score = matchState.game.lhsToString())
-            val rhsPlayer = current.game.rhsPlayer.copy(score = matchState.game.rhsToString())
+            val lhsPlayer = current.game.lhsPlayer.copy(score = totalMatchState.game.lhsToString())
+            val rhsPlayer = current.game.rhsPlayer.copy(score = totalMatchState.game.rhsToString())
             val gameUiState =
                 current.game.copy(
                     lhsPlayer = lhsPlayer,
                     rhsPlayer = rhsPlayer,
-                    isTieBreak = matchState.game is GameState.TieBreak,
+                    isTieBreak = totalMatchState.game is GameState.TieBreak,
                 )
             current.copy(game = gameUiState)
         }
     }
 }
 
-private fun MatchState.toUiState(lhsName: String, rhsName: String) =
+private fun TotalMatchState.toUiState(lhsName: String, rhsName: String) =
     MatchUiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))
 
 private fun GameState.toUiState(lhsName: String, rhsName: String) =

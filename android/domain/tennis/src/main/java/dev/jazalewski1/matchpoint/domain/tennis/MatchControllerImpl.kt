@@ -4,19 +4,18 @@ import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
 import dev.jazalewski1.matchpoint.domain.tennis.details.*
 
+private const val NUM_OF_SETS_TO_WIN = 3 // TODO: Temporary until setting is implemented
+
 class MatchControllerImpl : MatchController {
     private var game: Game = RegularGame()
     private var set = Set()
-    // To be handled by Match class
-    private var player1Sets = 0
-    private var player2Sets = 0
+    private val match = Match(numOfSetsToWin = NUM_OF_SETS_TO_WIN)
 
-    override fun getState(): MatchState {
-        return MatchState(
+    override fun getState(): TotalMatchState {
+        return TotalMatchState(
             game = game.toState(),
             set = set.toState(),
-            lhsSets = player1Sets,
-            rhsSets = player2Sets,
+            match = match.toState(),
         )
     }
 
@@ -36,19 +35,22 @@ class MatchControllerImpl : MatchController {
                 game = RegularGame()
                 return MatchEvent.GameWon
             }
-            is SetOutcome.Finished -> {
-                game = RegularGame()
-                set = Set()
-                when (winner) {
-                    Player.ONE -> player1Sets += 1
-                    Player.TWO -> player2Sets += 1
-                }
-                return MatchEvent.SetWon
-            }
             is SetOutcome.Tiebreak -> {
                 game = TieBreakGame()
                 return MatchEvent.GameWon
             }
+            is SetOutcome.Finished -> return processSetFinished(winner = winner)
+        }
+    }
+
+    private fun processSetFinished(winner: Player): MatchEvent {
+        when (match.addSet(winner)) {
+            is MatchOutcome.None -> {
+                game = RegularGame()
+                set = Set()
+                return MatchEvent.SetWon
+            }
+            is MatchOutcome.Finished -> return MatchEvent.MatchWon
         }
     }
 }
@@ -80,3 +82,5 @@ private fun Game.toState() =
     }
 
 private fun Set.toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
+
+private fun Match.toState() = MatchState(lhsSets = player1Sets, rhsSets = player2Sets)
