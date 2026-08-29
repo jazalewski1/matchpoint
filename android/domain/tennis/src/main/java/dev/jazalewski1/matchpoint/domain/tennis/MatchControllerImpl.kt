@@ -2,7 +2,6 @@ package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
-import dev.jazalewski1.matchpoint.domain.tennis.details.*
 
 private const val NUM_OF_SETS_TO_WIN = 3 // TODO: Temporary until setting is implemented
 
@@ -10,6 +9,7 @@ class MatchControllerImpl : MatchController {
     private var game: Game = RegularGame()
     private var set = Set()
     private val match = Match(numOfSetsToWin = NUM_OF_SETS_TO_WIN)
+    private val setHistory = mutableListOf<MatchHistory.Set>()
 
     override fun getState(): TotalMatchState {
         return TotalMatchState(
@@ -22,6 +22,8 @@ class MatchControllerImpl : MatchController {
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
 
     override fun addPointToRhs(): MatchEvent = processPointScored(Player.TWO)
+
+    override fun getHistory() = MatchHistory(sets = setHistory)
 
     private fun processPointScored(winner: Player): MatchEvent =
         when (game.addPoint(winner)) {
@@ -44,6 +46,7 @@ class MatchControllerImpl : MatchController {
     }
 
     private fun processSetFinished(winner: Player): MatchEvent {
+        saveSetToHistory(winner)
         when (match.addSet(winner)) {
             is MatchOutcome.None -> {
                 game = RegularGame()
@@ -52,6 +55,24 @@ class MatchControllerImpl : MatchController {
             }
             is MatchOutcome.Finished -> return MatchEvent.MatchWon
         }
+    }
+
+    private fun saveSetToHistory(winner: Player) {
+        val storedTb =
+            (game as? TieBreakGame)?.let { tieBreakGame ->
+                MatchHistory.Set.TieBreak(
+                    player1Points = tieBreakGame.player1,
+                    player2Points = tieBreakGame.player2,
+                )
+            }
+        val storedSet =
+            MatchHistory.Set(
+                player1Games = set.player1Games,
+                player2Games = set.player2Games,
+                winner = winner,
+                tieBreak = storedTb,
+            )
+        setHistory.add(storedSet)
     }
 }
 

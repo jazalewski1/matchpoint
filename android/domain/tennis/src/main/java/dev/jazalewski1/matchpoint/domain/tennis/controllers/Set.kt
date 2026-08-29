@@ -1,6 +1,6 @@
 package dev.jazalewski1.matchpoint.domain.tennis.controllers
 
-import dev.jazalewski1.matchpoint.domain.tennis.details.Player
+import dev.jazalewski1.matchpoint.domain.tennis.Player
 
 internal sealed interface SetOutcome {
     data object None : SetOutcome

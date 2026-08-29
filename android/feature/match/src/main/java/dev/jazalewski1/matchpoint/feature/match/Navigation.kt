@@ -14,7 +14,7 @@ fun NavGraphBuilder.matchSetupDestination(onStart: (String, String) -> Unit) {
 }
 
 fun NavGraphBuilder.matchDestination() {
-    composable<MatchRoute> { MatchScreen() }
+    composable<MatchRoute> { MatchScreen(onExit = { TODO() }) }
 }
 
 fun NavController.navigateToMatchSetupScreen() {

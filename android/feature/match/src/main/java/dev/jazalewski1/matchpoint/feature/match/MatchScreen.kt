@@ -40,8 +40,10 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
@@ -52,7 +54,10 @@ internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
 internal const val POINT_INDICATION_PULSE_REPS = 3
 
 @Composable
-internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
+internal fun MatchScreen(
+    onExit: (Long) -> Unit,
+    viewModel: MatchViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     MatchScreen(
         lhsPlayerName = uiState.game.lhsPlayer.name,
@@ -63,6 +68,9 @@ internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
         onRhsClick = viewModel::onRhsPressed,
         isTieBreak = uiState.game.isTieBreak,
         events = viewModel.uiEvents,
+        onMatchFinished = viewModel::onFinished,
+        onExit = onExit,
+        navigationEvents = viewModel.navigationEvents,
     )
 }
 
@@ -76,12 +84,23 @@ internal fun MatchScreen(
     onRhsClick: () -> Unit,
     isTieBreak: Boolean,
     events: SharedFlow<MatchUiEvent>,
+    onMatchFinished: () -> Unit,
+    onExit: (Long) -> Unit,
+    navigationEvents: Flow<MatchNavigationEvent>,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
         val activity = context as? Activity
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
+    }
+
+    LaunchedEffect(Unit) {
+        navigationEvents.collect { event ->
+            when (event) {
+                is MatchNavigationEvent.MatchFinished -> onExit(event.matchId)
+            }
+        }
     }
 
     val indicationState = rememberIndicationState()
@@ -158,6 +177,7 @@ internal fun MatchScreen(
                         side = it.side,
                         lhsScore = it.lhsScore,
                         rhsScore = it.rhsScore,
+                        onClick = onMatchFinished,
                     )
             }
         }
@@ -354,10 +374,11 @@ private fun MatchIndication(
     side: Side,
     lhsScore: String,
     rhsScore: String,
+    onClick: () -> Unit,
 ) {
     DialogIndication(
         side = side,
-        onClick = {},
+        onClick = onClick,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -491,6 +512,9 @@ private fun ScreenPreviewBase(
         onRhsClick = {},
         isTieBreak = isTieBreak,
         events = MutableSharedFlow(),
+        onMatchFinished = {},
+        onExit = {},
+        navigationEvents = flowOf(),
     )
 
 @HorizontalPreview
@@ -547,6 +571,7 @@ private fun LhsMatchIndicationPreview() {
             side = Side.LHS,
             lhsScore = "3",
             rhsScore = "1",
+            onClick = {},
         )
     }
 }

@@ -11,6 +11,8 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.jazalewski1.matchpoint.core.data.MatchDetails
+import dev.jazalewski1.matchpoint.core.data.Player
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

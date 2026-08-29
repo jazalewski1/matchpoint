@@ -12,50 +12,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.jazalewski1.matchpoint.core.data.MatchDetails
+import dev.jazalewski1.matchpoint.core.data.Player
 import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
-
-internal data class MatchDetails(
-    val player1Name: String,
-    val player2Name: String,
-    val sets: List<Set>,
-) {
-    data class Set(
-        val player1Games: Int,
-        val player2Games: Int,
-        val winner: Player,
-        val tieBreak: TieBreak? = null,
-    ) {
-        data class TieBreak(val player1Points: Int, val player2Points: Int)
-    }
-}
-
-internal enum class Player {
-    ONE,
-    TWO,
-}
-
-private typealias SetWinner = Player
-
-private data class PlayerSetDetails(
-    val games: Int,
-    val winner: Boolean,
-    val tieBreakPoints: Int? = null,
-)
-
-private fun MatchDetails.Set.getPlayerSetDetails(player: Player): PlayerSetDetails {
-    val (games, tbPoints) =
-        if (player == Player.ONE) {
-            Pair(this.player1Games, this.tieBreak?.player1Points)
-        } else {
-            Pair(this.player2Games, this.tieBreak?.player2Points)
-        }
-    return PlayerSetDetails(
-        games = games,
-        winner = this.winner == player,
-        tieBreakPoints = tbPoints,
-    )
-}
 
 @Composable
 internal fun MatchSummaryScreen(
@@ -83,6 +43,28 @@ internal fun MatchSummaryScreen(
             }
         }
     }
+}
+
+private typealias SetWinner = Player
+
+private data class PlayerSetDetails(
+    val games: Int,
+    val winner: Boolean,
+    val tieBreakPoints: Int? = null,
+)
+
+private fun MatchDetails.Set.getPlayerSetDetails(player: Player): PlayerSetDetails {
+    val (games, tbPoints) =
+        if (player == Player.ONE) {
+            Pair(this.player1Games, this.tieBreak?.player1Points)
+        } else {
+            Pair(this.player2Games, this.tieBreak?.player2Points)
+        }
+    return PlayerSetDetails(
+        games = games,
+        winner = this.winner == player,
+        tieBreakPoints = tbPoints,
+    )
 }
 
 private object Table {

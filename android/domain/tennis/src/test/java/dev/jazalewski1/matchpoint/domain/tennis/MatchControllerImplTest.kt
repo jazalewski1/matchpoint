@@ -298,4 +298,44 @@ class MatchControllerImplTest {
                 )
             )
     }
+
+    @Test
+    fun `returns match history`() {
+        val controller = MatchControllerImpl()
+
+        repeat(4) { winGameForRhs(controller) }
+        repeat(6) { winGameForLhs(controller) }
+
+        advanceToTieBreak(controller)
+        scorePointsForRhs(controller, numOfPoints = 0)
+        scorePointsForLhs(controller, numOfPoints = 7)
+
+        repeat(2) { winGameForRhs(controller) }
+        repeat(6) { winGameForLhs(controller) }
+
+        val expected = MatchHistory(
+            sets = listOf(
+                MatchHistory.Set(
+                    player1Games = 6,
+                    player2Games = 4,
+                    winner = Player.ONE,
+                ),
+                MatchHistory.Set(
+                    player1Games = 7,
+                    player2Games = 6,
+                    winner = Player.ONE,
+                    tieBreak = MatchHistory.Set.TieBreak(
+                        player1Points = 7,
+                        player2Points = 0,
+                    ),
+                ),
+                MatchHistory.Set(
+                    player1Games = 6,
+                    player2Games = 2,
+                    winner = Player.ONE,
+                ),
+            )
+        )
+        assertThat(controller.getHistory()).isEqualTo(expected)
+    }
 }

@@ -26,3 +26,7 @@ sealed interface MatchUiEvent {
         val rhsScore: String,
     ) : MatchUiEvent
 }
+
+sealed interface MatchNavigationEvent {
+    data class MatchFinished(val matchId: Long) : MatchNavigationEvent
+}

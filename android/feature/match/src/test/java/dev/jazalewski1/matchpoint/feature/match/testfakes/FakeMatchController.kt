@@ -2,6 +2,7 @@ package dev.jazalewski1.matchpoint.feature.match.testfakes
 
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
+import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
 import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 
@@ -20,6 +21,7 @@ class FakeMatchController : MatchController {
         )
     private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
     private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
+    private var matchHistory: MatchHistory = MatchHistory(sets = listOf())
 
     private var addPointToLhsCallback: (() -> Unit)? = null
     private var addPointToRhsCallback: (() -> Unit)? = null
@@ -34,6 +36,10 @@ class FakeMatchController : MatchController {
 
     fun returnAddPointToRhs(event: MatchEvent) {
         rhsMatchEvent = event
+    }
+
+    fun returnGetHistory(new: MatchHistory) {
+        matchHistory = new
     }
 
     fun afterAddPointToLhs(callback: () -> Unit) {
@@ -57,4 +63,6 @@ class FakeMatchController : MatchController {
         addPointToRhsCallback?.invoke()
         return rhsMatchEvent
     }
+
+    override fun getHistory(): MatchHistory = matchHistory
 }

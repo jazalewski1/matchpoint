@@ -4,9 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -31,6 +36,9 @@ class MatchScreenTest {
         onRhsClick: () -> Unit = {},
         isTieBreak: Boolean = false,
         events: SharedFlow<MatchUiEvent> = MutableSharedFlow(),
+        onExit: (Long) -> Unit = {},
+        onMatchFinished: () -> Unit = {},
+        navigationEvents: Flow<MatchNavigationEvent> = flowOf(),
     ) =
         MatchScreen(
             lhsPlayerName = lhsPlayerName,
@@ -41,6 +49,9 @@ class MatchScreenTest {
             onRhsClick = onRhsClick,
             isTieBreak = isTieBreak,
             events = events,
+            onMatchFinished = onMatchFinished,
+            onExit = onExit,
+            navigationEvents = navigationEvents,
         )
 
     @Test
@@ -283,5 +294,43 @@ class MatchScreenTest {
         advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithText(header).assertIsDisplayed()
         rule.onNodeWithText(scoreText).assertIsDisplayed()
+    }
+
+    @Test
+    fun `when clicked on match indication then triggers match finished`() = runTest {
+        rule.mainClock.autoAdvance = false
+
+        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+        var triggered = false
+        rule.setContent { SutScreen(events = events, onMatchFinished = { triggered = true }) }
+
+        val event =
+            MatchUiEvent.MatchFinished(
+                winner = Side.RHS,
+                lhsScore = "1",
+                rhsScore = "3",
+            )
+
+        events.emitAndWait(event)
+        rule.onNodeWithText("MATCH").performClick()
+
+        assertTrue(triggered)
+    }
+
+    @Test
+    fun `when received navigation match finished then triggers on exit`() = runTest {
+        var triggeredMatchId: Long? = null
+        val navigationEventsChannel = Channel<MatchNavigationEvent>()
+        rule.setContent {
+            SutScreen(
+                onExit = { id -> triggeredMatchId = id },
+                navigationEvents = navigationEventsChannel.receiveAsFlow(),
+            )
+        }
+
+        val matchId = 5L
+        navigationEventsChannel.send(MatchNavigationEvent.MatchFinished(matchId = matchId))
+        rule.awaitIdle()
+        assertEquals(matchId, triggeredMatchId)
     }
 }

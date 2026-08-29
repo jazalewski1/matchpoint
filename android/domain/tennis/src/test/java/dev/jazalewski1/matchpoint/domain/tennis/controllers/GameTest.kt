@@ -1,7 +1,7 @@
 package dev.jazalewski1.matchpoint.domain.tennis.controllers
 
 import dev.jazalewski1.matchpoint.domain.tennis.Points
-import dev.jazalewski1.matchpoint.domain.tennis.details.Player
+import dev.jazalewski1.matchpoint.domain.tennis.Player
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 

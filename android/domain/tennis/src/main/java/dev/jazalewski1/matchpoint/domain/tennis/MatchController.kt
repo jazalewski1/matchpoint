@@ -6,4 +6,6 @@ interface MatchController {
     fun addPointToLhs(): MatchEvent
 
     fun addPointToRhs(): MatchEvent
+
+    fun getHistory(): MatchHistory
 }

@@ -33,3 +33,4 @@ include(":domain:tennis")
 include(":feature:home")
 
 include(":feature:match")
+include(":core:data")
