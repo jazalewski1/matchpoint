@@ -1,5 +1,5 @@
-name: CI Android Workflow
-run-name: CI#${{ github.run_number }} - ${{ github.actor }} - branch "${{ github.head_ref }}"
+name: Android Validation
+run-name: ${{ github.event.pull_request.title }}
 
 on:
   pull_request:
@@ -24,6 +24,8 @@ jobs:
           distribution: 'temurin'
 
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
 
       - name: Validate
         working-directory: "android"
@@ -41,6 +43,8 @@ jobs:
           distribution: 'temurin'
 
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
 
       - name: Run
         working-directory: "android"

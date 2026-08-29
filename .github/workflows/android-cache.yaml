@@ -1,0 +1,26 @@
+name: Android Build & Cache
+
+on:
+  push:
+    branches: [main]
+    paths: ['android/**']
+
+jobs:
+  warm-cache:
+    name: Build and test on main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Build and test
+        working-directory: "android"
+        run: ./gradlew spotlessCheck testDebugUnitTest

@@ -1,5 +1,5 @@
-name: CI Common Workflow
-run-name: CI#${{ github.run_number }} - ${{ github.actor }} - branch "${{ github.head_ref }}"
+name: Common Validation
+run-name: ${{ github.event.pull_request.title }}
 on:
   pull_request:
     types:
