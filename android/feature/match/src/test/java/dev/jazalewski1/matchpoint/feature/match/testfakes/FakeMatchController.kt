@@ -16,8 +16,7 @@ class FakeMatchController : MatchController {
         TotalMatchState(
             game = gameLoveAll,
             set = set0To0,
-            lhsSets = 0,
-            rhsSets = 0,
+            match = match0To0,
         )
     private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
     private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored

@@ -226,4 +226,62 @@ class MatchScreenTest {
         rule.onNodeWithText(header).assertIsNotDisplayed()
         rule.onNodeWithText(scoreText).assertIsNotDisplayed()
     }
+
+    @Test
+    fun `when received lhs finished match then displays match indication`() = runTest {
+        rule.mainClock.autoAdvance = false
+
+        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+        rule.setContent { SutScreen(events = events) }
+
+        val sentLhsScore = "3"
+        val sentRhsScore = "1"
+        val event =
+            MatchUiEvent.MatchFinished(
+                winner = Side.LHS,
+                lhsScore = sentLhsScore,
+                rhsScore = sentRhsScore,
+            )
+
+        val header = "MATCH"
+        val scoreText = "3 : 1"
+
+        rule.onNodeWithText(header).assertIsNotDisplayed()
+        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        events.emitAndWait(event)
+        rule.onNodeWithText(header).assertIsDisplayed()
+        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        rule.onNodeWithText(header).assertIsDisplayed()
+        rule.onNodeWithText(scoreText).assertIsDisplayed()
+    }
+
+    @Test
+    fun `when received rhs finished match then displays match indication`() = runTest {
+        rule.mainClock.autoAdvance = false
+
+        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+        rule.setContent { SutScreen(events = events) }
+
+        val sentLhsScore = "1"
+        val sentRhsScore = "3"
+        val event =
+            MatchUiEvent.MatchFinished(
+                winner = Side.RHS,
+                lhsScore = sentLhsScore,
+                rhsScore = sentRhsScore,
+            )
+
+        val header = "MATCH"
+        val scoreText = "1 : 3"
+
+        rule.onNodeWithText(header).assertIsNotDisplayed()
+        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        events.emitAndWait(event)
+        rule.onNodeWithText(header).assertIsDisplayed()
+        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        rule.onNodeWithText(header).assertIsDisplayed()
+        rule.onNodeWithText(scoreText).assertIsDisplayed()
+    }
 }

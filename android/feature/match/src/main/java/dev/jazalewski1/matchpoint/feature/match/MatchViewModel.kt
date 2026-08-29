@@ -68,8 +68,15 @@ constructor(
                 is MatchEvent.SetWon -> {
                     MatchUiEvent.SetFinished(
                         winner = side,
-                        lhsScore = totalMatchState.lhsSets.toString(),
-                        rhsScore = totalMatchState.rhsSets.toString(),
+                        lhsScore = totalMatchState.match.lhsSets.toString(),
+                        rhsScore = totalMatchState.match.rhsSets.toString(),
+                    )
+                }
+                is MatchEvent.MatchWon -> {
+                    MatchUiEvent.MatchFinished(
+                        winner = side,
+                        lhsScore = totalMatchState.match.lhsSets.toString(),
+                        rhsScore = totalMatchState.match.rhsSets.toString(),
                     )
                 }
             }
