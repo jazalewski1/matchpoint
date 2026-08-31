@@ -1,6 +1,6 @@
 package dev.jazalewski1.matchpoint.feature.match.summary
 
-sealed interface UiState
+internal sealed interface UiState
 
 data class LoadedUiState(
     val player1: Player,
@@ -19,4 +19,4 @@ data class LoadedUiState(
     )
 }
 
-data class ErrorUiState(val message: String) : UiState
+internal data class ErrorUiState(val message: String) : UiState

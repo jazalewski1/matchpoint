@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class MatchViewModel
+internal class MatchViewModel
 @Inject
 constructor(
     private val matchController: MatchController,

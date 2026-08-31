@@ -1,6 +1,6 @@
 package dev.jazalewski1.matchpoint.feature.match.main
 
-data class UiState(val game: Game) {
+internal data class UiState(val game: Game) {
     data class Game(
         val lhsPlayer: Player,
         val rhsPlayer: Player,

@@ -10,7 +10,7 @@ import dev.jazalewski1.matchpoint.feature.match.MatchSummaryRoute
 import javax.inject.Inject
 
 @HiltViewModel
-class MatchSummaryViewModel
+internal class MatchSummaryViewModel
 @Inject
 constructor(private val matchRepository: MatchRepository, savedStateHandle: SavedStateHandle) :
     ViewModel() {
