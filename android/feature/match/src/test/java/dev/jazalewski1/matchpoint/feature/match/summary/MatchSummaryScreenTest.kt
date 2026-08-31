@@ -30,12 +30,12 @@ private data object Samples {
     val loadedUiState =
         MatchSummaryUiState.Loaded(
             player1 =
-                PlayerSummaryUiState(
+                PlayerUiState(
                     name = PLAYER1_NAME,
                     sets = listOf(setWon(6), setLost(1), setWon(6)),
                 ),
             player2 =
-                PlayerSummaryUiState(
+                PlayerUiState(
                     name = PLAYER2_NAME,
                     sets = listOf(setLost(2), setWon(6), setLost(3)),
                 ),
@@ -90,10 +90,9 @@ class MatchSummaryScreenTest {
             SutScreen(
                 uiState =
                     MatchSummaryUiState.Loaded(
-                        player1 =
-                            PlayerSummaryUiState(name = PLAYER1_NAME, sets = List(4) { setWon(6) }),
+                        player1 = PlayerUiState(name = PLAYER1_NAME, sets = List(4) { setWon(6) }),
                         player2 =
-                            PlayerSummaryUiState(
+                            PlayerUiState(
                                 name = PLAYER2_NAME,
                                 sets = List(4) { setLost(6) },
                             ),
@@ -123,12 +122,12 @@ class MatchSummaryScreenTest {
                 uiState =
                     MatchSummaryUiState.Loaded(
                         player1 =
-                            PlayerSummaryUiState(
+                            PlayerUiState(
                                 name = PLAYER1_NAME,
                                 sets = listOf(setWon(1), setLost(3), setWon(5), setLost(7, 9)),
                             ),
                         player2 =
-                            PlayerSummaryUiState(
+                            PlayerUiState(
                                 name = PLAYER2_NAME,
                                 sets = listOf(setWon(2), setLost(4), setWon(6), setLost(8, 10)),
                             ),

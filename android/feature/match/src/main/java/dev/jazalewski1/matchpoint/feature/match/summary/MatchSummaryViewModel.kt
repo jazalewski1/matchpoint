@@ -9,27 +9,6 @@ import dev.jazalewski1.matchpoint.core.data.Player
 import dev.jazalewski1.matchpoint.feature.match.MatchSummaryRoute
 import javax.inject.Inject
 
-sealed interface MatchSummaryUiState {
-    data class Loaded(
-        val player1: PlayerSummaryUiState,
-        val player2: PlayerSummaryUiState,
-        val numOfSets: Int,
-    ) : MatchSummaryUiState
-
-    data class Error(val message: String) : MatchSummaryUiState
-}
-
-data class PlayerSummaryUiState(
-    val name: String,
-    val sets: List<SetUiState>,
-)
-
-data class SetUiState(
-    val games: Int,
-    val isWinner: Boolean,
-    val tieBreakPoints: Int? = null,
-)
-
 @HiltViewModel
 class MatchSummaryViewModel
 @Inject
@@ -47,7 +26,7 @@ private fun getUiState(matchRepository: MatchRepository, matchId: Long): MatchSu
         matchRepository.getMatch(matchId)
             ?: return MatchSummaryUiState.Error(message = "Failed to load match data.")
     val player1 =
-        PlayerSummaryUiState(
+        PlayerUiState(
             name = matchData.player1Name,
             sets =
                 matchData.sets.map {
@@ -59,7 +38,7 @@ private fun getUiState(matchRepository: MatchRepository, matchId: Long): MatchSu
                 },
         )
     val player2 =
-        PlayerSummaryUiState(
+        PlayerUiState(
             name = matchData.player2Name,
             sets =
                 matchData.sets.map {

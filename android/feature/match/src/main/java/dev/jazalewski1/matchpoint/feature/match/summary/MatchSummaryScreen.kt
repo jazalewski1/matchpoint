@@ -105,7 +105,7 @@ private object Table {
     }
 
     @Composable
-    private fun GridScope.PlayerRow(uiState: PlayerSummaryUiState, player: Player) {
+    private fun GridScope.PlayerRow(uiState: PlayerUiState, player: Player) {
         val playerIndex = if (player == Player.ONE) 1 else 2
         PlayerNameCell(text = uiState.name, testTag = "TablePlayer${playerIndex}Name")
         for ((index, set) in uiState.sets.withIndex()) {
@@ -201,12 +201,12 @@ private data object Samples {
     val set6Tb7 = SetUiState(games = 6, isWinner = true, tieBreakPoints = 7)
 
     val player1 =
-        PlayerSummaryUiState(
+        PlayerUiState(
             name = "Federer",
             sets = listOf(set6),
         )
     val player2 =
-        PlayerSummaryUiState(
+        PlayerUiState(
             name = "Nadal",
             sets = listOf(set1),
         )

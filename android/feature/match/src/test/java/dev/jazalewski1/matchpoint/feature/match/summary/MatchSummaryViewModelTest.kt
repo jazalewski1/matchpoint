@@ -70,7 +70,7 @@ class MatchSummaryViewModelTest {
         val expected =
             MatchSummaryUiState.Loaded(
                 player1 =
-                    PlayerSummaryUiState(
+                    PlayerUiState(
                         name = PLAYER1_NAME,
                         sets =
                             listOf(
@@ -81,7 +81,7 @@ class MatchSummaryViewModelTest {
                             ),
                     ),
                 player2 =
-                    PlayerSummaryUiState(
+                    PlayerUiState(
                         name = PLAYER2_NAME,
                         sets =
                             listOf(
