@@ -2,6 +2,7 @@ package dev.jazalewski1.matchpoint
 
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +14,7 @@ import dagger.hilt.android.HiltAndroidApp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.feature.home.HomeRoute
 import dev.jazalewski1.matchpoint.feature.home.homeDestination
+import dev.jazalewski1.matchpoint.feature.home.navigateToHomeScreen
 import dev.jazalewski1.matchpoint.feature.match.*
 
 @AndroidEntryPoint
@@ -43,6 +45,10 @@ private fun App() {
             }
         )
 
-        matchDestination()
+        matchDestination(
+            onExit = { matchId -> Log.i("dev", "onExit, id=$matchId"); navController.navigateToMatchSummaryScreen(matchId = matchId) }
+        )
+
+        matchSummaryDestination(onReturn = { navController.navigateToHomeScreen() })
     }
 }
