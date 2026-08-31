@@ -11,7 +11,5 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 internal abstract class DataModule {
-    @Binds
-    @Singleton
-    abstract fun bindMatchRepository(impl: MemoryMatchRepository): MatchRepository
+    @Binds @Singleton abstract fun bindMatchRepository(impl: MemoryMatchRepository): MatchRepository
 }

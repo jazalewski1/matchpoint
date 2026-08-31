@@ -5,7 +5,7 @@ import javax.inject.Singleton
 
 // TODO: Temporary repository until Room is implemented
 @Singleton
-class MemoryMatchRepository @Inject constructor() : MatchRepository  {
+class MemoryMatchRepository @Inject constructor() : MatchRepository {
     private val matches: MutableMap<Long, MatchDetails> = mutableMapOf()
     private var nextId: Long = 0
 

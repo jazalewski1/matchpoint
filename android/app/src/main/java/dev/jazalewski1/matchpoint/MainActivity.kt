@@ -46,7 +46,10 @@ private fun App() {
         )
 
         matchDestination(
-            onExit = { matchId -> Log.i("dev", "onExit, id=$matchId"); navController.navigateToMatchSummaryScreen(matchId = matchId) }
+            onExit = { matchId ->
+                Log.i("dev", "onExit, id=$matchId")
+                navController.navigateToMatchSummaryScreen(matchId = matchId)
+            }
         )
 
         matchSummaryDestination(onReturn = { navController.navigateToHomeScreen() })

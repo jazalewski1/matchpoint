@@ -26,7 +26,7 @@ rootProject.name = "Matchpoint"
 
 include(":app")
 
- include(":core:data")
+include(":core:data")
 
 include(":core:ui")
 
@@ -35,4 +35,5 @@ include(":domain:tennis")
 include(":feature:home")
 
 include(":feature:match")
+
 include(":core:data")

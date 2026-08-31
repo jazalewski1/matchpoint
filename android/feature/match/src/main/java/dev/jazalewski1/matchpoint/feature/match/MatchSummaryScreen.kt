@@ -174,12 +174,13 @@ private fun Header() { // TODO: copied from setup screen, move to common
 
 @Composable
 private fun ErrorContainer(message: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.onErrorContainer),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                ),
             modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.8f),
         ) {
             Text(
@@ -298,7 +299,7 @@ private fun PreviewWith5Sets() {
 private fun PreviewWithError() {
     AppTheme {
         ScreenPreviewBase(
-            uiState = MatchSummaryUiState.Error(message = "Failed to load match data."),
+            uiState = MatchSummaryUiState.Error(message = "Failed to load match data.")
         )
     }
 }

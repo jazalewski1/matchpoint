@@ -15,8 +15,8 @@ import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
 import dev.jazalewski1.matchpoint.domain.tennis.Player
 import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
 import dev.jazalewski1.matchpoint.feature.match.util.*
-import kotlinx.coroutines.channels.Channel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -54,14 +54,15 @@ constructor(
     }
 
     fun onFinished() {
-        val matchId = matchRepository.saveMatch(
-            matchController
-                .getHistory()
-                .toDetails(
-                    player1Name = player1Name,
-                    player2Name = player2Name,
-                )
-        )
+        val matchId =
+            matchRepository.saveMatch(
+                matchController
+                    .getHistory()
+                    .toDetails(
+                        player1Name = player1Name,
+                        player2Name = player2Name,
+                    )
+            )
         viewModelScope.launch {
             _navigationEvents.send(MatchNavigationEvent.MatchFinished(matchId = matchId))
         }
