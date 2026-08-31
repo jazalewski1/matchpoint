@@ -1,4 +1,4 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.summary
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4

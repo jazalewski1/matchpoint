@@ -1,4 +1,4 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.summary
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

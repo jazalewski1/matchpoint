@@ -1,4 +1,4 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.main
 
 data class PlayerUiState(
     val name: String,

@@ -3,6 +3,9 @@ package dev.jazalewski1.matchpoint.feature.match
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import dev.jazalewski1.matchpoint.feature.match.main.MatchScreen
+import dev.jazalewski1.matchpoint.feature.match.setup.MatchSetupScreen
+import dev.jazalewski1.matchpoint.feature.match.summary.MatchSummaryScreen
 import kotlinx.serialization.Serializable
 
 @Serializable object MatchSetupRoute

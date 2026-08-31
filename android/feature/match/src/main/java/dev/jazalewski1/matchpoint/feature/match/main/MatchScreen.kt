@@ -1,4 +1,4 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.main
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
