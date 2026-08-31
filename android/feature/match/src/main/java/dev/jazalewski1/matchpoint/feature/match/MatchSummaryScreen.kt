@@ -18,10 +18,10 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
 internal fun MatchSummaryScreen(
-    onReturnClick: () -> Unit,
+    onReturn: () -> Unit,
     viewModel: MatchSummaryViewModel = hiltViewModel(),
 ) {
-    MatchSummaryScreen(uiState = viewModel.uiState, onReturnClick = onReturnClick)
+    MatchSummaryScreen(uiState = viewModel.uiState, onReturnClick = onReturn)
 }
 
 @Composable

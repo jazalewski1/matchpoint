@@ -10,7 +10,9 @@ import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,9 +68,7 @@ class MatchSummaryScreenTest {
     @Test
     fun `on error screen displays basic elements`() {
         val message = "Error message"
-        rule.setContent { SutScreen(
-            uiState = MatchSummaryUiState.Error(message = message)
-        ) }
+        rule.setContent { SutScreen(uiState = MatchSummaryUiState.Error(message = message)) }
 
         rule.onNodeWithText("Summary").assertIsDisplayed()
         rule.onNodeWithText(message).assertIsDisplayed()
@@ -151,5 +151,30 @@ class MatchSummaryScreenTest {
             this[0].assertIsDisplayed().assert(hasText("8"))
             this[1].assertIsDisplayed().assert(hasText("10"))
         }
+    }
+
+    @Test
+    fun `on loaded screen returns`() {
+        var returned = false
+        rule.setContent { SutScreen(onReturnClick = { returned = true }) }
+
+        rule.onNodeWithText("Return").performClick()
+
+        assertThat(returned).isTrue()
+    }
+
+    @Test
+    fun `on error screen returns`() {
+        var returned = false
+        rule.setContent {
+            SutScreen(
+                uiState = MatchSummaryUiState.Error("error"),
+                onReturnClick = { returned = true },
+            )
+        }
+
+        rule.onNodeWithText("Return").performClick()
+
+        assertThat(returned).isTrue()
     }
 }
