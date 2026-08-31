@@ -3,49 +3,61 @@ package dev.jazalewski1.matchpoint.core.ui.theme
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
-    val blueDark = Color(0xFF2814E2)
+    object Primary {
+        val veryDark = Color(0xFF07023A)
+        val dark = Color(0xFF2814E2)
+        val mid = Color(0xFF796DEA)
+        val light = Color(0xFFC9C5F1)
+    }
 
-    val purpleDark = Color(0xFF6414E3)
-    val purpleNormal = Color(0xFF9763EA)
-    val purpleLight = Color(0xFFCAB1F1)
+    object Secondary {
+        val veryDark = Color(0xFF100328)
+        val dark = Color(0xFF6414E3)
+        val mid = Color(0xFF9763EA)
+        val light = Color(0xFFCAB1F1)
+    }
 
-    val orangeDark = Color(0xFFE35113)
+    object Tertiary {
+        val veryDark = Color(0xFF130702)
+        val dark = Color(0xFFE35113)
+        val mid = Color(0xFFF7956B)
+        val light = Color(0xFFEEBFAB)
+    }
 
-    val white = Color(0xFFFBF8FF)
+    object Error {
+        val veryDark = Color(0xFF691515)
+        val dark = Color(0xFF940F0F)
+        val light = Color(0xFFC28383)
+    }
+
+    object Background {
+        val bg = Color(0xFFE8ECF5)
+        val fg = Color(0xFF1A1B21)
+    }
+
+    object Others {
+        val white = Color(0xFFF6F6F6)
+
+        val surface = Color(0xFFFBF8FF)
+        val onSurface = Color(0xFF1A1B21)
+        val surfaceVariant = Color(0xFFE2E1EC)
+        val onSurfaceVariant = Color(0xFF45464F)
+
+        val outline = Color(0xFF767680)
+        val outlineVariant = Color(0xFFC6C5D0)
+
+        val scrim = Color(0xFF000000)
+
+        val inverseSurface = Color(0xFF2F3036)
+        val inverseOnSurface = Color(0xFFF2F0F7)
+        val inversePrimary = Color(0xFFB8C4FF)
+
+        val surfaceDim = Color(0xFFDBD9E0)
+        val surfaceBright = Color(0xFFFBF8FF)
+        val surfaceContainerLowest = Color(0xFFFFFFFF)
+        val surfaceContainerLow = Color(0xFFF4F2FA)
+        val surfaceContainer = Color(0xFFEFEDF4)
+        val surfaceContainerHigh = Color(0xFFE9E7EF)
+        val surfaceContainerHighest = Color(0xFFE3E1E9)
+    }
 }
-
-val primaryLight = AppColors.blueDark
-val onPrimaryLight = Color(0xFFFFFFFF)
-val primaryContainerLight = Color(0xFFC9C5F1)
-val onPrimaryContainerLight = Color(0xFF0B063B)
-val secondaryLight = AppColors.purpleDark
-val onSecondaryLight = Color(0xFFFFFFFF)
-val secondaryContainerLight = AppColors.purpleLight
-val onSecondaryContainerLight = Color(0xFF201632)
-val tertiaryLight = AppColors.orangeDark
-val onTertiaryLight = Color(0xFFFFFFFF)
-val tertiaryContainerLight = Color(0xFFE35113)
-val onTertiaryContainerLight = Color(0xFFFFFFFF)
-val errorLight = Color(0xFF940F0F)
-val onErrorLight = Color(0xFFFFFFFF)
-val errorContainerLight = Color(0xFFC28383)
-val onErrorContainerLight = Color(0xFF691515)
-val backgroundLight = AppColors.white
-val onBackgroundLight = Color(0xFF1A1B21)
-val surfaceLight = Color(0xFFFBF8FF)
-val onSurfaceLight = Color(0xFF1A1B21)
-val surfaceVariantLight = Color(0xFFE2E1EC)
-val onSurfaceVariantLight = Color(0xFF45464F)
-val outlineLight = Color(0xFF767680)
-val outlineVariantLight = Color(0xFFC6C5D0)
-val scrimLight = Color(0xFF000000)
-val inverseSurfaceLight = Color(0xFF2F3036)
-val inverseOnSurfaceLight = Color(0xFFF2F0F7)
-val inversePrimaryLight = Color(0xFFB8C4FF)
-val surfaceDimLight = Color(0xFFDBD9E0)
-val surfaceBrightLight = Color(0xFFFBF8FF)
-val surfaceContainerLowestLight = Color(0xFFFFFFFF)
-val surfaceContainerLowLight = Color(0xFFF4F2FA)
-val surfaceContainerLight = Color(0xFFEFEDF4)
-val surfaceContainerHighLight = Color(0xFFE9E7EF)
-val surfaceContainerHighestLight = Color(0xFFE3E1E9)

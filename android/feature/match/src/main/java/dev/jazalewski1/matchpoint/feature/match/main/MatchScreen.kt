@@ -35,7 +35,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppColors
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
-import dev.jazalewski1.matchpoint.core.ui.theme.backgroundLight
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -206,10 +205,10 @@ private sealed interface DialogIndicationParams {
 
 private class IndicationState(private val scope: CoroutineScope) {
     private var job: Job? = null
-    var lhsColor = Animatable(backgroundLight)
+    var lhsColor = Animatable(AppColors.Background.bg)
         private set
 
-    var rhsColor = Animatable(backgroundLight)
+    var rhsColor = Animatable(AppColors.Background.bg)
         private set
 
     var dialogIndicationParams by mutableStateOf<DialogIndicationParams?>(null)
@@ -218,8 +217,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.PointScored) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(backgroundLight)
-            rhsColor.snapTo(backgroundLight)
+            lhsColor.snapTo(AppColors.Background.bg)
+            rhsColor.snapTo(AppColors.Background.bg)
             dialogIndicationParams = null
             val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
             animatePointIndication(colorToAnimate)
@@ -229,8 +228,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.GameFinished) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(backgroundLight)
-            rhsColor.snapTo(backgroundLight)
+            lhsColor.snapTo(AppColors.Background.bg)
+            rhsColor.snapTo(AppColors.Background.bg)
             dialogIndicationParams =
                 DialogIndicationParams.Game(
                     side = event.winner,
@@ -245,8 +244,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.SetFinished) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(backgroundLight)
-            rhsColor.snapTo(backgroundLight)
+            lhsColor.snapTo(AppColors.Background.bg)
+            rhsColor.snapTo(AppColors.Background.bg)
             dialogIndicationParams =
                 DialogIndicationParams.Set(
                     side = event.winner,
@@ -261,8 +260,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.MatchFinished) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(backgroundLight)
-            rhsColor.snapTo(backgroundLight)
+            lhsColor.snapTo(AppColors.Background.bg)
+            rhsColor.snapTo(AppColors.Background.bg)
             dialogIndicationParams =
                 DialogIndicationParams.Match(
                     side = event.winner,
@@ -293,12 +292,12 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
     val easeOut =
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
-    colorToAnimate.animateTo(targetValue = AppColors.purpleNormal, animationSpec = easeIn)
+    colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeIn)
     repeat(repetitionsWithoutEntryAndExit) {
-        colorToAnimate.animateTo(targetValue = AppColors.purpleLight, animationSpec = easeOut)
-        colorToAnimate.animateTo(targetValue = AppColors.purpleNormal, animationSpec = easeIn)
+        colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeOut)
+        colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeIn)
     }
-    colorToAnimate.animateTo(targetValue = AppColors.white, animationSpec = easeOut)
+    colorToAnimate.animateTo(targetValue = AppColors.Others.white, animationSpec = easeOut)
 }
 
 @Composable
@@ -410,8 +409,8 @@ private fun DialogIndication(
     content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val backgroundColor = AppColors.blueDark
-    val loudColor = AppColors.orangeDark
+    val backgroundColor = AppColors.Primary.dark
+    val loudColor = AppColors.Tertiary.dark
     val quietColor = Color.Transparent
     val alpha = remember { Animatable(0.3f) }
     val animatedColor = loudColor.copy(alpha = alpha.value)
