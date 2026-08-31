@@ -344,7 +344,7 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
         colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeOut)
         colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeIn)
     }
-    colorToAnimate.animateTo(targetValue = AppColors.Others.white, animationSpec = easeOut)
+    colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeOut)
 }
 
 @Composable
