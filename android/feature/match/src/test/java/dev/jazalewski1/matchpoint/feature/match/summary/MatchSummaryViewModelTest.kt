@@ -68,27 +68,43 @@ class MatchSummaryViewModelTest {
             )
 
         val expected =
-            MatchSummaryUiState.Loaded(
+            LoadedUiState(
                 player1 =
-                    PlayerUiState(
+                    LoadedUiState.Player(
                         name = PLAYER1_NAME,
                         sets =
                             listOf(
-                                SetUiState(games = 6, isWinner = true, tieBreakPoints = null),
-                                SetUiState(games = 2, isWinner = false, tieBreakPoints = null),
-                                SetUiState(games = 6, isWinner = true, tieBreakPoints = 7),
-                                SetUiState(games = 6, isWinner = false, tieBreakPoints = 4),
+                                LoadedUiState.Set(
+                                    games = 6,
+                                    isWinner = true,
+                                    tieBreakPoints = null,
+                                ),
+                                LoadedUiState.Set(
+                                    games = 2,
+                                    isWinner = false,
+                                    tieBreakPoints = null,
+                                ),
+                                LoadedUiState.Set(games = 6, isWinner = true, tieBreakPoints = 7),
+                                LoadedUiState.Set(games = 6, isWinner = false, tieBreakPoints = 4),
                             ),
                     ),
                 player2 =
-                    PlayerUiState(
+                    LoadedUiState.Player(
                         name = PLAYER2_NAME,
                         sets =
                             listOf(
-                                SetUiState(games = 1, isWinner = false, tieBreakPoints = null),
-                                SetUiState(games = 6, isWinner = true, tieBreakPoints = null),
-                                SetUiState(games = 6, isWinner = false, tieBreakPoints = 3),
-                                SetUiState(games = 6, isWinner = true, tieBreakPoints = 7),
+                                LoadedUiState.Set(
+                                    games = 1,
+                                    isWinner = false,
+                                    tieBreakPoints = null,
+                                ),
+                                LoadedUiState.Set(
+                                    games = 6,
+                                    isWinner = true,
+                                    tieBreakPoints = null,
+                                ),
+                                LoadedUiState.Set(games = 6, isWinner = false, tieBreakPoints = 3),
+                                LoadedUiState.Set(games = 6, isWinner = true, tieBreakPoints = 7),
                             ),
                     ),
                 numOfSets = 4,
@@ -110,6 +126,6 @@ class MatchSummaryViewModelTest {
             )
 
         assertThat(viewModel.uiState)
-            .isEqualTo(MatchSummaryUiState.Error(message = "Failed to load match data."))
+            .isEqualTo(ErrorUiState(message = "Failed to load match data."))
     }
 }

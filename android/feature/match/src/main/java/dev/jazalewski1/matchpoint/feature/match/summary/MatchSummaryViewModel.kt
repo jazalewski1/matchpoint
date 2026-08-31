@@ -21,16 +21,16 @@ constructor(private val matchRepository: MatchRepository, savedStateHandle: Save
         )
 }
 
-private fun getUiState(matchRepository: MatchRepository, matchId: Long): MatchSummaryUiState {
+private fun getUiState(matchRepository: MatchRepository, matchId: Long): UiState {
     val matchData =
         matchRepository.getMatch(matchId)
-            ?: return MatchSummaryUiState.Error(message = "Failed to load match data.")
+            ?: return ErrorUiState(message = "Failed to load match data.")
     val player1 =
-        PlayerUiState(
+        LoadedUiState.Player(
             name = matchData.player1Name,
             sets =
                 matchData.sets.map {
-                    SetUiState(
+                    LoadedUiState.Set(
                         games = it.player1Games,
                         isWinner = it.winner == Player.ONE,
                         tieBreakPoints = it.tieBreak?.player1Points,
@@ -38,18 +38,18 @@ private fun getUiState(matchRepository: MatchRepository, matchId: Long): MatchSu
                 },
         )
     val player2 =
-        PlayerUiState(
+        LoadedUiState.Player(
             name = matchData.player2Name,
             sets =
                 matchData.sets.map {
-                    SetUiState(
+                    LoadedUiState.Set(
                         games = it.player2Games,
                         isWinner = it.winner == Player.TWO,
                         tieBreakPoints = it.tieBreak?.player2Points,
                     )
                 },
         )
-    return MatchSummaryUiState.Loaded(
+    return LoadedUiState(
         player1 = player1,
         player2 = player2,
         numOfSets = matchData.sets.size,

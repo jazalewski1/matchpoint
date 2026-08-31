@@ -124,12 +124,12 @@ constructor(
 }
 
 private fun TotalMatchState.toUiState(lhsName: String, rhsName: String) =
-    MatchUiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))
+    UiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))
 
 private fun GameState.toUiState(lhsName: String, rhsName: String) =
-    GameUiState(
-        lhsPlayer = PlayerUiState(name = lhsName, score = this.lhsToString()),
-        rhsPlayer = PlayerUiState(name = rhsName, score = this.rhsToString()),
+    UiState.Game(
+        lhsPlayer = UiState.Player(name = lhsName, score = this.lhsToString()),
+        rhsPlayer = UiState.Player(name = rhsName, score = this.rhsToString()),
         isTieBreak = this is GameState.TieBreak,
     )
 

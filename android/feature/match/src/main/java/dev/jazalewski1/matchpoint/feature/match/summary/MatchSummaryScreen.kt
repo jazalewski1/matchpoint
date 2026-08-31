@@ -26,7 +26,7 @@ internal fun MatchSummaryScreen(
 
 @Composable
 internal fun MatchSummaryScreen(
-    uiState: MatchSummaryUiState,
+    uiState: UiState,
     onReturnClick: () -> Unit,
 ) {
     Scaffold { innerPadding ->
@@ -34,8 +34,8 @@ internal fun MatchSummaryScreen(
             Header()
             Column(modifier = Modifier.fillMaxSize().weight(1f)) {
                 when (uiState) {
-                    is MatchSummaryUiState.Loaded -> TableContainer(uiState = uiState)
-                    is MatchSummaryUiState.Error -> ErrorContainer(message = uiState.message)
+                    is LoadedUiState -> TableContainer(uiState = uiState)
+                    is ErrorUiState -> ErrorContainer(message = uiState.message)
                 }
             }
             Row( // TODO: copied from setup screen, move to common
@@ -60,7 +60,7 @@ private enum class Player {
 }
 
 @Composable
-private fun TableContainer(uiState: MatchSummaryUiState.Loaded) {
+private fun TableContainer(uiState: LoadedUiState) {
     Spacer(Modifier.height(48.dp))
     Table.Grid(uiState)
 }
@@ -68,7 +68,7 @@ private fun TableContainer(uiState: MatchSummaryUiState.Loaded) {
 @OptIn(ExperimentalGridApi::class)
 private object Table {
     @Composable
-    fun Grid(uiState: MatchSummaryUiState.Loaded) {
+    fun Grid(uiState: LoadedUiState) {
         Grid(
             config = {
                 column(120.dp)
@@ -105,7 +105,7 @@ private object Table {
     }
 
     @Composable
-    private fun GridScope.PlayerRow(uiState: PlayerUiState, player: Player) {
+    private fun GridScope.PlayerRow(uiState: LoadedUiState.Player, player: Player) {
         val playerIndex = if (player == Player.ONE) 1 else 2
         PlayerNameCell(text = uiState.name, testTag = "TablePlayer${playerIndex}Name")
         for ((index, set) in uiState.sets.withIndex()) {
@@ -127,7 +127,7 @@ private object Table {
     }
 
     @Composable
-    private fun ScoreCell(uiState: SetUiState, testTag: String) {
+    private fun ScoreCell(uiState: LoadedUiState.Set, testTag: String) {
         val (games, isWinner, tieBreakPoints) = uiState
         val backgroundColor =
             if (isWinner) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
@@ -193,20 +193,20 @@ private fun ErrorContainer(message: String) {
 }
 
 private data object Samples {
-    val set1 = SetUiState(games = 1, isWinner = false)
-    val set2 = SetUiState(games = 2, isWinner = false)
-    val set3 = SetUiState(games = 3, isWinner = false)
-    val set6 = SetUiState(games = 6, isWinner = true)
-    val set6Tb1 = SetUiState(games = 6, isWinner = false, tieBreakPoints = 1)
-    val set6Tb7 = SetUiState(games = 6, isWinner = true, tieBreakPoints = 7)
+    val set1 = LoadedUiState.Set(games = 1, isWinner = false)
+    val set2 = LoadedUiState.Set(games = 2, isWinner = false)
+    val set3 = LoadedUiState.Set(games = 3, isWinner = false)
+    val set6 = LoadedUiState.Set(games = 6, isWinner = true)
+    val set6Tb1 = LoadedUiState.Set(games = 6, isWinner = false, tieBreakPoints = 1)
+    val set6Tb7 = LoadedUiState.Set(games = 6, isWinner = true, tieBreakPoints = 7)
 
     val player1 =
-        PlayerUiState(
+        LoadedUiState.Player(
             name = "Federer",
             sets = listOf(set6),
         )
     val player2 =
-        PlayerUiState(
+        LoadedUiState.Player(
             name = "Nadal",
             sets = listOf(set1),
         )
@@ -214,7 +214,7 @@ private data object Samples {
 
 @Composable
 private fun ScreenPreviewBase(
-    uiState: MatchSummaryUiState,
+    uiState: UiState,
     onReturnClick: () -> Unit = {},
 ) {
     MatchSummaryScreen(
@@ -229,7 +229,7 @@ private fun PreviewWith1Set() {
     AppTheme {
         ScreenPreviewBase(
             uiState =
-                MatchSummaryUiState.Loaded(
+                LoadedUiState(
                     player1 = Samples.player1,
                     player2 = Samples.player2,
                     numOfSets = 1,
@@ -244,7 +244,7 @@ private fun PreviewWith3Sets() {
     AppTheme {
         ScreenPreviewBase(
             uiState =
-                MatchSummaryUiState.Loaded(
+                LoadedUiState(
                     player1 =
                         Samples.player1.copy(
                             sets = listOf(Samples.set6, Samples.set6Tb1, Samples.set6)
@@ -265,7 +265,7 @@ private fun PreviewWith5Sets() {
     AppTheme {
         ScreenPreviewBase(
             uiState =
-                MatchSummaryUiState.Loaded(
+                LoadedUiState(
                     player1 =
                         Samples.player1.copy(
                             sets =
@@ -298,8 +298,6 @@ private fun PreviewWith5Sets() {
 @Composable
 private fun PreviewWithError() {
     AppTheme {
-        ScreenPreviewBase(
-            uiState = MatchSummaryUiState.Error(message = "Failed to load match data.")
-        )
+        ScreenPreviewBase(uiState = ErrorUiState(message = "Failed to load match data."))
     }
 }

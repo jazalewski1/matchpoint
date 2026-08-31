@@ -21,21 +21,21 @@ private const val PLAYER1_NAME = "Player 1"
 private const val PLAYER2_NAME = "Player 2"
 
 private fun setWon(games: Int, tbPoints: Int? = null) =
-    SetUiState(games = games, isWinner = true, tieBreakPoints = tbPoints)
+    LoadedUiState.Set(games = games, isWinner = true, tieBreakPoints = tbPoints)
 
 private fun setLost(games: Int, tbPoints: Int? = null) =
-    SetUiState(games = games, isWinner = false, tieBreakPoints = tbPoints)
+    LoadedUiState.Set(games = games, isWinner = false, tieBreakPoints = tbPoints)
 
 private data object Samples {
     val loadedUiState =
-        MatchSummaryUiState.Loaded(
+        LoadedUiState(
             player1 =
-                PlayerUiState(
+                LoadedUiState.Player(
                     name = PLAYER1_NAME,
                     sets = listOf(setWon(6), setLost(1), setWon(6)),
                 ),
             player2 =
-                PlayerUiState(
+                LoadedUiState.Player(
                     name = PLAYER2_NAME,
                     sets = listOf(setLost(2), setWon(6), setLost(3)),
                 ),
@@ -49,7 +49,7 @@ class MatchSummaryScreenTest {
 
     @Composable
     private fun SutScreen(
-        uiState: MatchSummaryUiState = Samples.loadedUiState,
+        uiState: UiState = Samples.loadedUiState,
         onReturnClick: () -> Unit = {},
     ) =
         MatchSummaryScreen(
@@ -68,7 +68,7 @@ class MatchSummaryScreenTest {
     @Test
     fun `on error screen displays basic elements`() {
         val message = "Error message"
-        rule.setContent { SutScreen(uiState = MatchSummaryUiState.Error(message = message)) }
+        rule.setContent { SutScreen(uiState = ErrorUiState(message = message)) }
 
         rule.onNodeWithText("Summary").assertIsDisplayed()
         rule.onNodeWithText(message).assertIsDisplayed()
@@ -89,10 +89,11 @@ class MatchSummaryScreenTest {
         rule.setContent {
             SutScreen(
                 uiState =
-                    MatchSummaryUiState.Loaded(
-                        player1 = PlayerUiState(name = PLAYER1_NAME, sets = List(4) { setWon(6) }),
+                    LoadedUiState(
+                        player1 =
+                            LoadedUiState.Player(name = PLAYER1_NAME, sets = List(4) { setWon(6) }),
                         player2 =
-                            PlayerUiState(
+                            LoadedUiState.Player(
                                 name = PLAYER2_NAME,
                                 sets = List(4) { setLost(6) },
                             ),
@@ -120,14 +121,14 @@ class MatchSummaryScreenTest {
         rule.setContent {
             SutScreen(
                 uiState =
-                    MatchSummaryUiState.Loaded(
+                    LoadedUiState(
                         player1 =
-                            PlayerUiState(
+                            LoadedUiState.Player(
                                 name = PLAYER1_NAME,
                                 sets = listOf(setWon(1), setLost(3), setWon(5), setLost(7, 9)),
                             ),
                         player2 =
-                            PlayerUiState(
+                            LoadedUiState.Player(
                                 name = PLAYER2_NAME,
                                 sets = listOf(setWon(2), setLost(4), setWon(6), setLost(8, 10)),
                             ),
@@ -167,7 +168,7 @@ class MatchSummaryScreenTest {
         var returned = false
         rule.setContent {
             SutScreen(
-                uiState = MatchSummaryUiState.Error("error"),
+                uiState = ErrorUiState("error"),
                 onReturnClick = { returned = true },
             )
         }

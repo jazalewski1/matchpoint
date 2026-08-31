@@ -37,12 +37,12 @@ class MainDispatcherRule(val testDispatcher: TestDispatcher = UnconfinedTestDisp
 private const val LHS_PLAYER_NAME = "Left player"
 private const val RHS_PLAYER_NAME = "Right player"
 
-private val sampleLhsPlayer = PlayerUiState(name = LHS_PLAYER_NAME, score = "0")
-private val sampleRhsPlayer = PlayerUiState(name = RHS_PLAYER_NAME, score = "0")
+private val sampleLhsPlayer = UiState.Player(name = LHS_PLAYER_NAME, score = "0")
+private val sampleRhsPlayer = UiState.Player(name = RHS_PLAYER_NAME, score = "0")
 
 private val sampleGameUiState =
-    GameUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
-private val sampleMatchUiState = MatchUiState(game = sampleGameUiState)
+    UiState.Game(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
+private val sampleMatchUiState = UiState(game = sampleGameUiState)
 
 @RunWith(AndroidJUnit4::class)
 class MatchViewModelTest {

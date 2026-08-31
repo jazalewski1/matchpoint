@@ -1,14 +1,14 @@
 package dev.jazalewski1.matchpoint.feature.match.main
 
-data class PlayerUiState(
-    val name: String,
-    val score: String,
-)
+data class UiState(val game: Game) {
+    data class Game(
+        val lhsPlayer: Player,
+        val rhsPlayer: Player,
+        val isTieBreak: Boolean,
+    )
 
-data class GameUiState(
-    val lhsPlayer: PlayerUiState,
-    val rhsPlayer: PlayerUiState,
-    val isTieBreak: Boolean,
-)
-
-data class MatchUiState(val game: GameUiState)
+    data class Player(
+        val name: String,
+        val score: String,
+    )
+}
