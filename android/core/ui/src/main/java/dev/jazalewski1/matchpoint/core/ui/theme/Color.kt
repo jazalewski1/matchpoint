@@ -31,12 +31,12 @@ object AppColors {
     }
 
     object Background {
-        val bg = Color(0xFFE8ECF5)
+        val bg = Others.white
         val fg = Color(0xFF1A1B21)
     }
 
     object Others {
-        val white = Color(0xFFF6F6F6)
+        val white = Color(0xFFF4F7FA)
 
         val surface = Color(0xFFFBF8FF)
         val onSurface = Color(0xFF1A1B21)
