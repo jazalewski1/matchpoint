@@ -33,8 +33,12 @@ fun NavController.navigateToMatchScreen(player1Name: String, player2Name: String
     }
 }
 
+fun NavController.navigateToDemoMatchScreen(player1Name: String, player2Name: String) {
+    navigate(route = MatchRoute(player1Name, player2Name))
+}
+
 fun NavController.navigateToMatchSummaryScreen(matchId: Long) {
     navigate(route = MatchSummaryRoute(matchId)) {
-        popUpTo<MatchSetupRoute> { inclusive = true }
+        popUpTo<MatchRoute> { inclusive = true }
     }
 }

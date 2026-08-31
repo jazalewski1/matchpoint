@@ -2,7 +2,6 @@ package dev.jazalewski1.matchpoint
 
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -35,7 +34,10 @@ private fun App() {
         homeDestination(
             onStartClick = { navController.navigateToMatchSetupScreen() },
             onStartDemoClick = {
-                navController.navigateToMatchScreen(player1Name = "Nadal", player2Name = "Federer")
+                navController.navigateToDemoMatchScreen(
+                    player1Name = "Nadal",
+                    player2Name = "Federer",
+                )
             },
         )
 
@@ -47,7 +49,6 @@ private fun App() {
 
         matchDestination(
             onExit = { matchId ->
-                Log.i("dev", "onExit, id=$matchId")
                 navController.navigateToMatchSummaryScreen(matchId = matchId)
             }
         )
