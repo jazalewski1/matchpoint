@@ -11,8 +11,6 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import dev.jazalewski1.matchpoint.core.data.MatchDetails
-import dev.jazalewski1.matchpoint.core.data.Player
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,23 +18,28 @@ import org.junit.runner.RunWith
 private const val PLAYER1_NAME = "Player 1"
 private const val PLAYER2_NAME = "Player 2"
 
-private val set1to2 = MatchDetails.Set(player1Games = 1, player2Games = 2, winner = Player.ONE)
-private val set3to4 = MatchDetails.Set(player1Games = 3, player2Games = 4, winner = Player.TWO)
-private val set5to6 = MatchDetails.Set(player1Games = 5, player2Games = 6, winner = Player.ONE)
-private val setWithTieBreak =
-    MatchDetails.Set(
-        player1Games = 7,
-        player2Games = 8,
-        winner = Player.ONE,
-        tieBreak = MatchDetails.Set.TieBreak(player1Points = 9, player2Points = 10),
-    )
+private fun setWon(games: Int, tbPoints: Int? = null) =
+    SetUiState(games = games, isWinner = true, tieBreakPoints = tbPoints)
 
-private val sampleMatchDetails =
-    MatchDetails(
-        player1Name = PLAYER1_NAME,
-        player2Name = PLAYER2_NAME,
-        sets = listOf(MatchDetails.Set(player1Games = 6, player2Games = 2, winner = Player.ONE)),
-    )
+private fun setLost(games: Int, tbPoints: Int? = null) =
+    SetUiState(games = games, isWinner = false, tieBreakPoints = tbPoints)
+
+private data object Samples {
+    val loadedUiState =
+        MatchSummaryUiState.Loaded(
+            player1 =
+                PlayerSummaryUiState(
+                    name = PLAYER1_NAME,
+                    sets = listOf(setWon(6), setLost(1), setWon(6)),
+                ),
+            player2 =
+                PlayerSummaryUiState(
+                    name = PLAYER2_NAME,
+                    sets = listOf(setLost(2), setWon(6), setLost(3)),
+                ),
+            numOfSets = 3,
+        )
+}
 
 @RunWith(AndroidJUnit4::class)
 class MatchSummaryScreenTest {
@@ -44,31 +47,37 @@ class MatchSummaryScreenTest {
 
     @Composable
     private fun SutScreen(
-        details: MatchDetails = sampleMatchDetails,
+        uiState: MatchSummaryUiState = Samples.loadedUiState,
         onReturnClick: () -> Unit = {},
     ) =
         MatchSummaryScreen(
-            details = details,
+            uiState = uiState,
             onReturnClick = onReturnClick,
         )
 
     @Test
-    fun `displays screen header`() {
+    fun `on loaded screen displays basic elements`() {
         rule.setContent { SutScreen() }
 
         rule.onNodeWithText("Summary").assertIsDisplayed()
-    }
-
-    @Test
-    fun `displays return button`() {
-        rule.setContent { SutScreen() }
-
         rule.onNodeWithText("Return").assertIsDisplayed().assertHasClickAction()
     }
 
     @Test
-    fun `displays table with full set headers when there are 3 sets`() {
-        rule.setContent { SutScreen(details = sampleMatchDetails.copy(sets = List(3) { set3to4 })) }
+    fun `on error screen displays basic elements`() {
+        val message = "Error message"
+        rule.setContent { SutScreen(
+            uiState = MatchSummaryUiState.Error(message = message)
+        ) }
+
+        rule.onNodeWithText("Summary").assertIsDisplayed()
+        rule.onNodeWithText(message).assertIsDisplayed()
+        rule.onNodeWithText("Return").assertIsDisplayed().assertHasClickAction()
+    }
+
+    @Test
+    fun `on loaded screen displays table with full set headers when there are 3 sets`() {
+        rule.setContent { SutScreen(uiState = Samples.loadedUiState) }
 
         rule.onNodeWithTag("TableSetHeader1").assertIsDisplayed().assert(hasText("Set 1"))
         rule.onNodeWithTag("TableSetHeader2").assertIsDisplayed().assert(hasText("Set 2"))
@@ -76,37 +85,54 @@ class MatchSummaryScreenTest {
     }
 
     @Test
-    fun `displays table with full set headers when there are more than 3 sets`() {
-        rule.setContent { SutScreen(details = sampleMatchDetails.copy(sets = List(5) { set3to4 })) }
+    fun `on loaded screen displays table with full set headers when there are more than 3 sets`() {
+        rule.setContent {
+            SutScreen(
+                uiState =
+                    MatchSummaryUiState.Loaded(
+                        player1 =
+                            PlayerSummaryUiState(name = PLAYER1_NAME, sets = List(4) { setWon(6) }),
+                        player2 =
+                            PlayerSummaryUiState(
+                                name = PLAYER2_NAME,
+                                sets = List(4) { setLost(6) },
+                            ),
+                        numOfSets = 4,
+                    )
+            )
+        }
 
         rule.onNodeWithTag("TableSetHeader1").assertIsDisplayed().assert(hasText("S1"))
         rule.onNodeWithTag("TableSetHeader2").assertIsDisplayed().assert(hasText("S2"))
         rule.onNodeWithTag("TableSetHeader3").assertIsDisplayed().assert(hasText("S3"))
         rule.onNodeWithTag("TableSetHeader4").assertIsDisplayed().assert(hasText("S4"))
-        rule.onNodeWithTag("TableSetHeader5").assertIsDisplayed().assert(hasText("S5"))
     }
 
     @Test
-    fun `displays table with player names`() {
-        rule.setContent { SutScreen(details = sampleMatchDetails.copy(sets = List(5) { set3to4 })) }
+    fun `on loaded screen displays table with player names`() {
+        rule.setContent { SutScreen(uiState = Samples.loadedUiState) }
 
         rule.onNodeWithTag("TablePlayer1Name").assert(hasText(PLAYER1_NAME))
         rule.onNodeWithTag("TablePlayer2Name").assert(hasText(PLAYER2_NAME))
     }
 
     @Test
-    fun `displays table with set scores`() {
+    fun `on loaded screen displays table with set scores`() {
         rule.setContent {
             SutScreen(
-                details =
-                    sampleMatchDetails.copy(
-                        sets =
-                            listOf(
-                                set1to2,
-                                set3to4,
-                                set5to6,
-                                setWithTieBreak,
-                            )
+                uiState =
+                    MatchSummaryUiState.Loaded(
+                        player1 =
+                            PlayerSummaryUiState(
+                                name = PLAYER1_NAME,
+                                sets = listOf(setWon(1), setLost(3), setWon(5), setLost(7, 9)),
+                            ),
+                        player2 =
+                            PlayerSummaryUiState(
+                                name = PLAYER2_NAME,
+                                sets = listOf(setWon(2), setLost(4), setWon(6), setLost(8, 10)),
+                            ),
+                        numOfSets = 4,
                     )
             )
         }

@@ -12,22 +12,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.jazalewski1.matchpoint.core.data.MatchDetails
-import dev.jazalewski1.matchpoint.core.data.Player
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 @Composable
 internal fun MatchSummaryScreen(
-    details: MatchDetails,
+    onReturnClick: () -> Unit,
+    viewModel: MatchSummaryViewModel = hiltViewModel(),
+) {
+    MatchSummaryScreen(uiState = viewModel.uiState, onReturnClick = onReturnClick)
+}
+
+@Composable
+internal fun MatchSummaryScreen(
+    uiState: MatchSummaryUiState,
     onReturnClick: () -> Unit,
 ) {
     Scaffold { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Header()
-            Spacer(Modifier.height(48.dp))
             Column(modifier = Modifier.fillMaxSize().weight(1f)) {
-                Table.Grid(details)
+                when (uiState) {
+                    is MatchSummaryUiState.Loaded -> TableContainer(uiState = uiState)
+                    is MatchSummaryUiState.Error -> ErrorContainer(message = uiState.message)
+                }
             }
             Row( // TODO: copied from setup screen, move to common
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -45,36 +54,25 @@ internal fun MatchSummaryScreen(
     }
 }
 
-private typealias SetWinner = Player
-
-private data class PlayerSetDetails(
-    val games: Int,
-    val winner: Boolean,
-    val tieBreakPoints: Int? = null,
-)
-
-private fun MatchDetails.Set.getPlayerSetDetails(player: Player): PlayerSetDetails {
-    val (games, tbPoints) =
-        if (player == Player.ONE) {
-            Pair(this.player1Games, this.tieBreak?.player1Points)
-        } else {
-            Pair(this.player2Games, this.tieBreak?.player2Points)
-        }
-    return PlayerSetDetails(
-        games = games,
-        winner = this.winner == player,
-        tieBreakPoints = tbPoints,
-    )
+private enum class Player {
+    ONE,
+    TWO,
 }
 
+@Composable
+private fun TableContainer(uiState: MatchSummaryUiState.Loaded) {
+    Spacer(Modifier.height(48.dp))
+    Table.Grid(uiState)
+}
+
+@OptIn(ExperimentalGridApi::class)
 private object Table {
-    @OptIn(ExperimentalGridApi::class)
     @Composable
-    fun Grid(details: MatchDetails) {
+    fun Grid(uiState: MatchSummaryUiState.Loaded) {
         Grid(
             config = {
                 column(120.dp)
-                repeat(details.sets.size) {
+                repeat(uiState.numOfSets) {
                     column(1.fr)
                 }
                 repeat(3) {
@@ -84,29 +82,17 @@ private object Table {
             modifier = Modifier.fillMaxWidth().padding(16.dp).padding(start = 8.dp),
         ) {
             Spacer(Modifier)
-            repeat(details.sets.size) { index ->
+            repeat(uiState.numOfSets) { index ->
                 val setNumber = index + 1
                 val testTag = "TableSetHeader$setNumber"
-                SetHeader(index = setNumber, shortened = details.sets.size > 3, testTag = testTag)
+                SetHeader(index = setNumber, shortened = uiState.numOfSets > 3, testTag = testTag)
             }
 
-            PlayerNameCell(text = details.player1Name, testTag = "TablePlayer1Name")
-            for ((index, set) in details.sets.withIndex()) {
-                val setNumber = index + 1
-                val testTag = "TablePlayer1Set$setNumber"
-                ScoreCell(details = set.getPlayerSetDetails(Player.ONE), testTag = testTag)
-            }
-
-            PlayerNameCell(text = details.player2Name, testTag = "TablePlayer2Name")
-            for ((index, set) in details.sets.withIndex()) {
-                val setNumber = index + 1
-                val testTag = "TablePlayer2Set$setNumber"
-                ScoreCell(details = set.getPlayerSetDetails(Player.TWO), testTag = testTag)
-            }
+            PlayerRow(uiState = uiState.player1, player = Player.ONE)
+            PlayerRow(uiState = uiState.player2, player = Player.TWO)
         }
     }
 
-    @OptIn(ExperimentalGridApi::class)
     @Composable
     private fun GridScope.SetHeader(index: Int, shortened: Boolean, testTag: String) {
         val text = if (shortened) "S$index" else "Set $index"
@@ -118,7 +104,17 @@ private object Table {
         )
     }
 
-    @OptIn(ExperimentalGridApi::class)
+    @Composable
+    private fun GridScope.PlayerRow(uiState: PlayerSummaryUiState, player: Player) {
+        val playerIndex = if (player == Player.ONE) 1 else 2
+        PlayerNameCell(text = uiState.name, testTag = "TablePlayer${playerIndex}Name")
+        for ((index, set) in uiState.sets.withIndex()) {
+            val setNumber = index + 1
+            val testTag = "TablePlayer${playerIndex}Set$setNumber"
+            ScoreCell(uiState = set, testTag = testTag)
+        }
+    }
+
     @Composable
     private fun GridScope.PlayerNameCell(text: String, testTag: String) {
         Text(
@@ -131,10 +127,10 @@ private object Table {
     }
 
     @Composable
-    private fun ScoreCell(details: PlayerSetDetails, testTag: String) {
-        val (games, winner, tieBreakPoints) = details
+    private fun ScoreCell(uiState: SetUiState, testTag: String) {
+        val (games, isWinner, tieBreakPoints) = uiState
         val backgroundColor =
-            if (winner) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+            if (isWinner) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
         Surface(
             color = backgroundColor,
             shape = ShapeDefaults.ExtraLarge,
@@ -144,13 +140,13 @@ private object Table {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                if (tieBreakPoints != null) {
-                    Row(verticalAlignment = Alignment.Top) {
-                        Text(
-                            text = games.toString(),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontSize = 18.sp,
-                        )
+                Row {
+                    Text(
+                        text = games.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 18.sp,
+                    )
+                    if (tieBreakPoints != null) {
                         Text(
                             text = tieBreakPoints.toString(),
                             style = MaterialTheme.typography.titleMedium,
@@ -158,12 +154,6 @@ private object Table {
                             modifier = Modifier.offset(y = -(4.dp)),
                         )
                     }
-                } else {
-                    Text(
-                        text = games.toString(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontSize = 18.sp,
-                    )
                 }
             }
         }
@@ -182,20 +172,52 @@ private fun Header() { // TODO: copied from setup screen, move to common
     )
 }
 
-private val sampleMatchDetails =
-    MatchDetails(
-        player1Name = "Federer",
-        player2Name = "Nadal",
-        sets = listOf(MatchDetails.Set(player1Games = 6, player2Games = 2, winner = SetWinner.ONE)),
-    )
+@Composable
+private fun ErrorContainer(message: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer),
+            modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.8f),
+        ) {
+            Text(
+                text = message,
+                modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+private data object Samples {
+    val set1 = SetUiState(games = 1, isWinner = false)
+    val set2 = SetUiState(games = 2, isWinner = false)
+    val set3 = SetUiState(games = 3, isWinner = false)
+    val set6 = SetUiState(games = 6, isWinner = true)
+    val set6Tb1 = SetUiState(games = 6, isWinner = false, tieBreakPoints = 1)
+    val set6Tb7 = SetUiState(games = 6, isWinner = true, tieBreakPoints = 7)
+
+    val player1 =
+        PlayerSummaryUiState(
+            name = "Federer",
+            sets = listOf(set6),
+        )
+    val player2 =
+        PlayerSummaryUiState(
+            name = "Nadal",
+            sets = listOf(set1),
+        )
+}
 
 @Composable
 private fun ScreenPreviewBase(
-    details: MatchDetails = sampleMatchDetails,
+    uiState: MatchSummaryUiState,
     onReturnClick: () -> Unit = {},
 ) {
     MatchSummaryScreen(
-        details = details,
+        uiState = uiState,
         onReturnClick = onReturnClick,
     )
 }
@@ -204,7 +226,14 @@ private fun ScreenPreviewBase(
 @Composable
 private fun PreviewWith1Set() {
     AppTheme {
-        ScreenPreviewBase(details = sampleMatchDetails)
+        ScreenPreviewBase(
+            uiState =
+                MatchSummaryUiState.Loaded(
+                    player1 = Samples.player1,
+                    player2 = Samples.player2,
+                    numOfSets = 1,
+                )
+        )
     }
 }
 
@@ -213,14 +242,17 @@ private fun PreviewWith1Set() {
 private fun PreviewWith3Sets() {
     AppTheme {
         ScreenPreviewBase(
-            details =
-                sampleMatchDetails.copy(
-                    sets =
-                        listOf(
-                            MatchDetails.Set(6, 2, SetWinner.ONE),
-                            MatchDetails.Set(6, 6, SetWinner.TWO, MatchDetails.Set.TieBreak(2, 7)),
-                            MatchDetails.Set(6, 0, SetWinner.ONE),
-                        )
+            uiState =
+                MatchSummaryUiState.Loaded(
+                    player1 =
+                        Samples.player1.copy(
+                            sets = listOf(Samples.set6, Samples.set6Tb1, Samples.set6)
+                        ),
+                    player2 =
+                        Samples.player2.copy(
+                            sets = listOf(Samples.set2, Samples.set6Tb7, Samples.set3)
+                        ),
+                    numOfSets = 3,
                 )
         )
     }
@@ -231,17 +263,42 @@ private fun PreviewWith3Sets() {
 private fun PreviewWith5Sets() {
     AppTheme {
         ScreenPreviewBase(
-            details =
-                sampleMatchDetails.copy(
-                    sets =
-                        listOf(
-                            MatchDetails.Set(6, 2, SetWinner.ONE),
-                            MatchDetails.Set(4, 6, SetWinner.TWO),
-                            MatchDetails.Set(6, 0, SetWinner.ONE),
-                            MatchDetails.Set(6, 6, SetWinner.TWO, MatchDetails.Set.TieBreak(4, 7)),
-                            MatchDetails.Set(6, 4, SetWinner.ONE),
-                        )
+            uiState =
+                MatchSummaryUiState.Loaded(
+                    player1 =
+                        Samples.player1.copy(
+                            sets =
+                                listOf(
+                                    Samples.set6,
+                                    Samples.set6Tb1,
+                                    Samples.set1,
+                                    Samples.set6,
+                                    Samples.set6,
+                                )
+                        ),
+                    player2 =
+                        Samples.player2.copy(
+                            sets =
+                                listOf(
+                                    Samples.set1,
+                                    Samples.set6Tb7,
+                                    Samples.set6,
+                                    Samples.set2,
+                                    Samples.set3,
+                                )
+                        ),
+                    numOfSets = 5,
                 )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewWithError() {
+    AppTheme {
+        ScreenPreviewBase(
+            uiState = MatchSummaryUiState.Error(message = "Failed to load match data."),
         )
     }
 }
