@@ -25,12 +25,16 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.ui.theme.AppColors
@@ -94,6 +98,8 @@ internal fun MatchScreen(
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
 
+    HideSystemBars()
+
     LaunchedEffect(Unit) {
         navigationEvents.collect { event ->
             when (event) {
@@ -114,70 +120,111 @@ internal fun MatchScreen(
         }
     }
 
-    Scaffold { innerPadding ->
-        Row(modifier = Modifier.padding(innerPadding).fillMaxWidth()) {
-            PointContainer(
-                playerName = lhsPlayerName,
-                score = lhsScore,
-                onClick = onLhsClick,
-                contentDescription = "Left Score",
-                modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                backgroundColor = indicationState.lhsColor.value,
-            )
-            VerticalDivider(thickness = 2.dp)
-            PointContainer(
-                playerName = rhsPlayerName,
-                score = rhsScore,
-                onClick = onRhsClick,
-                contentDescription = "Right Score",
-                modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                backgroundColor = indicationState.rhsColor.value,
-            )
+    InfoContainer(
+        lhsPlayerName = lhsPlayerName,
+        rhsPlayerName = rhsPlayerName,
+        lhsScore = lhsScore,
+        rhsScore = rhsScore,
+        indicationState = indicationState,
+        isTieBreak = isTieBreak,
+        onLhsClick = onLhsClick,
+        onRhsClick = onRhsClick,
+    )
+
+    indicationState.dialogIndicationParams?.let {
+        when (it) {
+            is DialogIndicationParams.Game ->
+                GameIndication(
+                    side = it.side,
+                    lhsScore = it.lhsScore,
+                    rhsScore = it.rhsScore,
+                    onClick = { indicationState.dismissDialogIndication() },
+                )
+
+            is DialogIndicationParams.Set ->
+                SetIndication(
+                    side = it.side,
+                    lhsScore = it.lhsScore,
+                    rhsScore = it.rhsScore,
+                    onClick = { indicationState.dismissDialogIndication() },
+                )
+
+            is DialogIndicationParams.Match ->
+                MatchIndication(
+                    side = it.side,
+                    lhsScore = it.lhsScore,
+                    rhsScore = it.rhsScore,
+                    onClick = onMatchFinished,
+                )
         }
-        if (isTieBreak) {
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Surface(
-                    modifier = Modifier.padding(top = 24.dp),
-                    color = MaterialTheme.colorScheme.tertiary,
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Text(
-                        text = "TIE-BREAK",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.onTertiary,
-                        modifier = Modifier.padding(6.dp),
-                    )
-                }
+    }
+}
+
+@Composable
+private fun HideSystemBars() {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        DisposableEffect(Unit) {
+            val window = (view.context as Activity).window
+            val insetsController = WindowCompat.getInsetsController(window, view)
+
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+            onDispose {
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
             }
         }
-        indicationState.dialogIndicationParams?.let {
-            when (it) {
-                is DialogIndicationParams.Game ->
-                    GameIndication(
-                        side = it.side,
-                        lhsScore = it.lhsScore,
-                        rhsScore = it.rhsScore,
-                        onClick = { indicationState.dismissDialogIndication() },
-                    )
+    }
+}
 
-                is DialogIndicationParams.Set ->
-                    SetIndication(
-                        side = it.side,
-                        lhsScore = it.lhsScore,
-                        rhsScore = it.rhsScore,
-                        onClick = { indicationState.dismissDialogIndication() },
-                    )
-
-                is DialogIndicationParams.Match ->
-                    MatchIndication(
-                        side = it.side,
-                        lhsScore = it.lhsScore,
-                        rhsScore = it.rhsScore,
-                        onClick = onMatchFinished,
-                    )
+@Composable
+private fun InfoContainer(
+    lhsPlayerName: String,
+    rhsPlayerName: String,
+    lhsScore: String,
+    rhsScore: String,
+    indicationState: IndicationState,
+    isTieBreak: Boolean,
+    onLhsClick: () -> Unit,
+    onRhsClick: () -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        PointContainer(
+            playerName = lhsPlayerName,
+            score = lhsScore,
+            onClick = onLhsClick,
+            contentDescription = "Left Score",
+            modifier = Modifier.weight(0.5f).fillMaxHeight(),
+            backgroundColor = indicationState.lhsColor.value,
+        )
+        VerticalDivider(thickness = 2.dp)
+        PointContainer(
+            playerName = rhsPlayerName,
+            score = rhsScore,
+            onClick = onRhsClick,
+            contentDescription = "Right Score",
+            modifier = Modifier.weight(0.5f).fillMaxHeight(),
+            backgroundColor = indicationState.rhsColor.value,
+        )
+    }
+    if (isTieBreak) {
+        Box(
+            contentAlignment = Alignment.TopCenter,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Surface(
+                modifier = Modifier.padding(top = 24.dp),
+                color = MaterialTheme.colorScheme.tertiary,
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(
+                    text = "TIE-BREAK",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onTertiary,
+                    modifier = Modifier.padding(6.dp),
+                )
             }
         }
     }
