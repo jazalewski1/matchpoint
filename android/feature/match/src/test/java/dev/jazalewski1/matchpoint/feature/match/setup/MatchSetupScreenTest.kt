@@ -1,4 +1,4 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.setup
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties

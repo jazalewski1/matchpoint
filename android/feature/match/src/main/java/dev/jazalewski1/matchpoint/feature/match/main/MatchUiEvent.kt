@@ -1,11 +1,11 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.main
 
-enum class Side {
+internal enum class Side {
     LHS,
     RHS,
 }
 
-sealed interface MatchUiEvent {
+internal sealed interface MatchUiEvent {
     data class PointScored(val winner: Side) : MatchUiEvent
 
     data class GameFinished(
@@ -27,6 +27,6 @@ sealed interface MatchUiEvent {
     ) : MatchUiEvent
 }
 
-sealed interface MatchNavigationEvent {
+internal sealed interface MatchNavigationEvent {
     data class MatchFinished(val matchId: Long) : MatchNavigationEvent
 }

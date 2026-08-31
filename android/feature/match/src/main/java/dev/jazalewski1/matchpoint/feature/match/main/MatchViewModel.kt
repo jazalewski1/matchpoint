@@ -1,19 +1,19 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.main
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MatchRepository
-import dev.jazalewski1.matchpoint.core.data.Player as DataPlayer
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
-import dev.jazalewski1.matchpoint.domain.tennis.Player
 import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
+import dev.jazalewski1.matchpoint.feature.match.MatchRoute
 import dev.jazalewski1.matchpoint.feature.match.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class MatchViewModel
+internal class MatchViewModel
 @Inject
 constructor(
     private val matchController: MatchController,
@@ -123,12 +123,12 @@ constructor(
 }
 
 private fun TotalMatchState.toUiState(lhsName: String, rhsName: String) =
-    MatchUiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))
+    UiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))
 
 private fun GameState.toUiState(lhsName: String, rhsName: String) =
-    GameUiState(
-        lhsPlayer = PlayerUiState(name = lhsName, score = this.lhsToString()),
-        rhsPlayer = PlayerUiState(name = rhsName, score = this.rhsToString()),
+    UiState.Game(
+        lhsPlayer = UiState.Player(name = lhsName, score = this.lhsToString()),
+        rhsPlayer = UiState.Player(name = rhsName, score = this.rhsToString()),
         isTieBreak = this is GameState.TieBreak,
     )
 
@@ -143,7 +143,7 @@ private fun MatchHistory.Set.toDetails() =
     MatchDetails.Set(
         player1Games = this.player1Games,
         player2Games = this.player2Games,
-        winner = this.winner.toData(),
+        winner = this.winner,
         tieBreak =
             this.tieBreak?.let { tb ->
                 MatchDetails.Set.TieBreak(
@@ -152,9 +152,3 @@ private fun MatchHistory.Set.toDetails() =
                 )
             },
     )
-
-private fun Player.toData() =
-    when (this) {
-        Player.ONE -> DataPlayer.ONE
-        Player.TWO -> DataPlayer.TWO
-    }

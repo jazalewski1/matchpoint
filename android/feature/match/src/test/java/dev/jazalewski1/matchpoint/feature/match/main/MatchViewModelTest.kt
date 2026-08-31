@@ -1,14 +1,13 @@
-package dev.jazalewski1.matchpoint.feature.match
+package dev.jazalewski1.matchpoint.feature.match.main
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MemoryMatchRepository
-import dev.jazalewski1.matchpoint.core.data.Player as DataPlayer
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
-import dev.jazalewski1.matchpoint.domain.tennis.Player
 import dev.jazalewski1.matchpoint.domain.tennis.SetState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
@@ -37,12 +36,12 @@ class MainDispatcherRule(val testDispatcher: TestDispatcher = UnconfinedTestDisp
 private const val LHS_PLAYER_NAME = "Left player"
 private const val RHS_PLAYER_NAME = "Right player"
 
-private val sampleLhsPlayer = PlayerUiState(name = LHS_PLAYER_NAME, score = "0")
-private val sampleRhsPlayer = PlayerUiState(name = RHS_PLAYER_NAME, score = "0")
+private val sampleLhsPlayer = UiState.Player(name = LHS_PLAYER_NAME, score = "0")
+private val sampleRhsPlayer = UiState.Player(name = RHS_PLAYER_NAME, score = "0")
 
 private val sampleGameUiState =
-    GameUiState(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
-private val sampleMatchUiState = MatchUiState(game = sampleGameUiState)
+    UiState.Game(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
+private val sampleMatchUiState = UiState(game = sampleGameUiState)
 
 @RunWith(AndroidJUnit4::class)
 class MatchViewModelTest {
@@ -449,12 +448,12 @@ class MatchViewModelTest {
                         MatchDetails.Set(
                             player1Games = 6,
                             player2Games = 4,
-                            winner = DataPlayer.ONE,
+                            winner = Player.ONE,
                         ),
                         MatchDetails.Set(
                             player1Games = 7,
                             player2Games = 6,
-                            winner = DataPlayer.ONE,
+                            winner = Player.ONE,
                             tieBreak =
                                 MatchDetails.Set.TieBreak(
                                     player1Points = 7,
@@ -464,7 +463,7 @@ class MatchViewModelTest {
                         MatchDetails.Set(
                             player1Games = 6,
                             player2Games = 2,
-                            winner = DataPlayer.ONE,
+                            winner = Player.ONE,
                         ),
                     ),
             )

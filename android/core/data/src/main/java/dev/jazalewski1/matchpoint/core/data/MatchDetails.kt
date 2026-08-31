@@ -1,5 +1,7 @@
 package dev.jazalewski1.matchpoint.core.data
 
+import dev.jazalewski1.matchpoint.core.common.Player
+
 data class MatchDetails(
     val player1Name: String,
     val player2Name: String,
@@ -13,9 +15,4 @@ data class MatchDetails(
     ) {
         data class TieBreak(val player1Points: Int, val player2Points: Int)
     }
-}
-
-enum class Player {
-    ONE,
-    TWO,
 }

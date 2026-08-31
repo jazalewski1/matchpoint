@@ -11,6 +11,7 @@ java {
 kotlin { compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11 } }
 
 dependencies {
+    implementation(project(":core:common"))
     testImplementation(libs.assertj.core)
     testImplementation(libs.junit)
 }
