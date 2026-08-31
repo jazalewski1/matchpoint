@@ -19,4 +19,14 @@ sealed interface MatchUiEvent {
         val lhsScore: String,
         val rhsScore: String,
     ) : MatchUiEvent
+
+    data class MatchFinished(
+        val winner: Side,
+        val lhsScore: String,
+        val rhsScore: String,
+    ) : MatchUiEvent
+}
+
+sealed interface MatchNavigationEvent {
+    data class MatchFinished(val matchId: Long) : MatchNavigationEvent
 }

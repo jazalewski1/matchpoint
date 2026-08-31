@@ -3,12 +3,11 @@ package dev.jazalewski1.matchpoint.domain.tennis
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-private val sampleMatchState =
-    MatchState(
+private val sampleTotalMatchState =
+    TotalMatchState(
         game = GameState.default(),
         set = SetState.default(),
-        lhsSets = 0,
-        rhsSets = 0,
+        match = MatchState.default(),
     )
 
 class MatchControllerImplTest {
@@ -36,11 +35,19 @@ class MatchControllerImplTest {
         assertThat(event).isEqualTo(MatchEvent.SetWon)
     }
 
+    private fun assertLhsMatchWon(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.MatchWon)
+    }
+
+    private fun assertRhsMatchWon(event: MatchEvent) {
+        assertThat(event).isEqualTo(MatchEvent.MatchWon)
+    }
+
     @Test
     fun `has love all at beginning`() {
         val controller = MatchControllerImpl()
 
-        val expected = sampleMatchState
+        val expected = sampleTotalMatchState
         assertThat(controller.getState()).isEqualTo(expected)
     }
 
@@ -71,7 +78,7 @@ class MatchControllerImplTest {
         assertLhsGameWon(controller.addPointToLhs())
 
         assertThat(controller.getState())
-            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 1, rhsGames = 0)))
+            .isEqualTo(sampleTotalMatchState.copy(set = SetState(lhsGames = 1, rhsGames = 0)))
     }
 
     @Test
@@ -83,7 +90,7 @@ class MatchControllerImplTest {
         assertRhsGameWon(controller.addPointToRhs())
 
         assertThat(controller.getState())
-            .isEqualTo(sampleMatchState.copy(set = SetState(lhsGames = 0, rhsGames = 1)))
+            .isEqualTo(sampleTotalMatchState.copy(set = SetState(lhsGames = 0, rhsGames = 1)))
     }
 
     private fun advanceToDeuce(controller: MatchControllerImpl) {
@@ -147,7 +154,8 @@ class MatchControllerImplTest {
         scorePointsForLhs(controller, numOfPoints = 3)
         assertLhsSetWon(controller.addPointToLhs())
 
-        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(lhsSets = 1))
+        assertThat(controller.getState())
+            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 1, rhsSets = 0)))
     }
 
     @Test
@@ -159,7 +167,8 @@ class MatchControllerImplTest {
         scorePointsForRhs(controller, numOfPoints = 3)
         assertRhsSetWon(controller.addPointToRhs())
 
-        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(rhsSets = 1))
+        assertThat(controller.getState())
+            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 0, rhsSets = 1)))
     }
 
     @Test
@@ -173,7 +182,7 @@ class MatchControllerImplTest {
 
         assertThat(controller.getState())
             .isEqualTo(
-                sampleMatchState.copy(
+                sampleTotalMatchState.copy(
                     game = GameState.TieBreak(lhsPoints = 0, rhsPoints = 0),
                     set = SetState(lhsGames = 6, rhsGames = 6),
                 )
@@ -191,7 +200,7 @@ class MatchControllerImplTest {
 
         assertThat(controller.getState())
             .isEqualTo(
-                sampleMatchState.copy(
+                sampleTotalMatchState.copy(
                     game = GameState.TieBreak(lhsPoints = 0, rhsPoints = 0),
                     set = SetState(lhsGames = 6, rhsGames = 6),
                 )
@@ -214,7 +223,8 @@ class MatchControllerImplTest {
 
         assertLhsSetWon(controller.addPointToLhs())
 
-        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(lhsSets = 1))
+        assertThat(controller.getState())
+            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 1, rhsSets = 0)))
     }
 
     @Test
@@ -227,6 +237,108 @@ class MatchControllerImplTest {
 
         assertRhsSetWon(controller.addPointToRhs())
 
-        assertThat(controller.getState()).isEqualTo(sampleMatchState.copy(rhsSets = 1))
+        assertThat(controller.getState())
+            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 0, rhsSets = 1)))
+    }
+
+    private fun winSetForLhs(controller: MatchController) {
+        repeat(6) {
+            winGameForLhs(controller)
+        }
+    }
+
+    private fun winSetForRhs(controller: MatchController) {
+        repeat(6) {
+            winGameForRhs(controller)
+        }
+    }
+
+    @Test
+    fun `lhs wins match`() {
+        val controller = MatchControllerImpl()
+
+        repeat(1) { winSetForRhs(controller) }
+        repeat(2) { winSetForLhs(controller) }
+
+        repeat(5) { winGameForLhs(controller) }
+        scorePointsForLhs(controller, numOfPoints = 3)
+
+        assertLhsMatchWon(controller.addPointToLhs())
+
+        assertThat(controller.getState())
+            .isEqualTo(
+                TotalMatchState(
+                    game =
+                        GameState.Regular.Main(lhsPoints = Points.FORTY, rhsPoints = Points.LOVE),
+                    set = SetState(lhsGames = 6, rhsGames = 0),
+                    match = MatchState(lhsSets = 3, rhsSets = 1),
+                )
+            )
+    }
+
+    @Test
+    fun `rhs wins match`() {
+        val controller = MatchControllerImpl()
+
+        repeat(1) { winSetForLhs(controller) }
+        repeat(2) { winSetForRhs(controller) }
+
+        repeat(5) { winGameForRhs(controller) }
+        scorePointsForRhs(controller, numOfPoints = 3)
+
+        assertRhsMatchWon(controller.addPointToRhs())
+
+        assertThat(controller.getState())
+            .isEqualTo(
+                TotalMatchState(
+                    game =
+                        GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY),
+                    set = SetState(lhsGames = 0, rhsGames = 6),
+                    match = MatchState(lhsSets = 1, rhsSets = 3),
+                )
+            )
+    }
+
+    @Test
+    fun `returns match history`() {
+        val controller = MatchControllerImpl()
+
+        repeat(4) { winGameForRhs(controller) }
+        repeat(6) { winGameForLhs(controller) }
+
+        advanceToTieBreak(controller)
+        scorePointsForRhs(controller, numOfPoints = 0)
+        scorePointsForLhs(controller, numOfPoints = 7)
+
+        repeat(2) { winGameForRhs(controller) }
+        repeat(6) { winGameForLhs(controller) }
+
+        val expected =
+            MatchHistory(
+                sets =
+                    listOf(
+                        MatchHistory.Set(
+                            player1Games = 6,
+                            player2Games = 4,
+                            winner = Player.ONE,
+                        ),
+                        MatchHistory.Set(
+                            player1Games = 7,
+                            player2Games = 6,
+                            winner = Player.ONE,
+                            tieBreak =
+                                MatchHistory.Set.TieBreak(
+                                    player1Points = 7,
+                                    player2Points = 0,
+                                ),
+                        ),
+                        MatchHistory.Set(
+                            player1Games = 6,
+                            player2Games = 2,
+                            winner = Player.ONE,
+                        ),
+                    )
+            )
+        assertThat(controller.getHistory()).isEqualTo(expected)
     }
 }

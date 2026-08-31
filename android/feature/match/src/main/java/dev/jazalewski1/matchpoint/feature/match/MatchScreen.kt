@@ -40,8 +40,10 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
@@ -52,7 +54,10 @@ internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
 internal const val POINT_INDICATION_PULSE_REPS = 3
 
 @Composable
-internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
+internal fun MatchScreen(
+    onExit: (Long) -> Unit,
+    viewModel: MatchViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     MatchScreen(
         lhsPlayerName = uiState.game.lhsPlayer.name,
@@ -63,6 +68,9 @@ internal fun MatchScreen(viewModel: MatchViewModel = hiltViewModel()) {
         onRhsClick = viewModel::onRhsPressed,
         isTieBreak = uiState.game.isTieBreak,
         events = viewModel.uiEvents,
+        onMatchFinished = viewModel::onFinished,
+        onExit = onExit,
+        navigationEvents = viewModel.navigationEvents,
     )
 }
 
@@ -76,12 +84,23 @@ internal fun MatchScreen(
     onRhsClick: () -> Unit,
     isTieBreak: Boolean,
     events: SharedFlow<MatchUiEvent>,
+    onMatchFinished: () -> Unit,
+    onExit: (Long) -> Unit,
+    navigationEvents: Flow<MatchNavigationEvent>,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
         val activity = context as? Activity
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
+    }
+
+    LaunchedEffect(Unit) {
+        navigationEvents.collect { event ->
+            when (event) {
+                is MatchNavigationEvent.MatchFinished -> onExit(event.matchId)
+            }
+        }
     }
 
     val indicationState = rememberIndicationState()
@@ -91,6 +110,7 @@ internal fun MatchScreen(
                 is MatchUiEvent.PointScored -> indicationState.process(event)
                 is MatchUiEvent.GameFinished -> indicationState.process(event)
                 is MatchUiEvent.SetFinished -> indicationState.process(event)
+                is MatchUiEvent.MatchFinished -> indicationState.process(event)
             }
         }
     }
@@ -151,6 +171,14 @@ internal fun MatchScreen(
                         rhsScore = it.rhsScore,
                         onClick = { indicationState.dismissDialogIndication() },
                     )
+
+                is DialogIndicationParams.Match ->
+                    MatchIndication(
+                        side = it.side,
+                        lhsScore = it.lhsScore,
+                        rhsScore = it.rhsScore,
+                        onClick = onMatchFinished,
+                    )
             }
         }
     }
@@ -164,6 +192,12 @@ private sealed interface DialogIndicationParams {
     ) : DialogIndicationParams
 
     data class Set(
+        val side: Side,
+        val lhsScore: String,
+        val rhsScore: String,
+    ) : DialogIndicationParams
+
+    data class Match(
         val side: Side,
         val lhsScore: String,
         val rhsScore: String,
@@ -221,6 +255,20 @@ private class IndicationState(private val scope: CoroutineScope) {
                 )
             delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
             dialogIndicationParams = null
+        }
+    }
+
+    fun process(event: MatchUiEvent.MatchFinished) {
+        job?.cancel()
+        job = scope.launch {
+            lhsColor.snapTo(backgroundLight)
+            rhsColor.snapTo(backgroundLight)
+            dialogIndicationParams =
+                DialogIndicationParams.Match(
+                    side = event.winner,
+                    lhsScore = event.lhsScore,
+                    rhsScore = event.rhsScore,
+                )
         }
     }
 
@@ -305,6 +353,40 @@ private fun SetIndication(
         ) {
             Text(
                 text = "SET",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 182.sp,
+            )
+            Text(
+                text = "$lhsScore : $rhsScore",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 92.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MatchIndication(
+    side: Side,
+    lhsScore: String,
+    rhsScore: String,
+    onClick: () -> Unit,
+) {
+    DialogIndication(
+        side = side,
+        onClick = onClick,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Text(
+                text = "MATCH",
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Black,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -430,6 +512,9 @@ private fun ScreenPreviewBase(
         onRhsClick = {},
         isTieBreak = isTieBreak,
         events = MutableSharedFlow(),
+        onMatchFinished = {},
+        onExit = {},
+        navigationEvents = flowOf(),
     )
 
 @HorizontalPreview
@@ -470,8 +555,21 @@ private fun LhsGameIndicationPreview() {
 private fun RhsSetIndicationPreview() {
     AppTheme {
         SetIndication(
-            side = Side.LHS,
+            side = Side.RHS,
             lhsScore = "2",
+            rhsScore = "1",
+            onClick = {},
+        )
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun LhsMatchIndicationPreview() {
+    AppTheme {
+        MatchIndication(
+            side = Side.LHS,
+            lhsScore = "3",
             rhsScore = "1",
             onClick = {},
         )

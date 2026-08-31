@@ -2,27 +2,28 @@ package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
-import dev.jazalewski1.matchpoint.domain.tennis.details.*
+
+private const val NUM_OF_SETS_TO_WIN = 3 // TODO: Temporary until setting is implemented
 
 class MatchControllerImpl : MatchController {
     private var game: Game = RegularGame()
     private var set = Set()
-    // To be handled by Match class
-    private var player1Sets = 0
-    private var player2Sets = 0
+    private val match = Match(numOfSetsToWin = NUM_OF_SETS_TO_WIN)
+    private val setHistory = mutableListOf<MatchHistory.Set>()
 
-    override fun getState(): MatchState {
-        return MatchState(
+    override fun getState(): TotalMatchState {
+        return TotalMatchState(
             game = game.toState(),
             set = set.toState(),
-            lhsSets = player1Sets,
-            rhsSets = player2Sets,
+            match = match.toState(),
         )
     }
 
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
 
     override fun addPointToRhs(): MatchEvent = processPointScored(Player.TWO)
+
+    override fun getHistory() = MatchHistory(sets = setHistory)
 
     private fun processPointScored(winner: Player): MatchEvent =
         when (game.addPoint(winner)) {
@@ -36,20 +37,42 @@ class MatchControllerImpl : MatchController {
                 game = RegularGame()
                 return MatchEvent.GameWon
             }
-            is SetOutcome.Finished -> {
-                game = RegularGame()
-                set = Set()
-                when (winner) {
-                    Player.ONE -> player1Sets += 1
-                    Player.TWO -> player2Sets += 1
-                }
-                return MatchEvent.SetWon
-            }
             is SetOutcome.Tiebreak -> {
                 game = TieBreakGame()
                 return MatchEvent.GameWon
             }
+            is SetOutcome.Finished -> return processSetFinished(winner = winner)
         }
+    }
+
+    private fun processSetFinished(winner: Player): MatchEvent {
+        saveSetToHistory(winner)
+        when (match.addSet(winner)) {
+            is MatchOutcome.None -> {
+                game = RegularGame()
+                set = Set()
+                return MatchEvent.SetWon
+            }
+            is MatchOutcome.Finished -> return MatchEvent.MatchWon
+        }
+    }
+
+    private fun saveSetToHistory(winner: Player) {
+        val storedTb =
+            (game as? TieBreakGame)?.let { tieBreakGame ->
+                MatchHistory.Set.TieBreak(
+                    player1Points = tieBreakGame.player1,
+                    player2Points = tieBreakGame.player2,
+                )
+            }
+        val storedSet =
+            MatchHistory.Set(
+                player1Games = set.player1Games,
+                player2Games = set.player2Games,
+                winner = winner,
+                tieBreak = storedTb,
+            )
+        setHistory.add(storedSet)
     }
 }
 
@@ -80,3 +103,5 @@ private fun Game.toState() =
     }
 
 private fun Set.toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
+
+private fun Match.toState() = MatchState(lhsSets = player1Sets, rhsSets = player2Sets)

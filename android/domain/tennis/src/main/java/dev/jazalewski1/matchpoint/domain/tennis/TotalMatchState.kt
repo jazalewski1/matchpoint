@@ -30,8 +30,16 @@ data class SetState(
 }
 
 data class MatchState(
-    val game: GameState,
-    val set: SetState,
     val lhsSets: Int,
     val rhsSets: Int,
+) {
+    companion object {
+        fun default() = MatchState(lhsSets = 0, rhsSets = 0)
+    }
+}
+
+data class TotalMatchState(
+    val game: GameState,
+    val set: SetState,
+    val match: MatchState,
 )

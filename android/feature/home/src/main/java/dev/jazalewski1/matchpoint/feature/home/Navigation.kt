@@ -14,5 +14,7 @@ fun NavGraphBuilder.homeDestination(onStartClick: () -> Unit, onStartDemoClick: 
 }
 
 fun NavController.navigateToHomeScreen() {
-    navigate(route = HomeRoute)
+    navigate(route = HomeRoute) {
+        popUpTo<HomeRoute> { inclusive = true }
+    }
 }

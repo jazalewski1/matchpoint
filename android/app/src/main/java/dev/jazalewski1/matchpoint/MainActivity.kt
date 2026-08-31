@@ -13,6 +13,7 @@ import dagger.hilt.android.HiltAndroidApp
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.feature.home.HomeRoute
 import dev.jazalewski1.matchpoint.feature.home.homeDestination
+import dev.jazalewski1.matchpoint.feature.home.navigateToHomeScreen
 import dev.jazalewski1.matchpoint.feature.match.*
 
 @AndroidEntryPoint
@@ -33,7 +34,10 @@ private fun App() {
         homeDestination(
             onStartClick = { navController.navigateToMatchSetupScreen() },
             onStartDemoClick = {
-                navController.navigateToMatchScreen(player1Name = "Nadal", player2Name = "Federer")
+                navController.navigateToDemoMatchScreen(
+                    player1Name = "Nadal",
+                    player2Name = "Federer",
+                )
             },
         )
 
@@ -43,6 +47,12 @@ private fun App() {
             }
         )
 
-        matchDestination()
+        matchDestination(
+            onExit = { matchId ->
+                navController.navigateToMatchSummaryScreen(matchId = matchId)
+            }
+        )
+
+        matchSummaryDestination(onReturn = { navController.navigateToHomeScreen() })
     }
 }
