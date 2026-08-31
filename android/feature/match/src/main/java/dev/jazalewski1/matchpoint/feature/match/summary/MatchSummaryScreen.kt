@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
@@ -52,11 +53,6 @@ internal fun MatchSummaryScreen(
             }
         }
     }
-}
-
-private enum class Player {
-    ONE,
-    TWO,
 }
 
 @Composable

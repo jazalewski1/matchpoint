@@ -1,6 +1,6 @@
 package dev.jazalewski1.matchpoint.domain.tennis.controllers
 
-import dev.jazalewski1.matchpoint.domain.tennis.Player
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.domain.tennis.Points
 
 internal sealed interface GameOutcome {

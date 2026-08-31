@@ -1,5 +1,7 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
+import dev.jazalewski1.matchpoint.core.common.Player
+
 data class MatchHistory(val sets: List<Set>) {
     data class Set(
         val player1Games: Int,

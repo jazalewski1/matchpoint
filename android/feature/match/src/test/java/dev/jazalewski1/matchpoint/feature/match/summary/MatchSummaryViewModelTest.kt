@@ -2,9 +2,9 @@ package dev.jazalewski1.matchpoint.feature.match.summary
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MemoryMatchRepository
-import dev.jazalewski1.matchpoint.core.data.Player
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

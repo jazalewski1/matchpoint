@@ -5,14 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MatchRepository
-import dev.jazalewski1.matchpoint.core.data.Player as DataPlayer
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
-import dev.jazalewski1.matchpoint.domain.tennis.Player
 import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
 import dev.jazalewski1.matchpoint.feature.match.MatchRoute
 import dev.jazalewski1.matchpoint.feature.match.util.*
@@ -144,7 +143,7 @@ private fun MatchHistory.Set.toDetails() =
     MatchDetails.Set(
         player1Games = this.player1Games,
         player2Games = this.player2Games,
-        winner = this.winner.toData(),
+        winner = this.winner,
         tieBreak =
             this.tieBreak?.let { tb ->
                 MatchDetails.Set.TieBreak(
@@ -153,9 +152,3 @@ private fun MatchHistory.Set.toDetails() =
                 )
             },
     )
-
-private fun Player.toData() =
-    when (this) {
-        Player.ONE -> DataPlayer.ONE
-        Player.TWO -> DataPlayer.TWO
-    }

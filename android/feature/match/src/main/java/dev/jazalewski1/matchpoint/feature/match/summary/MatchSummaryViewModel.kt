@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchRepository
-import dev.jazalewski1.matchpoint.core.data.Player
 import dev.jazalewski1.matchpoint.feature.match.MatchSummaryRoute
 import javax.inject.Inject
 

@@ -37,3 +37,5 @@ include(":feature:home")
 include(":feature:match")
 
 include(":core:data")
+
+include(":core:common")

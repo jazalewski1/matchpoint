@@ -1,5 +1,6 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
 

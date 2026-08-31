@@ -3,12 +3,11 @@ package dev.jazalewski1.matchpoint.feature.match.main
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MemoryMatchRepository
-import dev.jazalewski1.matchpoint.core.data.Player as DataPlayer
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
-import dev.jazalewski1.matchpoint.domain.tennis.Player
 import dev.jazalewski1.matchpoint.domain.tennis.SetState
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
@@ -449,12 +448,12 @@ class MatchViewModelTest {
                         MatchDetails.Set(
                             player1Games = 6,
                             player2Games = 4,
-                            winner = DataPlayer.ONE,
+                            winner = Player.ONE,
                         ),
                         MatchDetails.Set(
                             player1Games = 7,
                             player2Games = 6,
-                            winner = DataPlayer.ONE,
+                            winner = Player.ONE,
                             tieBreak =
                                 MatchDetails.Set.TieBreak(
                                     player1Points = 7,
@@ -464,7 +463,7 @@ class MatchViewModelTest {
                         MatchDetails.Set(
                             player1Games = 6,
                             player2Games = 2,
-                            winner = DataPlayer.ONE,
+                            winner = Player.ONE,
                         ),
                     ),
             )
