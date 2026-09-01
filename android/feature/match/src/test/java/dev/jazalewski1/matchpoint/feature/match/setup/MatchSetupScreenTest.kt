@@ -21,8 +21,9 @@ class MatchSetupScreenTest {
     @get:Rule val rule = createComposeRule()
 
     @Composable
-    private fun SutScreen(onStart: (String, String) -> Unit = { p1, p2 -> }) =
-        MatchSetupScreen(onStart = onStart)
+    private fun SutScreen(
+        onStart: (String, String, Int) -> Unit = { p1, p2, numberOfSetsToWin -> }
+    ) = MatchSetupScreen(onStart = onStart)
 
     @Test
     fun `display header`() {
@@ -59,6 +60,19 @@ class MatchSetupScreenTest {
             performTextReplacement(newName)
             assert(hasEditableText(newName))
         }
+    }
+
+    @Test
+    fun `displays set option buttons`() {
+        rule.setContent { SutScreen() }
+
+        rule
+            .onNodeWithText("Best of 1")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertHasClickAction()
+        rule.onNodeWithText("Best of 3").assertIsDisplayed().assertHasClickAction()
+        rule.onNodeWithText("Best of 5").assertIsDisplayed().assertHasClickAction()
     }
 
     @Test
@@ -165,15 +179,39 @@ class MatchSetupScreenTest {
 
     @Test
     fun `when start button is clicked then callback with input names is triggered`() {
-        var names: Pair<String, String>? = null
-        rule.setContent { SutScreen(onStart = { n1, n2 -> names = Pair(n1, n2) }) }
+        var params: Triple<String, String, Int>? = null
+        rule.setContent {
+            SutScreen(
+                onStart = { n1, n2, numOfSetsToWin -> params = Triple(n1, n2, numOfSetsToWin) }
+            )
+        }
 
         val name1 = "Roger"
         rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement(name1)
         val name2 = "Rafael"
         rule.onNodeWithContentDescription("Player 2 Name").performTextReplacement(name2)
+        rule.onNodeWithText("Best of 3").performScrollTo().performClick()
+        val numOfSetsToWin = 2
+
         rule.onNodeWithContentDescription("Starts new match").performClick()
 
-        assertEquals(Pair(name1, name2), names)
+        assertEquals(Triple(name1, name2, numOfSetsToWin), params)
+    }
+
+    @Test
+    fun `displays set option information`() {
+        rule.setContent { SutScreen() }
+
+        rule.onNodeWithText("Best of 1").performScrollTo().performClick()
+        rule
+            .onNodeWithText("First player to win 1 set wins the match.")
+            .performScrollTo()
+            .assertIsDisplayed()
+
+        rule.onNodeWithText("Best of 3").performScrollTo().performClick()
+        rule.onNodeWithText("First player to win 2 sets wins the match.").assertIsDisplayed()
+
+        rule.onNodeWithText("Best of 5").performScrollTo().performClick()
+        rule.onNodeWithText("First player to win 3 sets wins the match.").assertIsDisplayed()
     }
 }
