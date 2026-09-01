@@ -37,13 +37,14 @@ private fun App() {
                 navController.navigateToDemoMatchScreen(
                     player1Name = "Nadal",
                     player2Name = "Federer",
+                    numOfSetsToWin = 2,
                 )
             },
         )
 
         matchSetupDestination(
-            onStart = { player1Name, player2Name ->
-                navController.navigateToMatchScreen(player1Name, player2Name)
+            onStart = { player1Name, player2Name, numOfSetsToWin ->
+                navController.navigateToMatchScreen(player1Name, player2Name, numOfSetsToWin)
             }
         )
 

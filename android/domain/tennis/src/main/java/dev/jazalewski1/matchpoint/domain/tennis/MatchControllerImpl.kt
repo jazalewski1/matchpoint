@@ -4,12 +4,10 @@ import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
 
-private const val NUM_OF_SETS_TO_WIN = 3 // TODO: Temporary until setting is implemented
-
-class MatchControllerImpl : MatchController {
+class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
     private var game: Game = RegularGame()
     private var set = Set()
-    private val match = Match(numOfSetsToWin = NUM_OF_SETS_TO_WIN)
+    private val match = Match(numOfSetsToWin = numOfSetsToWin)
     private val setHistory = mutableListOf<MatchHistory.Set>()
 
     override fun getState(): TotalMatchState {

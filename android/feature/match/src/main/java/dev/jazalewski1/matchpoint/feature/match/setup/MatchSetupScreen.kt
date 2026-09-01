@@ -32,7 +32,7 @@ private enum class SetOption(val numOfSets: Int, val numOfSetsToWin: Int) {
 }
 
 @Composable
-internal fun MatchSetupScreen(onStart: (String, String) -> Unit) {
+internal fun MatchSetupScreen(onStart: (String, String, Int) -> Unit) {
     val player1NameInput = rememberNameInputState()
     val player2NameInput = rememberNameInputState()
     var selectedSetOptionIndex by remember { mutableIntStateOf(0) }
@@ -53,7 +53,13 @@ internal fun MatchSetupScreen(onStart: (String, String) -> Unit) {
         isPlayer2NameValid = player2NameInput.errors.isEmpty(),
         isInputValid = isInputValid,
         selectedSetOptionIndex = selectedSetOptionIndex,
-        onStartClick = { onStart(player1NameInput.text, player2NameInput.text) },
+        onStartClick = {
+            onStart(
+                player1NameInput.text,
+                player2NameInput.text,
+                SetOption.entries[selectedSetOptionIndex].numOfSetsToWin,
+            )
+        },
         onSelectedSetOption = { index -> selectedSetOptionIndex = index },
         errors = errors,
     )

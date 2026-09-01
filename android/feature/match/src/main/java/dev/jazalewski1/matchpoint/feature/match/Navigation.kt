@@ -10,11 +10,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable object MatchSetupRoute
 
-@Serializable data class MatchRoute(val player1Name: String, val player2Name: String)
+@Serializable
+data class MatchRoute(val player1Name: String, val player2Name: String, val numOfSetsToWin: Int)
 
 @Serializable data class MatchSummaryRoute(val matchId: Long)
 
-fun NavGraphBuilder.matchSetupDestination(onStart: (String, String) -> Unit) {
+fun NavGraphBuilder.matchSetupDestination(onStart: (String, String, Int) -> Unit) {
     composable<MatchSetupRoute> { MatchSetupScreen(onStart = onStart) }
 }
 
@@ -30,14 +31,22 @@ fun NavController.navigateToMatchSetupScreen() {
     navigate(route = MatchSetupRoute)
 }
 
-fun NavController.navigateToMatchScreen(player1Name: String, player2Name: String) {
-    navigate(route = MatchRoute(player1Name, player2Name)) {
+fun NavController.navigateToMatchScreen(
+    player1Name: String,
+    player2Name: String,
+    numOfSetsToWin: Int,
+) {
+    navigate(route = MatchRoute(player1Name, player2Name, numOfSetsToWin)) {
         popUpTo<MatchSetupRoute> { inclusive = true }
     }
 }
 
-fun NavController.navigateToDemoMatchScreen(player1Name: String, player2Name: String) {
-    navigate(route = MatchRoute(player1Name, player2Name))
+fun NavController.navigateToDemoMatchScreen(
+    player1Name: String,
+    player2Name: String,
+    numOfSetsToWin: Int,
+) {
+    navigate(route = MatchRoute(player1Name, player2Name, numOfSetsToWin))
 }
 
 fun NavController.navigateToMatchSummaryScreen(matchId: Long) {

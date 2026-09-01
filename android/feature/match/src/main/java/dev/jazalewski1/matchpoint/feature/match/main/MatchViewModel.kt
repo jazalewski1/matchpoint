@@ -9,7 +9,7 @@ import dev.jazalewski1.matchpoint.core.common.Player
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MatchRepository
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
-import dev.jazalewski1.matchpoint.domain.tennis.MatchController
+import dev.jazalewski1.matchpoint.domain.tennis.MatchControllerFactory
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
 import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
@@ -29,12 +29,14 @@ import kotlinx.coroutines.launch
 internal class MatchViewModel
 @Inject
 constructor(
-    private val matchController: MatchController,
+    matchControllerFactory: MatchControllerFactory,
     private val matchRepository: MatchRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val player1Name = savedStateHandle.toRoute<MatchRoute>().player1Name
-    private val player2Name = savedStateHandle.toRoute<MatchRoute>().player2Name
+    private val route = savedStateHandle.toRoute<MatchRoute>()
+    private val player1Name = route.player1Name
+    private val player2Name = route.player2Name
+    private val matchController = matchControllerFactory.create(route.numOfSetsToWin)
     private val _uiState =
         MutableStateFlow(
             matchController.getState().toUiState(lhsName = player1Name, rhsName = player2Name)
