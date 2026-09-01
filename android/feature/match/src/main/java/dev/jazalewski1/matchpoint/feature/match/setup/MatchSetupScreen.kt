@@ -1,6 +1,10 @@
 package dev.jazalewski1.matchpoint.feature.match.setup
 
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -90,7 +94,9 @@ private fun Screen(
             Header()
             Spacer(Modifier.height(16.dp))
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).weight(1f),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).weight(1f).verticalScroll(
+                    rememberScrollState()
+                ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 NameInputField(

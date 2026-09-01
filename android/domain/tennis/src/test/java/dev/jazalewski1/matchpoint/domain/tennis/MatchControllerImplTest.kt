@@ -46,7 +46,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `has love all at beginning`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         val expected = sampleTotalMatchState
         assertThat(controller.getState()).isEqualTo(expected)
@@ -54,7 +54,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `lhs point scored`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         assertLhsPointScored(controller.addPointToLhs())
         assertThat(controller.getState().game)
@@ -63,7 +63,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `rhs point scored`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         assertRhsPointScored(controller.addPointToRhs())
         assertThat(controller.getState().game)
@@ -72,7 +72,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `lhs wins game`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(2) { controller.addPointToRhs() }
         repeat(3) { controller.addPointToLhs() }
@@ -84,7 +84,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `rhs wins game`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(2) { controller.addPointToLhs() }
         repeat(3) { controller.addPointToRhs() }
@@ -101,7 +101,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `game is deuce`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToDeuce(controller)
 
@@ -110,7 +110,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `advantage for lhs`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToDeuce(controller)
         assertLhsPointScored(controller.addPointToLhs())
@@ -121,7 +121,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `advantage for rhs`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToDeuce(controller)
         assertRhsPointScored(controller.addPointToRhs())
@@ -148,7 +148,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `lhs wins set`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(4) { winGameForRhs(controller) }
         repeat(5) { winGameForLhs(controller) }
@@ -161,7 +161,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `rhs wins set`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(4) { winGameForLhs(controller) }
         repeat(5) { winGameForRhs(controller) }
@@ -174,7 +174,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `lhs ties to tiebreak`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(5) { winGameForLhs(controller) }
         repeat(6) { winGameForRhs(controller) }
@@ -192,7 +192,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `rhs ties to tiebreak`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(5) { winGameForRhs(controller) }
         repeat(6) { winGameForLhs(controller) }
@@ -216,7 +216,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `lhs wins tiebreak`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToTieBreak(controller)
         scorePointsForRhs(controller, numOfPoints = 5)
@@ -230,7 +230,7 @@ class MatchControllerImplTest {
 
     @Test
     fun `rhs wins tiebreak`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToTieBreak(controller)
         scorePointsForLhs(controller, numOfPoints = 5)
@@ -255,11 +255,11 @@ class MatchControllerImplTest {
     }
 
     @Test
-    fun `lhs wins match`() {
-        val controller = MatchControllerImpl()
+    fun `lhs wins match with required number of sets`() {
+        val controller = MatchControllerImpl(numOfSetsToWin = 4)
 
-        repeat(1) { winSetForRhs(controller) }
-        repeat(2) { winSetForLhs(controller) }
+        repeat(2) { winSetForRhs(controller) }
+        repeat(3) { winSetForLhs(controller) }
 
         repeat(5) { winGameForLhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
@@ -272,17 +272,17 @@ class MatchControllerImplTest {
                     game =
                         GameState.Regular.Main(lhsPoints = Points.FORTY, rhsPoints = Points.LOVE),
                     set = SetState(lhsGames = 6, rhsGames = 0),
-                    match = MatchState(lhsSets = 3, rhsSets = 1),
+                    match = MatchState(lhsSets = 4, rhsSets = 2),
                 )
             )
     }
 
     @Test
-    fun `rhs wins match`() {
-        val controller = MatchControllerImpl()
+    fun `rhs wins match with required number of sets`() {
+        val controller = MatchControllerImpl(numOfSetsToWin = 4)
 
-        repeat(1) { winSetForLhs(controller) }
-        repeat(2) { winSetForRhs(controller) }
+        repeat(2) { winSetForLhs(controller) }
+        repeat(3) { winSetForRhs(controller) }
 
         repeat(5) { winGameForRhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
@@ -295,14 +295,14 @@ class MatchControllerImplTest {
                     game =
                         GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY),
                     set = SetState(lhsGames = 0, rhsGames = 6),
-                    match = MatchState(lhsSets = 1, rhsSets = 3),
+                    match = MatchState(lhsSets = 2, rhsSets = 4),
                 )
             )
     }
 
     @Test
     fun `returns match history`() {
-        val controller = MatchControllerImpl()
+        val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         repeat(4) { winGameForRhs(controller) }
         repeat(6) { winGameForLhs(controller) }
