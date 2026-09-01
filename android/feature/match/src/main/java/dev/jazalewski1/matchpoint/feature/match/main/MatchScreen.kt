@@ -91,13 +91,7 @@ internal fun MatchScreen(
     onExit: (Long) -> Unit,
     navigationEvents: Flow<MatchNavigationEvent>,
 ) {
-    val context = LocalContext.current
-    DisposableEffect(Unit) {
-        val activity = context as? Activity
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
-    }
-
+    RotateScreenToLandscape()
     HideSystemBars()
 
     LaunchedEffect(Unit) {
@@ -120,7 +114,7 @@ internal fun MatchScreen(
         }
     }
 
-    InfoContainer(
+    ScoreContainer(
         lhsPlayerName = lhsPlayerName,
         rhsPlayerName = rhsPlayerName,
         lhsScore = lhsScore,
@@ -131,32 +125,19 @@ internal fun MatchScreen(
         onRhsClick = onRhsClick,
     )
 
-    indicationState.dialogIndicationParams?.let {
-        when (it) {
-            is DialogIndicationParams.Game ->
-                GameIndication(
-                    side = it.side,
-                    lhsScore = it.lhsScore,
-                    rhsScore = it.rhsScore,
-                    onClick = { indicationState.dismissDialogIndication() },
-                )
+    GameEventIndication(
+        indicationState = indicationState,
+        onMatchFinished = onMatchFinished,
+    )
+}
 
-            is DialogIndicationParams.Set ->
-                SetIndication(
-                    side = it.side,
-                    lhsScore = it.lhsScore,
-                    rhsScore = it.rhsScore,
-                    onClick = { indicationState.dismissDialogIndication() },
-                )
-
-            is DialogIndicationParams.Match ->
-                MatchIndication(
-                    side = it.side,
-                    lhsScore = it.lhsScore,
-                    rhsScore = it.rhsScore,
-                    onClick = onMatchFinished,
-                )
-        }
+@Composable
+private fun RotateScreenToLandscape() {
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val activity = context as? Activity
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
 }
 
@@ -180,7 +161,7 @@ private fun HideSystemBars() {
 }
 
 @Composable
-private fun InfoContainer(
+private fun ScoreContainer(
     lhsPlayerName: String,
     rhsPlayerName: String,
     lhsScore: String,
@@ -191,7 +172,7 @@ private fun InfoContainer(
     onRhsClick: () -> Unit,
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
-        PointContainer(
+        PlayerSection(
             playerName = lhsPlayerName,
             score = lhsScore,
             onClick = onLhsClick,
@@ -200,7 +181,7 @@ private fun InfoContainer(
             backgroundColor = indicationState.lhsColor.value,
         )
         VerticalDivider(thickness = 2.dp)
-        PointContainer(
+        PlayerSection(
             playerName = rhsPlayerName,
             score = rhsScore,
             onClick = onRhsClick,
@@ -226,6 +207,79 @@ private fun InfoContainer(
                     modifier = Modifier.padding(6.dp),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun PlayerSection(
+    playerName: String,
+    score: String,
+    onClick: () -> Unit,
+    contentDescription: String,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Column(
+        modifier =
+            modifier
+                .clickable(
+                    enabled = true,
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource,
+                )
+                .drawBehind { drawRect(backgroundColor) }
+                .semantics(properties = { this.contentDescription = contentDescription }),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = playerName,
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = score,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Black,
+            autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
+        )
+    }
+}
+
+@Composable
+private fun GameEventIndication(
+    indicationState: IndicationState,
+    onMatchFinished: () -> Unit,
+) {
+    indicationState.dialogIndicationParams?.let {
+        when (it) {
+            is DialogIndicationParams.Game ->
+                DialogIndication(
+                    side = it.side,
+                    largeText = "GAME",
+                    smallText = "${it.lhsScore} : ${it.rhsScore}",
+                    onClick = { indicationState.dismissDialogIndication() },
+                )
+
+            is DialogIndicationParams.Set ->
+                DialogIndication(
+                    side = it.side,
+                    largeText = "SET",
+                    smallText = "${it.lhsScore} : ${it.rhsScore}",
+                    onClick = { indicationState.dismissDialogIndication() },
+                )
+
+            is DialogIndicationParams.Match ->
+                DialogIndication(
+                    side = it.side,
+                    largeText = "MATCH",
+                    smallText = "${it.lhsScore} : ${it.rhsScore}",
+                    onClick = onMatchFinished,
+                )
         }
     }
 }
@@ -348,112 +402,11 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
 }
 
 @Composable
-private fun GameIndication(
-    side: Side,
-    lhsScore: String,
-    rhsScore: String,
-    onClick: () -> Unit,
-) {
-    DialogIndication(
-        side = side,
-        onClick = onClick,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Text(
-                text = "GAME",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 182.sp,
-            )
-            Text(
-                text = "$lhsScore : $rhsScore",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 92.sp,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SetIndication(
-    side: Side,
-    lhsScore: String,
-    rhsScore: String,
-    onClick: () -> Unit,
-) {
-    DialogIndication(
-        side = side,
-        onClick = onClick,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Text(
-                text = "SET",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 182.sp,
-            )
-            Text(
-                text = "$lhsScore : $rhsScore",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 92.sp,
-            )
-        }
-    }
-}
-
-@Composable
-private fun MatchIndication(
-    side: Side,
-    lhsScore: String,
-    rhsScore: String,
-    onClick: () -> Unit,
-) {
-    DialogIndication(
-        side = side,
-        onClick = onClick,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Text(
-                text = "MATCH",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 182.sp,
-            )
-            Text(
-                text = "$lhsScore : $rhsScore",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 92.sp,
-            )
-        }
-    }
-}
-
-@Composable
 private fun DialogIndication(
     side: Side,
     onClick: () -> Unit,
-    content: @Composable () -> Unit,
+    largeText: String,
+    smallText: String,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val backgroundColor = AppColors.Primary.dark
@@ -492,46 +445,26 @@ private fun DialogIndication(
                 .background(backgroundColor)
                 .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
     ) {
-        content()
-    }
-}
-
-@Composable
-private fun PointContainer(
-    playerName: String,
-    score: String,
-    onClick: () -> Unit,
-    contentDescription: String,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-
-    Column(
-        modifier =
-            modifier
-                .clickable(
-                    enabled = true,
-                    onClick = onClick,
-                    indication = null,
-                    interactionSource = interactionSource,
-                )
-                .drawBehind { drawRect(backgroundColor) }
-                .semantics(properties = { this.contentDescription = contentDescription }),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = playerName,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = score,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Black,
-            autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Text(
+                text = largeText,
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 182.sp,
+            )
+            Text(
+                text = smallText,
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 92.sp,
+            )
+        }
     }
 }
 
@@ -587,36 +520,10 @@ private fun PreviewWithTieBreak() {
 @Composable
 private fun LhsGameIndicationPreview() {
     AppTheme {
-        GameIndication(
+        DialogIndication(
             side = Side.LHS,
-            lhsScore = "5",
-            rhsScore = "2",
-            onClick = {},
-        )
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun RhsSetIndicationPreview() {
-    AppTheme {
-        SetIndication(
-            side = Side.RHS,
-            lhsScore = "2",
-            rhsScore = "1",
-            onClick = {},
-        )
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun LhsMatchIndicationPreview() {
-    AppTheme {
-        MatchIndication(
-            side = Side.LHS,
-            lhsScore = "3",
-            rhsScore = "1",
+            largeText = "GAME",
+            smallText = "6 : 4",
             onClick = {},
         )
     }
