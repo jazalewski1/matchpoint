@@ -41,53 +41,6 @@ internal fun MatchSetupScreen(onStart: (String, String) -> Unit) {
     )
 }
 
-private class NameInputState {
-    var text by mutableStateOf("")
-        private set
-
-    var errors by mutableStateOf(listOf<NameError>())
-        private set
-
-    var isValid by mutableStateOf(false)
-        private set
-
-    init {
-        isValid = prepareErrors().isEmpty()
-    }
-
-    fun change(newValue: String) {
-        text = newValue
-        validate()
-    }
-
-    private fun validate() {
-        errors = prepareErrors()
-        isValid = errors.isEmpty()
-    }
-
-    private fun prepareErrors(): List<NameError> {
-        val newErrors = mutableListOf<NameError>()
-        if (text.isBlank()) {
-            newErrors.add(NameError.BLANK)
-        }
-        if (text.length > MAX_NAME_LENGTH) {
-            newErrors.add(NameError.TOO_LONG)
-        }
-        return newErrors
-    }
-}
-
-private enum class NameError {
-    BLANK {
-        override fun toString() = "Name cannot be empty."
-    },
-    TOO_LONG {
-        override fun toString() = "Name cannot be longer than $MAX_NAME_LENGTH characters."
-    },
-}
-
-@Composable private fun rememberNameInputState() = remember { NameInputState() }
-
 @Composable
 private fun Screen(
     player1Name: String,
@@ -188,6 +141,53 @@ private fun NameInputField(
         )
     }
 }
+
+private class NameInputState {
+    var text by mutableStateOf("")
+        private set
+
+    var errors by mutableStateOf(listOf<NameError>())
+        private set
+
+    var isValid by mutableStateOf(false)
+        private set
+
+    init {
+        isValid = prepareErrors().isEmpty()
+    }
+
+    fun change(newValue: String) {
+        text = newValue
+        validate()
+    }
+
+    private fun validate() {
+        errors = prepareErrors()
+        isValid = errors.isEmpty()
+    }
+
+    private fun prepareErrors(): List<NameError> {
+        val newErrors = mutableListOf<NameError>()
+        if (text.isBlank()) {
+            newErrors.add(NameError.BLANK)
+        }
+        if (text.length > MAX_NAME_LENGTH) {
+            newErrors.add(NameError.TOO_LONG)
+        }
+        return newErrors
+    }
+}
+
+private enum class NameError {
+    BLANK {
+        override fun toString() = "Name cannot be empty."
+    },
+    TOO_LONG {
+        override fun toString() = "Name cannot be longer than $MAX_NAME_LENGTH characters."
+    },
+}
+
+@Composable private fun rememberNameInputState() = remember { NameInputState() }
 
 @Composable
 private fun InputErrorCard(errors: List<String>) {
