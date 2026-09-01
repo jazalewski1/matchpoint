@@ -48,4 +48,4 @@ jobs:
 
       - name: Run
         working-directory: "android"
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew test
