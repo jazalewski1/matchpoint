@@ -21,8 +21,9 @@ class MatchSetupScreenTest {
     @get:Rule val rule = createComposeRule()
 
     @Composable
-    private fun SutScreen(onStart: (String, String, Int) -> Unit = { p1, p2, numberOfSetsToWin -> }) =
-        MatchSetupScreen(onStart = onStart)
+    private fun SutScreen(
+        onStart: (String, String, Int) -> Unit = { p1, p2, numberOfSetsToWin -> }
+    ) = MatchSetupScreen(onStart = onStart)
 
     @Test
     fun `display header`() {
@@ -65,7 +66,11 @@ class MatchSetupScreenTest {
     fun `displays set option buttons`() {
         rule.setContent { SutScreen() }
 
-        rule.onNodeWithText("Best of 1").performScrollTo().assertIsDisplayed().assertHasClickAction()
+        rule
+            .onNodeWithText("Best of 1")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertHasClickAction()
         rule.onNodeWithText("Best of 3").assertIsDisplayed().assertHasClickAction()
         rule.onNodeWithText("Best of 5").assertIsDisplayed().assertHasClickAction()
     }
@@ -175,7 +180,11 @@ class MatchSetupScreenTest {
     @Test
     fun `when start button is clicked then callback with input names is triggered`() {
         var params: Triple<String, String, Int>? = null
-        rule.setContent { SutScreen(onStart = { n1, n2, numOfSetsToWin -> params = Triple(n1, n2, numOfSetsToWin) }) }
+        rule.setContent {
+            SutScreen(
+                onStart = { n1, n2, numOfSetsToWin -> params = Triple(n1, n2, numOfSetsToWin) }
+            )
+        }
 
         val name1 = "Roger"
         rule.onNodeWithContentDescription("Player 1 Name").performTextReplacement(name1)
@@ -194,7 +203,10 @@ class MatchSetupScreenTest {
         rule.setContent { SutScreen() }
 
         rule.onNodeWithText("Best of 1").performScrollTo().performClick()
-        rule.onNodeWithText("First player to win 1 set wins the match.").performScrollTo().assertIsDisplayed()
+        rule
+            .onNodeWithText("First player to win 1 set wins the match.")
+            .performScrollTo()
+            .assertIsDisplayed()
 
         rule.onNodeWithText("Best of 3").performScrollTo().performClick()
         rule.onNodeWithText("First player to win 2 sets wins the match.").assertIsDisplayed()
