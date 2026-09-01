@@ -16,10 +16,26 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 private const val MAX_NAME_LENGTH = 24
 
+private enum class SetOption(val numOfSets: Int, val numOfSetsToWin: Int) {
+    BEST_OF_1(numOfSets = 1, numOfSetsToWin = 1),
+    BEST_OF_3(numOfSets = 3, numOfSetsToWin = 2),
+    BEST_OF_5(numOfSets = 5, numOfSetsToWin = 3);
+
+    fun toLabel() = "Best of $numOfSets"
+
+    fun toWinRequirement() =
+        when (this) {
+            BEST_OF_1 -> "1 set"
+            BEST_OF_3 -> "2 sets"
+            BEST_OF_5 -> "3 sets"
+        }
+}
+
 @Composable
 internal fun MatchSetupScreen(onStart: (String, String) -> Unit) {
     val player1NameInput = rememberNameInputState()
     val player2NameInput = rememberNameInputState()
+    var selectedSetOptionIndex by remember { mutableIntStateOf(0) }
     val errors by remember {
         derivedStateOf {
             (player1NameInput.errors + player2NameInput.errors).distinct().map(NameError::toString)
@@ -36,7 +52,9 @@ internal fun MatchSetupScreen(onStart: (String, String) -> Unit) {
         onPlayer2NameChanged = player2NameInput::change,
         isPlayer2NameValid = player2NameInput.errors.isEmpty(),
         isInputValid = isInputValid,
+        selectedSetOptionIndex = selectedSetOptionIndex,
         onStartClick = { onStart(player1NameInput.text, player2NameInput.text) },
+        onSelectedSetOption = { index -> selectedSetOptionIndex = index },
         errors = errors,
     )
 }
@@ -50,6 +68,8 @@ private fun Screen(
     onPlayer2NameChanged: (String) -> Unit,
     isPlayer2NameValid: Boolean,
     isInputValid: Boolean,
+    selectedSetOptionIndex: Int,
+    onSelectedSetOption: (Int) -> Unit,
     onStartClick: () -> Unit,
     errors: List<String>,
 ) {
@@ -80,6 +100,10 @@ private fun Screen(
                     onValueChange = onPlayer2NameChanged,
                     imeAction = ImeAction.Done,
                     isValid = isPlayer2NameValid,
+                )
+                SetSelectionButton(
+                    selectedSetOptionIndex = selectedSetOptionIndex,
+                    onClick = onSelectedSetOption,
                 )
             }
             if (errors.isNotEmpty()) {
@@ -114,6 +138,13 @@ private fun Header() {
 }
 
 @Composable
+private fun SmallLabel(content: @Composable () -> Unit) {
+    Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        content()
+    }
+}
+
+@Composable
 private fun NameInputField(
     value: String,
     label: String,
@@ -122,15 +153,17 @@ private fun NameInputField(
     imeAction: ImeAction,
 ) {
     Column {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-        ) {
-            Text(text = label, style = MaterialTheme.typography.labelLarge)
-            Text(
-                text = "${value.length} / $MAX_NAME_LENGTH",
-                style = MaterialTheme.typography.labelLarge,
-            )
+        SmallLabel {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = label, style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = "${value.length} / $MAX_NAME_LENGTH",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
         PrimaryTextField(
             value = value,
@@ -208,12 +241,50 @@ private fun InputErrorCard(errors: List<String>) {
 }
 
 @Composable
+private fun SetSelectionButton(
+    selectedSetOptionIndex: Int,
+    onClick: (Int) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SmallLabel {
+            Text(text = "Number of sets", style = MaterialTheme.typography.labelLarge)
+        }
+
+        val options = SetOption.entries
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            options.forEachIndexed { index, option ->
+                SegmentedButton(
+                    shape =
+                        SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = options.size,
+                        ),
+                    onClick = { onClick(index) },
+                    selected = index == selectedSetOptionIndex,
+                    label = { Text(option.toLabel()) },
+                )
+            }
+        }
+
+        val winDetails = options[selectedSetOptionIndex].toWinRequirement()
+        SmallLabel {
+            Text(
+                text = "First player to win $winDetails wins the match.",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun ScreenPreviewBase(
     player1Name: String = "Roger",
     isPlayer1NameValid: Boolean = true,
     player2Name: String = "Novak",
     isPlayer2NameValid: Boolean = true,
     isInputValid: Boolean = true,
+    selectedSetOptionIndex: Int = 0,
     errors: List<String> = emptyList(),
 ) =
     Screen(
@@ -224,6 +295,8 @@ private fun ScreenPreviewBase(
         isPlayer2NameValid = isPlayer2NameValid,
         onPlayer2NameChanged = {},
         isInputValid = isInputValid,
+        selectedSetOptionIndex = selectedSetOptionIndex,
+        onSelectedSetOption = {},
         onStartClick = {},
         errors = errors,
     )
