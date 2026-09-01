@@ -39,7 +39,7 @@ internal fun MatchSummaryScreen(
                     is ErrorUiState -> ErrorContainer(message = uiState.message)
                 }
             }
-            Row( // TODO: copied from setup screen, move to common
+            Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -157,7 +157,7 @@ private object Table {
 }
 
 @Composable
-private fun Header() { // TODO: copied from setup screen, move to common
+private fun Header() {
     Text(
         text = "Summary",
         style = MaterialTheme.typography.displayMedium,
