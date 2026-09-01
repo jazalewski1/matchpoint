@@ -38,7 +38,6 @@ class SetTest {
     fun `starts with 0 to 0`() {
         val set = Set()
         set.assertGames(0, 0)
-        assertThat(true).isFalse()
     }
 
     @Test
