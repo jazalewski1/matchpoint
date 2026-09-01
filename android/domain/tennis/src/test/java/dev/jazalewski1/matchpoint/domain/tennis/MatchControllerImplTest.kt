@@ -1,5 +1,6 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
+import dev.jazalewski1.matchpoint.core.common.Player
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
