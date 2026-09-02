@@ -8,5 +8,3 @@ internal val game40And15 = GameState.Regular.Main(Points.FORTY, Points.FIFTEEN)
 
 internal val tiebreak2To5 = GameState.TieBreak(lhsPoints = 2, rhsPoints = 5)
 internal val tiebreak5To2 = GameState.TieBreak(lhsPoints = 5, rhsPoints = 2)
-
-internal val initialMatch = TotalMatchState(game = gameLoveAll)

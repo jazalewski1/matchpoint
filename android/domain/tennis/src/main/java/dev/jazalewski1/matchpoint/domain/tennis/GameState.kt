@@ -19,7 +19,3 @@ sealed interface GameState {
         fun default() = Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.LOVE)
     }
 }
-
-data class TotalMatchState( // TODO: rename to MatchState, or remove if not needed anymore
-    val game: GameState
-)

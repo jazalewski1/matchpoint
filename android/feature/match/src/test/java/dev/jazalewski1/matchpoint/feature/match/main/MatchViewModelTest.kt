@@ -104,7 +104,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         matchController.afterAddPointToLhs {
-            matchController.returnGetState(initialMatch.copy(game = game15And40))
+            matchController.returnGetCurrentGameState(game15And40)
         }
 
         viewModel.onLhsPressed()
@@ -127,7 +127,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         matchController.afterAddPointToRhs {
-            matchController.returnGetState(initialMatch.copy(game = game40And15))
+            matchController.returnGetCurrentGameState(game40And15)
         }
 
         viewModel.onRhsPressed()
@@ -175,13 +175,13 @@ class MatchViewModelTest {
 
     @Test
     fun `updates score when lhs wins game`() = runTest {
-        matchController.returnGetState(initialMatch.copy(game = game40And15))
+        matchController.returnGetCurrentGameState(game40And15)
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         val event = MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
-            matchController.returnGetState(initialMatch.copy(game = gameLoveAll))
+            matchController.returnGetCurrentGameState(gameLoveAll)
         }
 
         viewModel.onLhsPressed()
@@ -194,13 +194,13 @@ class MatchViewModelTest {
 
     @Test
     fun `updates score when rhs wins game`() = runTest {
-        matchController.returnGetState(initialMatch.copy(game = game15And40))
+        matchController.returnGetCurrentGameState(game15And40)
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         val event = MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToRhs {
-            matchController.returnGetState(initialMatch.copy(game = gameLoveAll))
+            matchController.returnGetCurrentGameState(gameLoveAll)
         }
 
         viewModel.onRhsPressed()
@@ -218,7 +218,7 @@ class MatchViewModelTest {
         val event = MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 5, rhsGames = 3)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
-            matchController.returnGetState(initialMatch.copy(game = gameLoveAll))
+            matchController.returnGetCurrentGameState(gameLoveAll)
         }
 
         viewModel.uiEvents.test {
@@ -241,7 +241,7 @@ class MatchViewModelTest {
         val event = MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 3, rhsGames = 5)
         matchController.returnAddPointToRhs(event)
         matchController.afterAddPointToRhs {
-            matchController.returnGetState(initialMatch.copy(game = gameLoveAll))
+            matchController.returnGetCurrentGameState(gameLoveAll)
         }
 
         viewModel.uiEvents.test {
@@ -264,7 +264,7 @@ class MatchViewModelTest {
         val event = MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
-            matchController.returnGetState(initialMatch.copy(game = gameLoveAll))
+            matchController.returnGetCurrentGameState(gameLoveAll)
         }
 
         viewModel.uiEvents.test {
@@ -287,7 +287,7 @@ class MatchViewModelTest {
         val event = MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1)
         matchController.returnAddPointToRhs(event)
         matchController.afterAddPointToRhs {
-            matchController.returnGetState(initialMatch.copy(game = gameLoveAll))
+            matchController.returnGetCurrentGameState(gameLoveAll)
         }
 
         viewModel.uiEvents.test {
@@ -308,7 +308,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         matchController.afterAddPointToLhs {
-            matchController.returnGetState(initialMatch.copy(game = tiebreak2To5))
+            matchController.returnGetCurrentGameState(tiebreak2To5)
         }
 
         viewModel.onLhsPressed()
@@ -332,7 +332,7 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         matchController.afterAddPointToRhs {
-            matchController.returnGetState(initialMatch.copy(game = tiebreak5To2))
+            matchController.returnGetCurrentGameState(tiebreak5To2)
         }
 
         viewModel.onRhsPressed()
@@ -358,7 +358,7 @@ class MatchViewModelTest {
         val event = MatchEvent.MatchWon(winnerSide = Side.LHS, lhsSets = 3, rhsSets = 1)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
-            matchController.returnGetState(initialMatch.copy(game = game40And15))
+            matchController.returnGetCurrentGameState(game40And15)
         }
 
         viewModel.uiEvents.test {
@@ -381,7 +381,7 @@ class MatchViewModelTest {
         val event = MatchEvent.MatchWon(winnerSide = Side.RHS, lhsSets = 1, rhsSets = 3)
         matchController.returnAddPointToRhs(event)
         matchController.afterAddPointToRhs {
-            matchController.returnGetState(initialMatch.copy(game = game15And40))
+            matchController.returnGetCurrentGameState(game15And40)
         }
 
         viewModel.uiEvents.test {

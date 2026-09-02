@@ -12,9 +12,7 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
     private val setHistory = mutableListOf<MatchHistory.Set>()
     private val sideConfig = SideConfig()
 
-    override fun getState(): TotalMatchState { // TODO: rename to getCurrentGame
-        return TotalMatchState(game = game.toState())
-    }
+    override fun getCurrentGameState() = game.toState()
 
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
 
