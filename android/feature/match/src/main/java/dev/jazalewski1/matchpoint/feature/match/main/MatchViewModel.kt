@@ -77,53 +77,56 @@ constructor(
                 Side.LHS -> matchController.addPointToLhs()
                 Side.RHS -> matchController.addPointToRhs()
             }
+        _uiEvents.tryEmit(matchEvent.toUiEvent())
+        updateScores()
+    }
+
+    private fun updateScores() {
         val matchState = matchController.getState()
-        sendEvent(matchState, matchEvent, side)
-        updateScores(matchState)
-    }
-
-    private fun sendEvent(totalMatchState: TotalMatchState, matchEvent: MatchEvent, side: Side) {
-        val event =
-            when (matchEvent) {
-                is MatchEvent.PointScored -> MatchUiEvent.PointScored(winner = side)
-                is MatchEvent.GameWon ->
-                    MatchUiEvent.GameFinished(
-                        winner = side,
-                        lhsScore = totalMatchState.set.lhsGames.toString(),
-                        rhsScore = totalMatchState.set.rhsGames.toString(),
-                    )
-                is MatchEvent.SetWon -> {
-                    MatchUiEvent.SetFinished(
-                        winner = side,
-                        lhsScore = totalMatchState.match.lhsSets.toString(),
-                        rhsScore = totalMatchState.match.rhsSets.toString(),
-                    )
-                }
-                is MatchEvent.MatchWon -> {
-                    MatchUiEvent.MatchFinished(
-                        winner = side,
-                        lhsScore = totalMatchState.match.lhsSets.toString(),
-                        rhsScore = totalMatchState.match.rhsSets.toString(),
-                    )
-                }
-            }
-        _uiEvents.tryEmit(event)
-    }
-
-    private fun updateScores(totalMatchState: TotalMatchState) {
         _uiState.update { current ->
-            val lhsPlayer = current.game.lhsPlayer.copy(score = totalMatchState.game.lhsToString())
-            val rhsPlayer = current.game.rhsPlayer.copy(score = totalMatchState.game.rhsToString())
+            val lhsPlayer = current.game.lhsPlayer.copy(score = matchState.game.lhsToString())
+            val rhsPlayer = current.game.rhsPlayer.copy(score = matchState.game.rhsToString())
             val gameUiState =
                 current.game.copy(
                     lhsPlayer = lhsPlayer,
                     rhsPlayer = rhsPlayer,
-                    isTieBreak = totalMatchState.game is GameState.TieBreak,
+                    isTieBreak = matchState.game is GameState.TieBreak,
                 )
             current.copy(game = gameUiState)
         }
     }
 }
+
+private fun MatchEvent.toUiEvent() =
+    when (this) {
+        is MatchEvent.PointScored -> toUiEvent()
+        is MatchEvent.GameWon -> toUiEvent()
+        is MatchEvent.SetWon -> toUiEvent()
+        is MatchEvent.MatchWon -> toUiEvent()
+    }
+
+private fun MatchEvent.PointScored.toUiEvent() = MatchUiEvent.PointScored(winner = this.winnerSide)
+
+private fun MatchEvent.GameWon.toUiEvent() =
+    MatchUiEvent.GameFinished(
+        winner = this.winnerSide,
+        lhsScore = this.lhsGames.toString(),
+        rhsScore = this.rhsGames.toString(),
+    )
+
+private fun MatchEvent.SetWon.toUiEvent() =
+    MatchUiEvent.SetFinished(
+        winner = this.winnerSide,
+        lhsScore = this.lhsSets.toString(),
+        rhsScore = this.rhsSets.toString(),
+    )
+
+private fun MatchEvent.MatchWon.toUiEvent() =
+    MatchUiEvent.MatchFinished(
+        winner = this.winnerSide,
+        lhsScore = this.lhsSets.toString(),
+        rhsScore = this.rhsSets.toString(),
+    )
 
 private fun TotalMatchState.toUiState(lhsName: String, rhsName: String) =
     UiState(game = game.toUiState(lhsName = lhsName, rhsName = rhsName))

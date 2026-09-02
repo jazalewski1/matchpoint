@@ -1,49 +1,13 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.core.common.Player
+import dev.jazalewski1.matchpoint.core.common.Side
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-private val sampleTotalMatchState =
-    TotalMatchState(
-        game = GameState.default(),
-        set = SetState.default(),
-        match = MatchState.default(),
-    )
+private val sampleTotalMatchState = TotalMatchState(game = GameState.default())
 
 class MatchControllerImplTest {
-    private fun assertLhsPointScored(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.PointScored)
-    }
-
-    private fun assertRhsPointScored(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.PointScored)
-    }
-
-    private fun assertLhsGameWon(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.GameWon)
-    }
-
-    private fun assertRhsGameWon(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.GameWon)
-    }
-
-    private fun assertLhsSetWon(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.SetWon)
-    }
-
-    private fun assertRhsSetWon(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.SetWon)
-    }
-
-    private fun assertLhsMatchWon(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.MatchWon)
-    }
-
-    private fun assertRhsMatchWon(event: MatchEvent) {
-        assertThat(event).isEqualTo(MatchEvent.MatchWon)
-    }
-
     @Test
     fun `has love all at beginning`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
@@ -56,7 +20,8 @@ class MatchControllerImplTest {
     fun `lhs point scored`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        assertLhsPointScored(controller.addPointToLhs())
+        val event = controller.addPointToLhs()
+        assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.LHS))
         assertThat(controller.getState().game)
             .isEqualTo(GameState.Regular.Main(Points.FIFTEEN, Points.LOVE))
     }
@@ -65,7 +30,8 @@ class MatchControllerImplTest {
     fun `rhs point scored`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        assertRhsPointScored(controller.addPointToRhs())
+        val event = controller.addPointToRhs()
+        assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.RHS))
         assertThat(controller.getState().game)
             .isEqualTo(GameState.Regular.Main(Points.LOVE, Points.FIFTEEN))
     }
@@ -76,10 +42,10 @@ class MatchControllerImplTest {
 
         repeat(2) { controller.addPointToRhs() }
         repeat(3) { controller.addPointToLhs() }
-        assertLhsGameWon(controller.addPointToLhs())
 
-        assertThat(controller.getState())
-            .isEqualTo(sampleTotalMatchState.copy(set = SetState(lhsGames = 1, rhsGames = 0)))
+        val event = controller.addPointToLhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0))
     }
 
     @Test
@@ -88,10 +54,10 @@ class MatchControllerImplTest {
 
         repeat(2) { controller.addPointToLhs() }
         repeat(3) { controller.addPointToRhs() }
-        assertRhsGameWon(controller.addPointToRhs())
 
-        assertThat(controller.getState())
-            .isEqualTo(sampleTotalMatchState.copy(set = SetState(lhsGames = 0, rhsGames = 1)))
+        val event = controller.addPointToRhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1))
     }
 
     private fun advanceToDeuce(controller: MatchControllerImpl) {
@@ -113,8 +79,9 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToDeuce(controller)
-        assertLhsPointScored(controller.addPointToLhs())
 
+        val event = controller.addPointToLhs()
+        assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.LHS))
         val expected = GameState.Regular.Advantage.Lhs
         assertThat(controller.getState().game).isEqualTo(expected)
     }
@@ -124,8 +91,9 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         advanceToDeuce(controller)
-        assertRhsPointScored(controller.addPointToRhs())
 
+        val event = controller.addPointToRhs()
+        assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.RHS))
         val expected = GameState.Regular.Advantage.Rhs
         assertThat(controller.getState().game).isEqualTo(expected)
     }
@@ -153,10 +121,10 @@ class MatchControllerImplTest {
         repeat(4) { winGameForRhs(controller) }
         repeat(5) { winGameForLhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
-        assertLhsSetWon(controller.addPointToLhs())
 
-        assertThat(controller.getState())
-            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 1, rhsSets = 0)))
+        val event = controller.addPointToLhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
     }
 
     @Test
@@ -166,10 +134,10 @@ class MatchControllerImplTest {
         repeat(4) { winGameForLhs(controller) }
         repeat(5) { winGameForRhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
-        assertRhsSetWon(controller.addPointToRhs())
 
-        assertThat(controller.getState())
-            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 0, rhsSets = 1)))
+        val event = controller.addPointToRhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
     }
 
     @Test
@@ -179,15 +147,13 @@ class MatchControllerImplTest {
         repeat(5) { winGameForLhs(controller) }
         repeat(6) { winGameForRhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
-        assertLhsGameWon(controller.addPointToLhs())
 
-        assertThat(controller.getState())
-            .isEqualTo(
-                sampleTotalMatchState.copy(
-                    game = GameState.TieBreak(lhsPoints = 0, rhsPoints = 0),
-                    set = SetState(lhsGames = 6, rhsGames = 6),
-                )
-            )
+        val event = controller.addPointToLhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 6, rhsGames = 6))
+
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.TieBreak(lhsPoints = 0, rhsPoints = 0))
     }
 
     @Test
@@ -197,15 +163,13 @@ class MatchControllerImplTest {
         repeat(5) { winGameForRhs(controller) }
         repeat(6) { winGameForLhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
-        assertRhsGameWon(controller.addPointToRhs())
 
-        assertThat(controller.getState())
-            .isEqualTo(
-                sampleTotalMatchState.copy(
-                    game = GameState.TieBreak(lhsPoints = 0, rhsPoints = 0),
-                    set = SetState(lhsGames = 6, rhsGames = 6),
-                )
-            )
+        val event = controller.addPointToRhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 6, rhsGames = 6))
+
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.TieBreak(lhsPoints = 0, rhsPoints = 0))
     }
 
     private fun advanceToTieBreak(controller: MatchController) {
@@ -222,10 +186,11 @@ class MatchControllerImplTest {
         scorePointsForRhs(controller, numOfPoints = 5)
         scorePointsForLhs(controller, numOfPoints = 6)
 
-        assertLhsSetWon(controller.addPointToLhs())
-
-        assertThat(controller.getState())
-            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 1, rhsSets = 0)))
+        val event = controller.addPointToLhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.LOVE))
     }
 
     @Test
@@ -236,10 +201,11 @@ class MatchControllerImplTest {
         scorePointsForLhs(controller, numOfPoints = 5)
         scorePointsForRhs(controller, numOfPoints = 6)
 
-        assertRhsSetWon(controller.addPointToRhs())
-
-        assertThat(controller.getState())
-            .isEqualTo(sampleTotalMatchState.copy(match = MatchState(lhsSets = 0, rhsSets = 1)))
+        val event = controller.addPointToRhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.LOVE))
     }
 
     private fun winSetForLhs(controller: MatchController) {
@@ -264,17 +230,11 @@ class MatchControllerImplTest {
         repeat(5) { winGameForLhs(controller) }
         scorePointsForLhs(controller, numOfPoints = 3)
 
-        assertLhsMatchWon(controller.addPointToLhs())
-
-        assertThat(controller.getState())
-            .isEqualTo(
-                TotalMatchState(
-                    game =
-                        GameState.Regular.Main(lhsPoints = Points.FORTY, rhsPoints = Points.LOVE),
-                    set = SetState(lhsGames = 6, rhsGames = 0),
-                    match = MatchState(lhsSets = 4, rhsSets = 2),
-                )
-            )
+        val event = controller.addPointToLhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.MatchWon(winnerSide = Side.LHS, lhsSets = 4, rhsSets = 2))
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.Regular.Main(lhsPoints = Points.FORTY, rhsPoints = Points.LOVE))
     }
 
     @Test
@@ -287,17 +247,11 @@ class MatchControllerImplTest {
         repeat(5) { winGameForRhs(controller) }
         scorePointsForRhs(controller, numOfPoints = 3)
 
-        assertRhsMatchWon(controller.addPointToRhs())
-
-        assertThat(controller.getState())
-            .isEqualTo(
-                TotalMatchState(
-                    game =
-                        GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY),
-                    set = SetState(lhsGames = 0, rhsGames = 6),
-                    match = MatchState(lhsSets = 2, rhsSets = 4),
-                )
-            )
+        val event = controller.addPointToRhs()
+        assertThat(event)
+            .isEqualTo(MatchEvent.MatchWon(winnerSide = Side.RHS, lhsSets = 2, rhsSets = 4))
+        assertThat(controller.getState().game)
+            .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY))
     }
 
     @Test

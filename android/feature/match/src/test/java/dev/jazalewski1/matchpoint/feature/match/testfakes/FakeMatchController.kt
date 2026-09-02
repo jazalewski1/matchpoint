@@ -1,5 +1,6 @@
 package dev.jazalewski1.matchpoint.feature.match.testfakes
 
+import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
@@ -13,14 +14,9 @@ class FakeMatchController : MatchController {
     var addPointToRhsCount = 0
         private set
 
-    private var totalMatchState: TotalMatchState =
-        TotalMatchState(
-            game = gameLoveAll,
-            set = set0To0,
-            match = match0To0,
-        )
-    private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
-    private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
+    private var totalMatchState: TotalMatchState = TotalMatchState(game = gameLoveAll)
+    private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored(winnerSide = Side.LHS)
+    private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored(winnerSide = Side.RHS)
     private var matchHistory: MatchHistory = MatchHistory(sets = listOf())
 
     private var addPointToLhsCallback: (() -> Unit)? = null

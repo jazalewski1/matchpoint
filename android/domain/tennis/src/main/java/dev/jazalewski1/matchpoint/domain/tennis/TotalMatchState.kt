@@ -20,26 +20,6 @@ sealed interface GameState {
     }
 }
 
-data class SetState(
-    val lhsGames: Int,
-    val rhsGames: Int,
-) {
-    companion object {
-        fun default() = SetState(lhsGames = 0, rhsGames = 0)
-    }
-}
-
-data class MatchState(
-    val lhsSets: Int,
-    val rhsSets: Int,
-) {
-    companion object {
-        fun default() = MatchState(lhsSets = 0, rhsSets = 0)
-    }
-}
-
-data class TotalMatchState(
-    val game: GameState,
-    val set: SetState,
-    val match: MatchState,
+data class TotalMatchState( // TODO: rename to MatchState, or remove if not needed anymore
+    val game: GameState
 )

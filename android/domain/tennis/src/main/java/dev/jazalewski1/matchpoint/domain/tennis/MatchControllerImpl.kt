@@ -1,6 +1,7 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.core.common.Player
+import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
 
@@ -9,13 +10,10 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
     private var set = Set()
     private val match = Match(numOfSetsToWin = numOfSetsToWin)
     private val setHistory = mutableListOf<MatchHistory.Set>()
+    private val sideConfig = SideConfig()
 
-    override fun getState(): TotalMatchState {
-        return TotalMatchState(
-            game = game.toState(),
-            set = set.toState(),
-            match = match.toState(),
-        )
+    override fun getState(): TotalMatchState { // TODO: rename to getCurrentGame
+        return TotalMatchState(game = game.toState())
     }
 
     override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
@@ -26,7 +24,8 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
 
     private fun processPointScored(winner: Player): MatchEvent =
         when (game.addPoint(winner)) {
-            is GameOutcome.PointScored -> MatchEvent.PointScored
+            is GameOutcome.PointScored ->
+                MatchEvent.PointScored(winnerSide = sideConfig.getSide(winner))
             is GameOutcome.Finished -> processGameFinished(winner = winner)
         }
 
@@ -34,11 +33,19 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
         when (set.addGame(winner)) {
             is SetOutcome.None -> {
                 game = RegularGame()
-                return MatchEvent.GameWon
+                return MatchEvent.GameWon(
+                    winnerSide = sideConfig.getSide(winner),
+                    lhsGames = sideConfig.selectLhs(p1 = set.player1Games, p2 = set.player2Games),
+                    rhsGames = sideConfig.selectRhs(p1 = set.player1Games, p2 = set.player2Games),
+                )
             }
             is SetOutcome.Tiebreak -> {
                 game = TieBreakGame()
-                return MatchEvent.GameWon
+                return MatchEvent.GameWon(
+                    winnerSide = sideConfig.getSide(winner),
+                    lhsGames = sideConfig.selectLhs(p1 = set.player1Games, p2 = set.player2Games),
+                    rhsGames = sideConfig.selectRhs(p1 = set.player1Games, p2 = set.player2Games),
+                )
             }
             is SetOutcome.Finished -> return processSetFinished(winner = winner)
         }
@@ -50,9 +57,18 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
             is MatchOutcome.None -> {
                 game = RegularGame()
                 set = Set()
-                return MatchEvent.SetWon
+                return MatchEvent.SetWon(
+                    winnerSide = sideConfig.getSide(winner),
+                    lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                    rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                )
             }
-            is MatchOutcome.Finished -> return MatchEvent.MatchWon
+            is MatchOutcome.Finished ->
+                return MatchEvent.MatchWon(
+                    winnerSide = sideConfig.getSide(winner),
+                    lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                    rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                )
         }
     }
 
@@ -101,6 +117,18 @@ private fun Game.toState() =
         }
     }
 
-private fun Set.toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
+private class SideConfig {
+    var playerOnLhs = Player.ONE
+        private set
 
-private fun Match.toState() = MatchState(lhsSets = player1Sets, rhsSets = player2Sets)
+    fun getSide(player: Player) =
+        if (playerOnLhs == player) {
+            Side.LHS
+        } else {
+            Side.RHS
+        }
+
+    fun <T> selectLhs(p1: T, p2: T) = if (playerOnLhs == Player.ONE) p1 else p2
+
+    fun <T> selectRhs(p1: T, p2: T) = if (playerOnLhs == Player.ONE) p2 else p1
+}
