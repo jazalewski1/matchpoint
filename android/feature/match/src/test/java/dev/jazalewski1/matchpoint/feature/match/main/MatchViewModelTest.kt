@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import dev.jazalewski1.matchpoint.core.common.Player
+import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MemoryMatchRepository
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent

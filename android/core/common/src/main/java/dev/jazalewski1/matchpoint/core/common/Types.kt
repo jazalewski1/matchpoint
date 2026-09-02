@@ -4,3 +4,8 @@ enum class Player {
     ONE,
     TWO,
 }
+
+enum class Side {
+    LHS,
+    RHS,
+}
