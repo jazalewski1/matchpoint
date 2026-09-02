@@ -7,21 +7,28 @@ object AppColors {
         val veryDark = Color(0xFF07023A)
         val dark = Color(0xFF2814E2)
         val mid = Color(0xFF796DEA)
-        val light = Color(0xFFC9C5F1)
+        val light = Color(0xFFBDB8FF)
     }
 
     object Secondary {
         val veryDark = Color(0xFF100328)
         val dark = Color(0xFF6414E3)
         val mid = Color(0xFF9763EA)
-        val light = Color(0xFFCAB1F1)
+        val light = Color(0xFFC0BBFF)
     }
 
     object Tertiary {
-        val veryDark = Color(0xFF130702)
-        val dark = Color(0xFFE35113)
-        val mid = Color(0xFFF7956B)
-        val light = Color(0xFFEEBFAB)
+        val veryDark = Color(0xFF240F06)
+        val dark = Color(0xFFE86127)
+        val mid = Color(0xFFF2956D)
+        val light = Color(0xFFFFD6C4)
+    }
+
+    object Quaternary {
+        val veryDark = Color(0xFF091E1F)
+        val dark = Color(0xFF116A6B)
+        val mid = Color(0xFF5AC3C7)
+        val light = Color(0xFFB0E6E8)
     }
 
     object Error {
