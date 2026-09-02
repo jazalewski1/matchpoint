@@ -151,7 +151,7 @@ private fun Header() {
 
 @Composable
 private fun SmallLabel(content: @Composable () -> Unit) {
-    Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().padding(4.dp)) {
         content()
     }
 }
