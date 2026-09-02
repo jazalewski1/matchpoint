@@ -10,7 +10,6 @@ import androidx.compose.animation.core.EaseOutQuad
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -263,6 +262,8 @@ private fun GameEventIndication(
                     largeText = "GAME",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
                     onClick = { indicationState.dismissDialogIndication() },
+                    backgroundColor = AppColors.Secondary.light,
+                    pulseColor = AppColors.Secondary.dark,
                 )
 
             is DialogIndicationParams.Set ->
@@ -271,6 +272,8 @@ private fun GameEventIndication(
                     largeText = "SET",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
                     onClick = { indicationState.dismissDialogIndication() },
+                    backgroundColor = AppColors.Quaternary.light,
+                    pulseColor = AppColors.Quaternary.dark,
                 )
 
             is DialogIndicationParams.Match ->
@@ -279,6 +282,8 @@ private fun GameEventIndication(
                     largeText = "MATCH",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
                     onClick = onMatchFinished,
+                    backgroundColor = AppColors.Tertiary.light,
+                    pulseColor = AppColors.Tertiary.dark,
                 )
         }
     }
@@ -407,16 +412,14 @@ private fun DialogIndication(
     onClick: () -> Unit,
     largeText: String,
     smallText: String,
+    backgroundColor: Color,
+    pulseColor: Color,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val backgroundColor = AppColors.Primary.dark
-    val loudColor = AppColors.Tertiary.dark
-    val quietColor = Color.Transparent
-    val alpha = remember { Animatable(0.3f) }
-    val animatedColor = loudColor.copy(alpha = alpha.value)
+    val animatedColor = remember { Animatable(backgroundColor) }
     LaunchedEffect(Unit) {
-        alpha.animateTo(
-            targetValue = 1f,
+        animatedColor.animateTo(
+            targetValue = pulseColor,
             animationSpec =
                 infiniteRepeatable(
                     animation =
@@ -430,9 +433,9 @@ private fun DialogIndication(
     }
     val colors =
         if (side == Side.LHS) {
-            listOf(animatedColor, quietColor)
+            listOf(animatedColor.value, backgroundColor)
         } else {
-            listOf(quietColor, animatedColor)
+            listOf(backgroundColor, animatedColor.value)
         }
     Box(
         modifier =
@@ -442,8 +445,7 @@ private fun DialogIndication(
                     indication = null,
                     interactionSource = interactionSource,
                 )
-                .background(backgroundColor)
-                .drawBehind { drawRect(brush = Brush.horizontalGradient(colors)) }
+                .drawBehind { drawRect(brush = Brush.horizontalGradient(colors = colors)) }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -454,14 +456,14 @@ private fun DialogIndication(
                 text = largeText,
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = AppColors.Background.fg,
                 fontSize = 182.sp,
             )
             Text(
                 text = smallText,
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = AppColors.Background.fg,
                 fontSize = 92.sp,
             )
         }
@@ -525,6 +527,23 @@ private fun LhsGameIndicationPreview() {
             largeText = "GAME",
             smallText = "6 : 4",
             onClick = {},
+            backgroundColor = AppColors.Secondary.light,
+            pulseColor = AppColors.Secondary.mid,
+        )
+    }
+}
+
+@HorizontalPreview
+@Composable
+private fun RhsGameIndicationPreview() {
+    AppTheme {
+        DialogIndication(
+            side = Side.RHS,
+            largeText = "GAME",
+            smallText = "6 : 4",
+            onClick = {},
+            backgroundColor = AppColors.Secondary.light,
+            pulseColor = AppColors.Secondary.mid,
         )
     }
 }
