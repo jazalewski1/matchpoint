@@ -86,9 +86,18 @@ constructor(
 
     private fun updateScores() {
         val gameState = matchController.getCurrentGameState()
+        val sideConfig = matchController.getSideConfig()
         _uiState.update { current ->
-            val lhsPlayer = current.game.lhsPlayer.copy(score = gameState.lhsToString())
-            val rhsPlayer = current.game.rhsPlayer.copy(score = gameState.rhsToString())
+            val lhsPlayer =
+                UiState.Player(
+                    name = sideConfig.selectLhs(p1 = player1Name, p2 = player2Name),
+                    score = gameState.lhsToString(),
+                )
+            val rhsPlayer =
+                UiState.Player(
+                    name = sideConfig.selectRhs(p1 = player1Name, p2 = player2Name),
+                    score = gameState.rhsToString(),
+                )
             val gameUiState =
                 current.game.copy(
                     lhsPlayer = lhsPlayer,

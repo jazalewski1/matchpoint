@@ -9,6 +9,7 @@ import dev.jazalewski1.matchpoint.core.data.MatchDetails
 import dev.jazalewski1.matchpoint.core.data.MemoryMatchRepository
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
+import dev.jazalewski1.matchpoint.domain.tennis.SideConfig
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchController
 import dev.jazalewski1.matchpoint.feature.match.testfakes.FakeMatchControllerFactory
@@ -34,13 +35,13 @@ class MainDispatcherRule(val testDispatcher: TestDispatcher = UnconfinedTestDisp
     override fun finished(description: Description) = Dispatchers.resetMain()
 }
 
-private const val LHS_PLAYER_NAME = "Left player"
-private const val RHS_PLAYER_NAME = "Right player"
+private const val PLAYER1_NAME = "Player One"
+private const val PLAYER2_NAME = "Player Two"
 
 private const val NUM_OF_SETS_TO_WIN = 3
 
-private val sampleLhsPlayer = UiState.Player(name = LHS_PLAYER_NAME, score = "0")
-private val sampleRhsPlayer = UiState.Player(name = RHS_PLAYER_NAME, score = "0")
+private val sampleLhsPlayer = UiState.Player(name = PLAYER1_NAME, score = "0")
+private val sampleRhsPlayer = UiState.Player(name = PLAYER2_NAME, score = "0")
 
 private val sampleGameUiState =
     UiState.Game(lhsPlayer = sampleLhsPlayer, rhsPlayer = sampleRhsPlayer, isTieBreak = false)
@@ -59,8 +60,8 @@ class MatchViewModelTest {
     private val savedStateHandle =
         SavedStateHandle(
             mapOf(
-                "player1Name" to LHS_PLAYER_NAME,
-                "player2Name" to RHS_PLAYER_NAME,
+                "player1Name" to PLAYER1_NAME,
+                "player2Name" to PLAYER2_NAME,
                 "numOfSetsToWin" to NUM_OF_SETS_TO_WIN,
             )
         )
@@ -100,11 +101,12 @@ class MatchViewModelTest {
     }
 
     @Test
-    fun `updates ui state when adding lhs score`() = runTest {
+    fun `updates ui state when adding lhs score with player1 on lhs`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         matchController.afterAddPointToLhs {
             matchController.returnGetCurrentGameState(game15And40)
+            matchController.returnGetSideConfig(SideConfig(playerOnLhs = Player.ONE))
         }
 
         viewModel.onLhsPressed()
@@ -114,8 +116,8 @@ class MatchViewModelTest {
                 sampleMatchUiState.copy(
                     game =
                         sampleGameUiState.copy(
-                            lhsPlayer = sampleLhsPlayer.copy(score = "15"),
-                            rhsPlayer = sampleRhsPlayer.copy(score = "40"),
+                            lhsPlayer = UiState.Player(name = PLAYER1_NAME, score = "15"),
+                            rhsPlayer = UiState.Player(name = PLAYER2_NAME, score = "40"),
                         )
                 )
             assertThat(awaitItem()).isEqualTo(expected)
@@ -123,11 +125,36 @@ class MatchViewModelTest {
     }
 
     @Test
-    fun `updates ui state when adding rhs score`() = runTest {
+    fun `updates ui state when adding lhs score with player2 on lhs`() = runTest {
+        val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
+
+        matchController.afterAddPointToLhs {
+            matchController.returnGetCurrentGameState(game15And40)
+            matchController.returnGetSideConfig(SideConfig(playerOnLhs = Player.TWO))
+        }
+
+        viewModel.onLhsPressed()
+
+        viewModel.uiState.test {
+            val expected =
+                sampleMatchUiState.copy(
+                    game =
+                        sampleGameUiState.copy(
+                            lhsPlayer = UiState.Player(name = PLAYER2_NAME, score = "15"),
+                            rhsPlayer = UiState.Player(name = PLAYER1_NAME, score = "40"),
+                        )
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @Test
+    fun `updates ui state when adding rhs score with player1 on lhs`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         matchController.afterAddPointToRhs {
             matchController.returnGetCurrentGameState(game40And15)
+            matchController.returnGetSideConfig(SideConfig(playerOnLhs = Player.ONE))
         }
 
         viewModel.onRhsPressed()
@@ -137,8 +164,32 @@ class MatchViewModelTest {
                 sampleMatchUiState.copy(
                     game =
                         sampleGameUiState.copy(
-                            lhsPlayer = sampleLhsPlayer.copy(score = "40"),
-                            rhsPlayer = sampleRhsPlayer.copy(score = "15"),
+                            lhsPlayer = UiState.Player(name = PLAYER1_NAME, score = "40"),
+                            rhsPlayer = UiState.Player(name = PLAYER2_NAME, score = "15"),
+                        )
+                )
+            assertThat(awaitItem()).isEqualTo(expected)
+        }
+    }
+
+    @Test
+    fun `updates ui state when adding rhs score with player2 on lhs`() = runTest {
+        val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
+
+        matchController.afterAddPointToRhs {
+            matchController.returnGetCurrentGameState(game40And15)
+            matchController.returnGetSideConfig(SideConfig(playerOnLhs = Player.TWO))
+        }
+
+        viewModel.onRhsPressed()
+
+        viewModel.uiState.test {
+            val expected =
+                sampleMatchUiState.copy(
+                    game =
+                        sampleGameUiState.copy(
+                            lhsPlayer = UiState.Player(name = PLAYER2_NAME, score = "40"),
+                            rhsPlayer = UiState.Player(name = PLAYER1_NAME, score = "15"),
                         )
                 )
             assertThat(awaitItem()).isEqualTo(expected)
@@ -434,8 +485,8 @@ class MatchViewModelTest {
         val actual = matchRepository.getMatch(0)
         val expected =
             MatchDetails(
-                player1Name = LHS_PLAYER_NAME,
-                player2Name = RHS_PLAYER_NAME,
+                player1Name = PLAYER1_NAME,
+                player2Name = PLAYER2_NAME,
                 sets =
                     listOf(
                         MatchDetails.Set(
