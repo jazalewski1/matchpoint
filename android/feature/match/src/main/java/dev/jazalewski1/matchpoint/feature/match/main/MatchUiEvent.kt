@@ -1,9 +1,6 @@
 package dev.jazalewski1.matchpoint.feature.match.main
 
-internal enum class Side {
-    LHS,
-    RHS,
-}
+import dev.jazalewski1.matchpoint.core.common.Side
 
 internal sealed interface MatchUiEvent {
     data class PointScored(val winner: Side) : MatchUiEvent

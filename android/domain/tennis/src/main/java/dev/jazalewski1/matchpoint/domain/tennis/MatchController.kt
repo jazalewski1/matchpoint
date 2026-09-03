@@ -1,7 +1,9 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 interface MatchController {
-    fun getState(): TotalMatchState
+    fun getCurrentGameState(): GameState
+
+    fun getSideConfig(): SideConfig
 
     fun addPointToLhs(): MatchEvent
 

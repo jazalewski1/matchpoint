@@ -1,6 +1,7 @@
 package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.core.common.Player
+import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.*
 import dev.jazalewski1.matchpoint.domain.tennis.controllers.Set
 
@@ -9,51 +10,105 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
     private var set = Set()
     private val match = Match(numOfSetsToWin = numOfSetsToWin)
     private val setHistory = mutableListOf<MatchHistory.Set>()
+    private var sideConfig = SideConfig()
 
-    override fun getState(): TotalMatchState {
-        return TotalMatchState(
-            game = game.toState(),
-            set = set.toState(),
-            match = match.toState(),
-        )
-    }
+    override fun getCurrentGameState() = game.toState(sideConfig)
 
-    override fun addPointToLhs(): MatchEvent = processPointScored(Player.ONE)
+    override fun getSideConfig() = sideConfig
 
-    override fun addPointToRhs(): MatchEvent = processPointScored(Player.TWO)
+    override fun addPointToLhs(): MatchEvent = addPoint(Side.LHS)
+
+    override fun addPointToRhs(): MatchEvent = addPoint(Side.RHS)
 
     override fun getHistory() = MatchHistory(sets = setHistory)
 
-    private fun processPointScored(winner: Player): MatchEvent =
+    private fun addPoint(side: Side): MatchEvent {
+        val player = sideConfig.getPlayer(side)
+        val outcome = evaluatePointScored(winner = player)
+        val event = toMatchEvent(outcome)
+        sideConfig = nextSideConfig(outcome)
+        performTransition(outcome)
+        return event
+    }
+
+    private fun evaluatePointScored(winner: Player) =
         when (game.addPoint(winner)) {
-            is GameOutcome.PointScored -> MatchEvent.PointScored
-            is GameOutcome.Finished -> processGameFinished(winner = winner)
+            is GameOutcome.PointScored -> Outcome.PointScored(winner = winner)
+            is GameOutcome.Finished -> evaluateGameFinished(winner = winner)
         }
 
-    private fun processGameFinished(winner: Player): MatchEvent {
+    private fun evaluateGameFinished(winner: Player) =
         when (set.addGame(winner)) {
-            is SetOutcome.None -> {
+            is SetOutcome.None -> Outcome.GameFinished(winner, toTieBreak = false)
+            is SetOutcome.Tiebreak -> Outcome.GameFinished(winner, toTieBreak = true)
+            is SetOutcome.Finished -> evaluateSetFinished(winner = winner)
+        }
+
+    private fun evaluateSetFinished(winner: Player) =
+        when (match.addSet(winner)) {
+            is MatchOutcome.None -> Outcome.SetFinished(winner)
+            is MatchOutcome.Finished -> Outcome.MatchFinished(winner)
+        }
+
+    private fun toMatchEvent(outcome: Outcome) =
+        when (outcome) {
+            is Outcome.PointScored ->
+                MatchEvent.PointScored(winnerSide = sideConfig.getSide(outcome.winner))
+            is Outcome.GameFinished ->
+                MatchEvent.GameWon(
+                    winnerSide = sideConfig.getSide(outcome.winner),
+                    lhsGames = sideConfig.selectLhs(p1 = set.player1Games, p2 = set.player2Games),
+                    rhsGames = sideConfig.selectRhs(p1 = set.player1Games, p2 = set.player2Games),
+                )
+            is Outcome.SetFinished ->
+                MatchEvent.SetWon(
+                    winnerSide = sideConfig.getSide(outcome.winner),
+                    lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                    rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                )
+            is Outcome.MatchFinished ->
+                MatchEvent.MatchWon(
+                    winnerSide = sideConfig.getSide(outcome.winner),
+                    lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                    rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                )
+        }
+
+    private fun nextSideConfig(outcome: Outcome) =
+        when (outcome) {
+            is Outcome.PointScored if shouldSwitchSides(game) -> sideConfig.switch()
+            is Outcome.GameFinished if shouldSwitchSides(set) -> sideConfig.switch()
+            is Outcome.SetFinished if shouldSwitchSides(set) -> sideConfig.switch()
+            else -> sideConfig
+        }
+
+    private fun performTransition(outcome: Outcome) {
+        when (outcome) {
+            is Outcome.GameFinished -> {
+                game = if (outcome.toTieBreak) TieBreakGame() else RegularGame()
+            }
+            is Outcome.SetFinished -> {
+                saveSetToHistory(outcome.winner)
                 game = RegularGame()
-                return MatchEvent.GameWon
+                set = Set()
             }
-            is SetOutcome.Tiebreak -> {
-                game = TieBreakGame()
-                return MatchEvent.GameWon
+            is Outcome.MatchFinished -> {
+                saveSetToHistory(outcome.winner)
             }
-            is SetOutcome.Finished -> return processSetFinished(winner = winner)
+            else -> {}
         }
     }
 
-    private fun processSetFinished(winner: Player): MatchEvent {
-        saveSetToHistory(winner)
-        when (match.addSet(winner)) {
-            is MatchOutcome.None -> {
-                game = RegularGame()
-                set = Set()
-                return MatchEvent.SetWon
-            }
-            is MatchOutcome.Finished -> return MatchEvent.MatchWon
+    private fun shouldSwitchSides(game: Game): Boolean {
+        val tieBreak = game as? TieBreakGame
+        if (tieBreak != null) {
+            return (tieBreak.player1 + tieBreak.player2) % 6 == 0
         }
+        return false
+    }
+
+    private fun shouldSwitchSides(set: Set): Boolean {
+        return (set.player1Games + set.player2Games) % 2 == 1
     }
 
     private fun saveSetToHistory(winner: Player) {
@@ -75,32 +130,42 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
     }
 }
 
-private fun Game.toState() =
+private fun Game.toState(sideConfig: SideConfig) =
     when (this) {
         is RegularGame -> {
             when (val current = phase) {
                 is Phase.Main ->
                     GameState.Regular.Main(
-                        lhsPoints = current.player1,
-                        rhsPoints = current.player2,
+                        lhsPoints =
+                            sideConfig.selectLhs(p1 = current.player1, p2 = current.player2),
+                        rhsPoints =
+                            sideConfig.selectRhs(p1 = current.player1, p2 = current.player2),
                     )
 
                 is Phase.Deuce -> GameState.Regular.Deuce
                 is Phase.Advantage ->
-                    when (current.player) {
-                        Player.ONE -> GameState.Regular.Advantage.Lhs
-                        Player.TWO -> GameState.Regular.Advantage.Rhs
+                    when (sideConfig.getSide(current.player)) {
+                        Side.LHS -> GameState.Regular.Advantage.Lhs
+                        Side.RHS -> GameState.Regular.Advantage.Rhs
                     }
             }
         }
         is TieBreakGame -> {
             GameState.TieBreak(
-                lhsPoints = player1,
-                rhsPoints = player2,
+                lhsPoints = sideConfig.selectLhs(p1 = player1, p2 = player2),
+                rhsPoints = sideConfig.selectRhs(p1 = player1, p2 = player2),
             )
         }
     }
 
-private fun Set.toState() = SetState(lhsGames = player1Games, rhsGames = player2Games)
+private sealed interface Outcome {
+    data class PointScored(val winner: Player) : Outcome
 
-private fun Match.toState() = MatchState(lhsSets = player1Sets, rhsSets = player2Sets)
+    data class GameFinished(val winner: Player, val toTieBreak: Boolean) : Outcome
+
+    data class SetFinished(val winner: Player) : Outcome
+
+    data class MatchFinished(val winner: Player) : Outcome
+}
+
+private fun SideConfig.switch() = SideConfig(playerOnLhs = this.playerOnLhs.opposite())

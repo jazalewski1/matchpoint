@@ -1,9 +1,12 @@
 package dev.jazalewski1.matchpoint.feature.match.testfakes
 
+import dev.jazalewski1.matchpoint.core.common.Player
+import dev.jazalewski1.matchpoint.core.common.Side
+import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.MatchController
 import dev.jazalewski1.matchpoint.domain.tennis.MatchEvent
 import dev.jazalewski1.matchpoint.domain.tennis.MatchHistory
-import dev.jazalewski1.matchpoint.domain.tennis.TotalMatchState
+import dev.jazalewski1.matchpoint.domain.tennis.SideConfig
 import dev.jazalewski1.matchpoint.feature.match.testdata.*
 
 class FakeMatchController : MatchController {
@@ -13,21 +16,21 @@ class FakeMatchController : MatchController {
     var addPointToRhsCount = 0
         private set
 
-    private var totalMatchState: TotalMatchState =
-        TotalMatchState(
-            game = gameLoveAll,
-            set = set0To0,
-            match = match0To0,
-        )
-    private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored
-    private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored
+    private var gameState: GameState = gameLoveAll
+    private var sideConfig: SideConfig = SideConfig(playerOnLhs = Player.ONE)
+    private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored(winnerSide = Side.LHS)
+    private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored(winnerSide = Side.RHS)
     private var matchHistory: MatchHistory = MatchHistory(sets = listOf())
 
     private var addPointToLhsCallback: (() -> Unit)? = null
     private var addPointToRhsCallback: (() -> Unit)? = null
 
-    fun returnGetState(new: TotalMatchState) {
-        totalMatchState = new
+    fun returnGetCurrentGameState(new: GameState) {
+        gameState = new
+    }
+
+    fun returnGetSideConfig(new: SideConfig) {
+        sideConfig = new
     }
 
     fun returnAddPointToLhs(event: MatchEvent) {
@@ -50,7 +53,9 @@ class FakeMatchController : MatchController {
         addPointToRhsCallback = callback
     }
 
-    override fun getState(): TotalMatchState = totalMatchState
+    override fun getCurrentGameState(): GameState = gameState
+
+    override fun getSideConfig(): SideConfig = sideConfig
 
     override fun addPointToLhs(): MatchEvent {
         addPointToLhsCount += 1
