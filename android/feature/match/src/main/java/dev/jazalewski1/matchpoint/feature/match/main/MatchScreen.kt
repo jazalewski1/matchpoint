@@ -403,10 +403,10 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
     val easeOut =
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
-    colorToAnimate.animateTo(targetValue = AppColors.Tertiary.mid, animationSpec = easeOut)
+    colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
     repeat(repetitionsWithoutEntryAndExit) {
-        colorToAnimate.animateTo(targetValue = AppColors.Tertiary.light, animationSpec = easeIn)
-        colorToAnimate.animateTo(targetValue = AppColors.Tertiary.mid, animationSpec = easeOut)
+        colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeIn)
+        colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
     }
     colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeIn)
 }
