@@ -112,28 +112,28 @@ constructor(
 private fun MatchEvent.toUiEvent() =
     when (this) {
         is MatchEvent.PointScored -> toUiEvent()
-        is MatchEvent.GameWon -> toUiEvent()
-        is MatchEvent.SetWon -> toUiEvent()
-        is MatchEvent.MatchWon -> toUiEvent()
+        is MatchEvent.GameFinished -> toUiEvent()
+        is MatchEvent.SetFinished -> toUiEvent()
+        is MatchEvent.MatchFinished -> toUiEvent()
     }
 
 private fun MatchEvent.PointScored.toUiEvent() = MatchUiEvent.PointScored(winner = this.winnerSide)
 
-private fun MatchEvent.GameWon.toUiEvent() =
+private fun MatchEvent.GameFinished.toUiEvent() =
     MatchUiEvent.GameFinished(
         winner = this.winnerSide,
         lhsScore = this.lhsGames.toString(),
         rhsScore = this.rhsGames.toString(),
     )
 
-private fun MatchEvent.SetWon.toUiEvent() =
+private fun MatchEvent.SetFinished.toUiEvent() =
     MatchUiEvent.SetFinished(
         winner = this.winnerSide,
         lhsScore = this.lhsSets.toString(),
         rhsScore = this.rhsSets.toString(),
     )
 
-private fun MatchEvent.MatchWon.toUiEvent() =
+private fun MatchEvent.MatchFinished.toUiEvent() =
     MatchUiEvent.MatchFinished(
         winner = this.winnerSide,
         lhsScore = this.lhsSets.toString(),

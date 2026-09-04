@@ -229,7 +229,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGameState(game40And15)
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0)
+        val event = MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -248,7 +248,7 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGameState(game15And40)
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1)
+        val event = MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToRhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -266,7 +266,7 @@ class MatchViewModelTest {
     fun `notifies about game finished when lhs wins game`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 5, rhsGames = 3)
+        val event = MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 5, rhsGames = 3)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -289,7 +289,7 @@ class MatchViewModelTest {
     fun `notifies about game finished when rhs wins game`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 3, rhsGames = 5)
+        val event = MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 3, rhsGames = 5)
         matchController.returnAddPointToRhs(event)
         matchController.afterAddPointToRhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -312,7 +312,7 @@ class MatchViewModelTest {
     fun `notifies about set finished when lhs wins set`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0)
+        val event = MatchEvent.SetFinished(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -335,7 +335,7 @@ class MatchViewModelTest {
     fun `notifies about set finished when rhs wins set`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1)
+        val event = MatchEvent.SetFinished(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1)
         matchController.returnAddPointToRhs(event)
         matchController.afterAddPointToRhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -406,7 +406,7 @@ class MatchViewModelTest {
     fun `notifies about set finished when lhs wins match`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.MatchWon(winnerSide = Side.LHS, lhsSets = 3, rhsSets = 1)
+        val event = MatchEvent.MatchFinished(winnerSide = Side.LHS, lhsSets = 3, rhsSets = 1)
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
             matchController.returnGetCurrentGameState(game40And15)
@@ -429,7 +429,7 @@ class MatchViewModelTest {
     fun `notifies about set finished when rhs wins match`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.MatchWon(winnerSide = Side.RHS, lhsSets = 1, rhsSets = 3)
+        val event = MatchEvent.MatchFinished(winnerSide = Side.RHS, lhsSets = 1, rhsSets = 3)
         matchController.returnAddPointToRhs(event)
         matchController.afterAddPointToRhs {
             matchController.returnGetCurrentGameState(game15And40)
