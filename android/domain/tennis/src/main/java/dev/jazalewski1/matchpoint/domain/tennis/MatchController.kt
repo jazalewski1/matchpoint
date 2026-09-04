@@ -5,9 +5,9 @@ interface MatchController {
 
     fun getSideConfig(): SideConfig
 
-    fun addPointToLhs(): MatchEvent
+    fun addPointToLhs(): MatchEvent?
 
-    fun addPointToRhs(): MatchEvent
+    fun addPointToRhs(): MatchEvent?
 
     fun getHistory(): MatchHistory
 }

@@ -18,8 +18,8 @@ class FakeMatchController : MatchController {
 
     private var gameState: GameState = gameLoveAll
     private var sideConfig: SideConfig = SideConfig(playerOnLhs = Player.ONE)
-    private var lhsMatchEvent: MatchEvent = MatchEvent.PointScored(winnerSide = Side.LHS)
-    private var rhsMatchEvent: MatchEvent = MatchEvent.PointScored(winnerSide = Side.RHS)
+    private var lhsMatchEvent: MatchEvent? = MatchEvent.PointScored(winnerSide = Side.LHS)
+    private var rhsMatchEvent: MatchEvent? = MatchEvent.PointScored(winnerSide = Side.RHS)
     private var matchHistory: MatchHistory = MatchHistory(sets = listOf())
 
     private var addPointToLhsCallback: (() -> Unit)? = null
@@ -33,11 +33,11 @@ class FakeMatchController : MatchController {
         sideConfig = new
     }
 
-    fun returnAddPointToLhs(event: MatchEvent) {
+    fun returnAddPointToLhs(event: MatchEvent?) {
         lhsMatchEvent = event
     }
 
-    fun returnAddPointToRhs(event: MatchEvent) {
+    fun returnAddPointToRhs(event: MatchEvent?) {
         rhsMatchEvent = event
     }
 
@@ -57,13 +57,13 @@ class FakeMatchController : MatchController {
 
     override fun getSideConfig(): SideConfig = sideConfig
 
-    override fun addPointToLhs(): MatchEvent {
+    override fun addPointToLhs(): MatchEvent? {
         addPointToLhsCount += 1
         addPointToLhsCallback?.invoke()
         return lhsMatchEvent
     }
 
-    override fun addPointToRhs(): MatchEvent {
+    override fun addPointToRhs(): MatchEvent? {
         addPointToRhsCount += 1
         addPointToRhsCallback?.invoke()
         return rhsMatchEvent

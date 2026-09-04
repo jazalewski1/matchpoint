@@ -449,6 +449,50 @@ class MatchViewModelTest {
     }
 
     @Test
+    fun `does nothing on none match event triggered by lhs`() = runTest {
+        matchController.returnGetCurrentGameState(gameLoveAll)
+        val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
+
+        matchController.returnAddPointToLhs(null)
+        matchController.afterAddPointToLhs {
+            matchController.returnGetCurrentGameState(game40And15)
+        }
+
+        viewModel.uiState.test {
+            awaitItem() // initial state
+
+            viewModel.uiEvents.test {
+                viewModel.onLhsPressed()
+                expectNoEvents()
+            }
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `does nothing on none match event triggered by rhs`() = runTest {
+        matchController.returnGetCurrentGameState(gameLoveAll)
+        val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
+
+        matchController.returnAddPointToRhs(null)
+        matchController.afterAddPointToRhs {
+            matchController.returnGetCurrentGameState(game15And40)
+        }
+
+        viewModel.uiState.test {
+            awaitItem() // initial state
+
+            viewModel.uiEvents.test {
+                viewModel.onRhsPressed()
+                expectNoEvents()
+            }
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
     fun `stores match details in repository on finished`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 

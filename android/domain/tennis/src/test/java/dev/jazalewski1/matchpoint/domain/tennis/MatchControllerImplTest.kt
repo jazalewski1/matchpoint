@@ -373,6 +373,22 @@ class MatchControllerImplTest {
     }
 
     @Test
+    fun `finished match does not accept points`() {
+        val controller = MatchControllerImpl(numOfSetsToWin = 1)
+
+        winSetForPlayerStartingOnLhs(controller)
+
+        val lastGameState =
+            GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY)
+        assertThat(controller.getCurrentGameState()).isEqualTo(lastGameState)
+
+        assertThat(controller.addPointToLhs()).isNull()
+        assertThat(controller.addPointToRhs()).isNull()
+
+        assertThat(controller.getCurrentGameState()).isEqualTo(lastGameState)
+    }
+
+    @Test
     fun `returns match history`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 

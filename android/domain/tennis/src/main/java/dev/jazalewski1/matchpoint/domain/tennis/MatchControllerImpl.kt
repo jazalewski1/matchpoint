@@ -11,18 +11,22 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
     private val match = Match(numOfSetsToWin = numOfSetsToWin)
     private val setHistory = mutableListOf<MatchHistory.Set>()
     private var sideConfig = SideConfig()
+    private var isOngoing = true
 
     override fun getCurrentGameState() = game.toState(sideConfig)
 
     override fun getSideConfig() = sideConfig
 
-    override fun addPointToLhs(): MatchEvent = addPoint(Side.LHS)
+    override fun addPointToLhs(): MatchEvent? = addPoint(Side.LHS)
 
-    override fun addPointToRhs(): MatchEvent = addPoint(Side.RHS)
+    override fun addPointToRhs(): MatchEvent? = addPoint(Side.RHS)
 
     override fun getHistory() = MatchHistory(sets = setHistory)
 
-    private fun addPoint(side: Side): MatchEvent {
+    private fun addPoint(side: Side): MatchEvent? {
+        if (!isOngoing) {
+            return null
+        }
         val player = sideConfig.getPlayer(side)
         val outcome = evaluatePointScored(winner = player)
         val event = toMatchEvent(outcome)
@@ -94,6 +98,7 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
             }
             is Outcome.MatchFinished -> {
                 saveSetToHistory(outcome.winner)
+                isOngoing = false
             }
             else -> {}
         }
