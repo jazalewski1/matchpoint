@@ -42,8 +42,8 @@ internal fun MatchSetupScreen(onStart: (String, String, Int) -> Unit) {
         selectedSetOptionIndex = selectedSetOptionIndex,
         onStartClick = {
             onStart(
-                nameInput.uiState.player1.name,
-                nameInput.uiState.player2.name,
+                nameInput.preparePlayer1(),
+                nameInput.preparePlayer2(),
                 SetOption.entries[selectedSetOptionIndex].numOfSetsToWin,
             )
         },

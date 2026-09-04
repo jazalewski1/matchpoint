@@ -43,6 +43,22 @@ class NameInputStateHolderTest {
     }
 
     @Test
+    fun `prepares player1 name`() {
+        val holder = NameInputStateHolder()
+        val newName = "  $validName1 "
+        holder.changePlayer1(newName)
+        assertThat(holder.preparePlayer1()).isEqualTo(validName1)
+    }
+
+    @Test
+    fun `trims player2 name`() {
+        val holder = NameInputStateHolder()
+        val newName = "  $validName2 "
+        holder.changePlayer2(newName)
+        assertThat(holder.preparePlayer2()).isEqualTo(validName2)
+    }
+
+    @Test
     fun `is complete`() {
         val holder = NameInputStateHolder()
         holder.changePlayer1(validName1)

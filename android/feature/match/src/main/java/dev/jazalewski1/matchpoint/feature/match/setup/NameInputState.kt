@@ -56,6 +56,10 @@ internal class NameInputStateHolder {
     fun changePlayer2(newValue: String) {
         uiState = uiState.copy(player2 = NameFormUiState.Player.Initialized(newValue))
     }
+
+    fun preparePlayer1() = uiState.player1.name.trim()
+
+    fun preparePlayer2() = uiState.player2.name.trim()
 }
 
 private fun validate(text: String): List<NameError> {
