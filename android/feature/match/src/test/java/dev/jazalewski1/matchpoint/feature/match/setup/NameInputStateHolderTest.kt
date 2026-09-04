@@ -13,7 +13,8 @@ private val validPlayer1UiState =
     NameFormUiState.Player.Initialized(name = validName1, errors = emptyList())
 private val validPlayer2UiState =
     NameFormUiState.Player.Initialized(name = validName2, errors = emptyList())
-private val defaultUiState = NameFormUiState(player1 = uninitializedPlayer, player2 = uninitializedPlayer)
+private val defaultUiState =
+    NameFormUiState(player1 = uninitializedPlayer, player2 = uninitializedPlayer)
 
 class NameInputStateHolderTest {
     @Test
@@ -63,9 +64,10 @@ class NameInputStateHolderTest {
         val holder = NameInputStateHolder()
         holder.changePlayer1(validName1)
         holder.changePlayer2(validName2)
-        assertThat(holder.uiState).isEqualTo(
-            NameFormUiState(player1 = validPlayer1UiState, player2 = validPlayer2UiState)
-        )
+        assertThat(holder.uiState)
+            .isEqualTo(
+                NameFormUiState(player1 = validPlayer1UiState, player2 = validPlayer2UiState)
+            )
         assertThat(holder.uiState.isComplete).isTrue()
         assertThat(holder.uiState.errors).isEmpty()
     }
@@ -75,22 +77,30 @@ class NameInputStateHolderTest {
         val holder = NameInputStateHolder()
 
         holder.changePlayer1(blankName)
-        assertThat(holder.uiState).isEqualTo(
-            defaultUiState.copy(
-                player1 =
-                    NameFormUiState.Player.Initialized(name = blankName, errors = listOf(NameError.BLANK)),
+        assertThat(holder.uiState)
+            .isEqualTo(
+                defaultUiState.copy(
+                    player1 =
+                        NameFormUiState.Player.Initialized(
+                            name = blankName,
+                            errors = listOf(NameError.BLANK),
+                        )
+                )
             )
-        )
         assertThat(holder.uiState.isComplete).isFalse()
         assertThat(holder.uiState.errors).containsExactly(NameError.BLANK.toString())
 
         holder.changePlayer1(tooLongName)
-        assertThat(holder.uiState).isEqualTo(
-            defaultUiState.copy(
-                player1 =
-                    NameFormUiState.Player.Initialized(name = tooLongName, errors = listOf(NameError.TOO_LONG)),
+        assertThat(holder.uiState)
+            .isEqualTo(
+                defaultUiState.copy(
+                    player1 =
+                        NameFormUiState.Player.Initialized(
+                            name = tooLongName,
+                            errors = listOf(NameError.TOO_LONG),
+                        )
+                )
             )
-        )
         assertThat(holder.uiState.errors).containsExactly(NameError.TOO_LONG.toString())
     }
 
@@ -99,21 +109,29 @@ class NameInputStateHolderTest {
         val holder = NameInputStateHolder()
 
         holder.changePlayer2(blankName)
-        assertThat(holder.uiState).isEqualTo(
-            defaultUiState.copy(
-                player2 =
-                    NameFormUiState.Player.Initialized(name = blankName, errors = listOf(NameError.BLANK)),
+        assertThat(holder.uiState)
+            .isEqualTo(
+                defaultUiState.copy(
+                    player2 =
+                        NameFormUiState.Player.Initialized(
+                            name = blankName,
+                            errors = listOf(NameError.BLANK),
+                        )
+                )
             )
-        )
         assertThat(holder.uiState.errors).containsExactly(NameError.BLANK.toString())
 
         holder.changePlayer2(tooLongName)
-        assertThat(holder.uiState).isEqualTo(
-            defaultUiState.copy(
-                player2 =
-                    NameFormUiState.Player.Initialized(name = tooLongName, errors = listOf(NameError.TOO_LONG)),
+        assertThat(holder.uiState)
+            .isEqualTo(
+                defaultUiState.copy(
+                    player2 =
+                        NameFormUiState.Player.Initialized(
+                            name = tooLongName,
+                            errors = listOf(NameError.TOO_LONG),
+                        )
+                )
             )
-        )
         assertThat(holder.uiState.errors).containsExactly(NameError.TOO_LONG.toString())
     }
 
@@ -123,7 +141,8 @@ class NameInputStateHolderTest {
         holder.changePlayer1(blankName)
         holder.changePlayer2(tooLongName)
 
-        assertThat(holder.uiState.errors).containsExactly(NameError.BLANK.toString(), NameError.TOO_LONG.toString())
+        assertThat(holder.uiState.errors)
+            .containsExactly(NameError.BLANK.toString(), NameError.TOO_LONG.toString())
     }
 
     @Test

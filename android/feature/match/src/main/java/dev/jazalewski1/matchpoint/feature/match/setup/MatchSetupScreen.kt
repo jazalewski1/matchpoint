@@ -9,12 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Devices.DEFAULT
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.jazalewski1.matchpoint.core.ui.common.PrimaryButton
 import dev.jazalewski1.matchpoint.core.ui.common.PrimaryTextField
-import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 
 private enum class SetOption(val numOfSets: Int, val numOfSetsToWin: Int) {
     BEST_OF_1(numOfSets = 1, numOfSetsToWin = 1),

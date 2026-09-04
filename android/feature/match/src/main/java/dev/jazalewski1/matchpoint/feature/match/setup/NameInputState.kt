@@ -31,11 +31,12 @@ internal data class NameFormUiState(
     }
 
     val isComplete: Boolean
-        get() = if (player1 is Player.Initialized && player2 is Player.Initialized) {
-            player1.isValid && player2.isValid
-        } else {
-            false
-        }
+        get() =
+            if (player1 is Player.Initialized && player2 is Player.Initialized) {
+                player1.isValid && player2.isValid
+            } else {
+                false
+            }
 
     val errors: List<String>
         get() {
