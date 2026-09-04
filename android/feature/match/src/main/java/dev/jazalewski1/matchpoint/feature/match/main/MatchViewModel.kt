@@ -80,8 +80,10 @@ constructor(
                 Side.LHS -> matchController.addPointToLhs()
                 Side.RHS -> matchController.addPointToRhs()
             }
-        _uiEvents.tryEmit(matchEvent.toUiEvent())
-        updateScores()
+        if (matchEvent != null) {
+            _uiEvents.tryEmit(matchEvent.toUiEvent())
+            updateScores()
+        }
     }
 
     private fun updateScores() {
