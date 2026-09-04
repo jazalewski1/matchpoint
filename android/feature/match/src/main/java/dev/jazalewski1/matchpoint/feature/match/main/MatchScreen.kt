@@ -231,7 +231,11 @@ private fun PlayerSection(
                     indication = null,
                     interactionSource = interactionSource,
                 )
-                .drawBehind { drawRect(backgroundColor) }
+                .drawBehind {
+                    val colorStops =
+                        arrayOf(0.0f to AppColors.Background.bg, 0.8f to backgroundColor)
+                    drawRect(Brush.verticalGradient(colorStops = colorStops))
+                }
                 .semantics(properties = { this.contentDescription = contentDescription }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -399,12 +403,12 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
     val easeOut =
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
-    colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeIn)
+    colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
     repeat(repetitionsWithoutEntryAndExit) {
-        colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeOut)
-        colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeIn)
+        colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeIn)
+        colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
     }
-    colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeOut)
+    colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeIn)
 }
 
 @Composable
