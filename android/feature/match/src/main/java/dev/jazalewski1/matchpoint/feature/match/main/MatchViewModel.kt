@@ -2,7 +2,6 @@ package dev.jazalewski1.matchpoint.feature.match.main
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.jazalewski1.matchpoint.core.common.Side
@@ -22,7 +21,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 internal class MatchViewModel
@@ -69,9 +67,7 @@ constructor(
                         player2Name = player2Name,
                     )
             )
-        viewModelScope.launch {
-            _navigationEvents.send(MatchNavigationEvent.MatchFinished(matchId = matchId))
-        }
+        _navigationEvents.trySend(MatchNavigationEvent.MatchFinished(matchId = matchId))
     }
 
     private fun process(side: Side) {
