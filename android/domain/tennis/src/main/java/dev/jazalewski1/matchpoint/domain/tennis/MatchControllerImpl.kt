@@ -145,8 +145,8 @@ private fun Game.toState(sideConfig: SideConfig) =
                 is Phase.Deuce -> GameState.Regular.Deuce
                 is Phase.Advantage ->
                     when (sideConfig.getSide(current.player)) {
-                        Side.LHS -> GameState.Regular.Advantage.Lhs
-                        Side.RHS -> GameState.Regular.Advantage.Rhs
+                        Side.LHS -> GameState.Regular.Advantage(Side.LHS)
+                        Side.RHS -> GameState.Regular.Advantage(Side.RHS)
                     }
             }
         }

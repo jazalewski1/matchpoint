@@ -81,22 +81,26 @@ class MatchControllerImplTest {
 
         advanceToDeuce(controller)
         controller.addPointToLhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Lhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.LHS))
 
         controller.addPointToRhs()
         controller.addPointToRhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Rhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.RHS))
 
         controller.addPointToRhs()
         // switched sides
 
         advanceToDeuce(controller)
         controller.addPointToLhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Lhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.LHS))
 
         controller.addPointToRhs()
         controller.addPointToRhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Rhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.RHS))
     }
 
     private fun advanceToDeuce(controller: MatchControllerImpl) {
@@ -121,7 +125,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.LHS))
-        val expected = GameState.Regular.Advantage.Lhs
+        val expected = GameState.Regular.Advantage(Side.LHS)
         assertThat(controller.getCurrentGameState()).isEqualTo(expected)
     }
 
@@ -133,7 +137,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.RHS))
-        val expected = GameState.Regular.Advantage.Rhs
+        val expected = GameState.Regular.Advantage(Side.RHS)
         assertThat(controller.getCurrentGameState()).isEqualTo(expected)
     }
 
