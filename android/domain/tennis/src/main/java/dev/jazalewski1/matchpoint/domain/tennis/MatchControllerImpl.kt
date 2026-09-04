@@ -55,19 +55,19 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
             is Outcome.PointScored ->
                 MatchEvent.PointScored(winnerSide = sideConfig.getSide(outcome.winner))
             is Outcome.GameFinished ->
-                MatchEvent.GameWon(
+                MatchEvent.GameFinished(
                     winnerSide = sideConfig.getSide(outcome.winner),
                     lhsGames = sideConfig.selectLhs(p1 = set.player1Games, p2 = set.player2Games),
                     rhsGames = sideConfig.selectRhs(p1 = set.player1Games, p2 = set.player2Games),
                 )
             is Outcome.SetFinished ->
-                MatchEvent.SetWon(
+                MatchEvent.SetFinished(
                     winnerSide = sideConfig.getSide(outcome.winner),
                     lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
                     rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
                 )
             is Outcome.MatchFinished ->
-                MatchEvent.MatchWon(
+                MatchEvent.MatchFinished(
                     winnerSide = sideConfig.getSide(outcome.winner),
                     lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
                     rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
@@ -145,8 +145,8 @@ private fun Game.toState(sideConfig: SideConfig) =
                 is Phase.Deuce -> GameState.Regular.Deuce
                 is Phase.Advantage ->
                     when (sideConfig.getSide(current.player)) {
-                        Side.LHS -> GameState.Regular.Advantage.Lhs
-                        Side.RHS -> GameState.Regular.Advantage.Rhs
+                        Side.LHS -> GameState.Regular.Advantage(Side.LHS)
+                        Side.RHS -> GameState.Regular.Advantage(Side.RHS)
                     }
             }
         }

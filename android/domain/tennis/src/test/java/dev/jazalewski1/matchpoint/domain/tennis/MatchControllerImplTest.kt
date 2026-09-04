@@ -43,7 +43,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0))
+            .isEqualTo(MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0))
     }
 
     @Test
@@ -55,7 +55,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1))
+            .isEqualTo(MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1))
     }
 
     @Test
@@ -81,22 +81,26 @@ class MatchControllerImplTest {
 
         advanceToDeuce(controller)
         controller.addPointToLhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Lhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.LHS))
 
         controller.addPointToRhs()
         controller.addPointToRhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Rhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.RHS))
 
         controller.addPointToRhs()
         // switched sides
 
         advanceToDeuce(controller)
         controller.addPointToLhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Lhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.LHS))
 
         controller.addPointToRhs()
         controller.addPointToRhs()
-        assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Advantage.Rhs)
+        assertThat(controller.getCurrentGameState())
+            .isEqualTo(GameState.Regular.Advantage(Side.RHS))
     }
 
     private fun advanceToDeuce(controller: MatchControllerImpl) {
@@ -121,7 +125,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.LHS))
-        val expected = GameState.Regular.Advantage.Lhs
+        val expected = GameState.Regular.Advantage(Side.LHS)
         assertThat(controller.getCurrentGameState()).isEqualTo(expected)
     }
 
@@ -133,7 +137,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event).isEqualTo(MatchEvent.PointScored(winnerSide = Side.RHS))
-        val expected = GameState.Regular.Advantage.Rhs
+        val expected = GameState.Regular.Advantage(Side.RHS)
         assertThat(controller.getCurrentGameState()).isEqualTo(expected)
     }
 
@@ -166,7 +170,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
+            .isEqualTo(MatchEvent.SetFinished(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
     }
 
     @Test
@@ -182,7 +186,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
+            .isEqualTo(MatchEvent.SetFinished(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
     }
 
     @Test
@@ -199,7 +203,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
+            .isEqualTo(MatchEvent.SetFinished(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
     }
 
     @Test
@@ -216,7 +220,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
+            .isEqualTo(MatchEvent.SetFinished(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
     }
 
     @Test
@@ -238,7 +242,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.LHS, lhsGames = 6, rhsGames = 6))
+            .isEqualTo(MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 6, rhsGames = 6))
 
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.TieBreak(lhsPoints = 0, rhsPoints = 0))
@@ -263,7 +267,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.GameWon(winnerSide = Side.RHS, lhsGames = 6, rhsGames = 6))
+            .isEqualTo(MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 6, rhsGames = 6))
 
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.TieBreak(lhsPoints = 0, rhsPoints = 0))
@@ -287,7 +291,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
+            .isEqualTo(MatchEvent.SetFinished(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1))
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.LOVE))
     }
@@ -301,7 +305,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.SetWon(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
+            .isEqualTo(MatchEvent.SetFinished(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0))
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.LOVE))
     }
@@ -341,7 +345,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToRhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.MatchWon(winnerSide = Side.RHS, lhsSets = 3, rhsSets = 4))
+            .isEqualTo(MatchEvent.MatchFinished(winnerSide = Side.RHS, lhsSets = 3, rhsSets = 4))
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY))
     }
@@ -363,7 +367,7 @@ class MatchControllerImplTest {
 
         val event = controller.addPointToLhs()
         assertThat(event)
-            .isEqualTo(MatchEvent.MatchWon(winnerSide = Side.LHS, lhsSets = 4, rhsSets = 3))
+            .isEqualTo(MatchEvent.MatchFinished(winnerSide = Side.LHS, lhsSets = 4, rhsSets = 3))
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.FORTY, rhsPoints = Points.LOVE))
     }

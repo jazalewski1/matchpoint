@@ -1,5 +1,6 @@
 package dev.jazalewski1.matchpoint.feature.match.util
 
+import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.domain.tennis.GameState
 import dev.jazalewski1.matchpoint.domain.tennis.Points
 import org.assertj.core.api.Assertions.assertThat
@@ -39,14 +40,14 @@ class GameStateConverterTest {
 
     @Test
     fun `converts lhs advantage`() {
-        val game = GameState.Regular.Advantage.Lhs
+        val game = GameState.Regular.Advantage(Side.LHS)
         assertThat(game.lhsToString()).isEqualTo("AD")
         assertThat(game.rhsToString()).isEqualTo("40")
     }
 
     @Test
     fun `converts rhs advantage`() {
-        val game = GameState.Regular.Advantage.Rhs
+        val game = GameState.Regular.Advantage(Side.RHS)
         assertThat(game.lhsToString()).isEqualTo("40")
         assertThat(game.rhsToString()).isEqualTo("AD")
     }

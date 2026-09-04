@@ -2,23 +2,22 @@ package dev.jazalewski1.matchpoint.domain.tennis
 
 import dev.jazalewski1.matchpoint.core.common.Side
 
-// TODO: rename *Won to *Finished
 sealed interface MatchEvent {
     data class PointScored(val winnerSide: Side) : MatchEvent
 
-    data class GameWon(
+    data class GameFinished(
         val winnerSide: Side,
         val lhsGames: Int,
         val rhsGames: Int,
     ) : MatchEvent
 
-    data class SetWon(
+    data class SetFinished(
         val winnerSide: Side,
         val lhsSets: Int,
         val rhsSets: Int,
     ) : MatchEvent
 
-    data class MatchWon(
+    data class MatchFinished(
         val winnerSide: Side,
         val lhsSets: Int,
         val rhsSets: Int,

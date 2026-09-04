@@ -91,7 +91,10 @@ class MatchSummaryScreenTest {
                 uiState =
                     LoadedUiState(
                         player1 =
-                            LoadedUiState.Player(name = PLAYER1_NAME, sets = List(4) { setWon(6) }),
+                            LoadedUiState.Player(
+                                name = PLAYER1_NAME,
+                                sets = List(4) { setWon(6) },
+                            ),
                         player2 =
                             LoadedUiState.Player(
                                 name = PLAYER2_NAME,
@@ -125,12 +128,24 @@ class MatchSummaryScreenTest {
                         player1 =
                             LoadedUiState.Player(
                                 name = PLAYER1_NAME,
-                                sets = listOf(setWon(1), setLost(3), setWon(5), setLost(7, 9)),
+                                sets =
+                                    listOf(
+                                        setWon(1),
+                                        setLost(3),
+                                        setWon(5),
+                                        setLost(7, 9),
+                                    ),
                             ),
                         player2 =
                             LoadedUiState.Player(
                                 name = PLAYER2_NAME,
-                                sets = listOf(setWon(2), setLost(4), setWon(6), setLost(8, 10)),
+                                sets =
+                                    listOf(
+                                        setWon(2),
+                                        setLost(4),
+                                        setWon(6),
+                                        setLost(8, 10),
+                                    ),
                             ),
                         numOfSets = 4,
                     )
