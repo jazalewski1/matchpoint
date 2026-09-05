@@ -57,7 +57,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
+internal const val INDICATION_PULSE_HALF_DURATION_MS = 400
 internal const val INDICATION_PULSE_FULL_DURATION_MS = INDICATION_PULSE_HALF_DURATION_MS * 2
 internal const val DIALOG_INDICATION_PULSE_REPS = 5
 internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
