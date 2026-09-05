@@ -115,7 +115,8 @@ private fun MatchEvent.toUiEvent() =
         is MatchEvent.MatchFinished -> toUiEvent()
     }
 
-private fun MatchEvent.PointScored.toUiEvent() = MatchUiEvent.PointScored(winner = this.winnerSide, withSideSwitch = this.withSideSwitch)
+private fun MatchEvent.PointScored.toUiEvent() =
+    MatchUiEvent.PointScored(winner = this.winnerSide, withSideSwitch = this.withSideSwitch)
 
 private fun MatchEvent.GameFinished.toUiEvent() =
     MatchUiEvent.GameFinished(

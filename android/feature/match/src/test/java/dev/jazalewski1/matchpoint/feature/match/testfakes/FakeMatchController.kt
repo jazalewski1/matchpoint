@@ -18,8 +18,10 @@ class FakeMatchController : MatchController {
 
     private var gameState: GameState = gameLoveAll
     private var sideConfig: SideConfig = SideConfig(playerOnLhs = Player.ONE)
-    private var lhsMatchEvent: MatchEvent? = MatchEvent.PointScored(winnerSide = Side.LHS, withSideSwitch = false)
-    private var rhsMatchEvent: MatchEvent? = MatchEvent.PointScored(winnerSide = Side.RHS, withSideSwitch = false)
+    private var lhsMatchEvent: MatchEvent? =
+        MatchEvent.PointScored(winnerSide = Side.LHS, withSideSwitch = false)
+    private var rhsMatchEvent: MatchEvent? =
+        MatchEvent.PointScored(winnerSide = Side.RHS, withSideSwitch = false)
     private var matchHistory: MatchHistory = MatchHistory(sets = listOf())
 
     private var addPointToLhsCallback: (() -> Unit)? = null

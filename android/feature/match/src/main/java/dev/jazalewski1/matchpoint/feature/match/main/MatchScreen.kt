@@ -5,14 +5,11 @@ import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.EaseOutQuad
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateValue
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -49,6 +46,7 @@ import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.core.ui.theme.AppColors
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.monospaceFontFamily
+import dev.jazalewski1.matchpoint.feature.match.R
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -58,7 +56,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import dev.jazalewski1.matchpoint.feature.match.R
 
 internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
 internal const val INDICATION_PULSE_FULL_DURATION_MS = INDICATION_PULSE_HALF_DURATION_MS * 2
@@ -66,7 +63,8 @@ internal const val DIALOG_INDICATION_PULSE_REPS = 5
 internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
     DIALOG_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
 internal const val POINT_INDICATION_PULSE_REPS = 3
-internal const val POINT_INDICATION_TOTAL_DURATION_MS = POINT_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
+internal const val POINT_INDICATION_TOTAL_DURATION_MS =
+    POINT_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
 
 @Composable
 internal fun MatchScreen(
@@ -315,9 +313,8 @@ private fun GameEventIndication(
                     pulseColor = AppColors.Tertiary.dark,
                 )
 
-            is DialogIndicationParams.SideSwitch -> SideSwitchDialogIndication(
-                onClick = { indicationState.dismissDialogIndication() },
-            )
+            is DialogIndicationParams.SideSwitch ->
+                SideSwitchDialogIndication(onClick = { indicationState.dismissDialogIndication() })
         }
     }
 }
@@ -531,19 +528,19 @@ private fun DialogIndication(
 }
 
 @Composable
-private fun SideSwitchDialogIndication(
-    onClick: () -> Unit,
-) {
+private fun SideSwitchDialogIndication(onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val transition = rememberInfiniteTransition()
-    val animationProgress by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600, easing = EaseInOut),
-            repeatMode = RepeatMode.Reverse,
+    val animationProgress by
+        transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(600, easing = EaseInOut),
+                    repeatMode = RepeatMode.Reverse,
+                ),
         )
-    )
     val offset = animationProgress * 120
     Box(
         modifier =
@@ -554,9 +551,11 @@ private fun SideSwitchDialogIndication(
                     interactionSource = interactionSource,
                 )
                 .background(color = AppColors.Others.inverseSurface)
-                .semantics(properties = {
-                    contentDescription = "Side Switch Indication"
-                })
+                .semantics(
+                    properties = {
+                        contentDescription = "Side Switch Indication"
+                    }
+                )
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

@@ -204,7 +204,7 @@ class MatchViewModelTest {
             matchController.returnAddPointToLhs(
                 MatchEvent.PointScored(
                     winnerSide = Side.LHS,
-                    withSideSwitch = false
+                    withSideSwitch = false,
                 )
             )
             viewModel.onLhsPressed()
@@ -213,7 +213,9 @@ class MatchViewModelTest {
         }
 
         viewModel.uiEvents.test {
-            matchController.returnAddPointToLhs(MatchEvent.PointScored(winnerSide = Side.LHS, withSideSwitch = true))
+            matchController.returnAddPointToLhs(
+                MatchEvent.PointScored(winnerSide = Side.LHS, withSideSwitch = true)
+            )
             viewModel.onLhsPressed()
             val expected = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = true)
             assertThat(awaitItem()).isEqualTo(expected)
@@ -228,7 +230,7 @@ class MatchViewModelTest {
             matchController.returnAddPointToRhs(
                 MatchEvent.PointScored(
                     winnerSide = Side.RHS,
-                    withSideSwitch = false
+                    withSideSwitch = false,
                 )
             )
             viewModel.onRhsPressed()
@@ -237,7 +239,9 @@ class MatchViewModelTest {
         }
 
         viewModel.uiEvents.test {
-            matchController.returnAddPointToRhs(MatchEvent.PointScored(winnerSide = Side.RHS, withSideSwitch = true))
+            matchController.returnAddPointToRhs(
+                MatchEvent.PointScored(winnerSide = Side.RHS, withSideSwitch = true)
+            )
             viewModel.onRhsPressed()
             val expected = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = true)
             assertThat(awaitItem()).isEqualTo(expected)
@@ -249,7 +253,13 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGameState(game40And15)
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 1, rhsGames = 0, withSideSwitch = false)
+        val event =
+            MatchEvent.GameFinished(
+                winnerSide = Side.LHS,
+                lhsGames = 1,
+                rhsGames = 0,
+                withSideSwitch = false,
+            )
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToLhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -268,7 +278,13 @@ class MatchViewModelTest {
         matchController.returnGetCurrentGameState(game15And40)
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        val event = MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 0, rhsGames = 1, withSideSwitch = false)
+        val event =
+            MatchEvent.GameFinished(
+                winnerSide = Side.RHS,
+                lhsGames = 0,
+                rhsGames = 1,
+                withSideSwitch = false,
+            )
         matchController.returnAddPointToLhs(event)
         matchController.afterAddPointToRhs {
             matchController.returnGetCurrentGameState(gameLoveAll)
@@ -287,7 +303,13 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 5, rhsGames = 3, withSideSwitch = false)
+            val event =
+                MatchEvent.GameFinished(
+                    winnerSide = Side.LHS,
+                    lhsGames = 5,
+                    rhsGames = 3,
+                    withSideSwitch = false,
+                )
             matchController.returnAddPointToLhs(event)
             matchController.afterAddPointToLhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -306,7 +328,13 @@ class MatchViewModelTest {
         }
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.GameFinished(winnerSide = Side.LHS, lhsGames = 5, rhsGames = 3, withSideSwitch = true)
+            val event =
+                MatchEvent.GameFinished(
+                    winnerSide = Side.LHS,
+                    lhsGames = 5,
+                    rhsGames = 3,
+                    withSideSwitch = true,
+                )
             matchController.returnAddPointToLhs(event)
             matchController.afterAddPointToLhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -330,7 +358,13 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 3, rhsGames = 5, withSideSwitch = false)
+            val event =
+                MatchEvent.GameFinished(
+                    winnerSide = Side.RHS,
+                    lhsGames = 3,
+                    rhsGames = 5,
+                    withSideSwitch = false,
+                )
             matchController.returnAddPointToRhs(event)
             matchController.afterAddPointToRhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -349,7 +383,13 @@ class MatchViewModelTest {
         }
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.GameFinished(winnerSide = Side.RHS, lhsGames = 3, rhsGames = 5, withSideSwitch = true)
+            val event =
+                MatchEvent.GameFinished(
+                    winnerSide = Side.RHS,
+                    lhsGames = 3,
+                    rhsGames = 5,
+                    withSideSwitch = true,
+                )
             matchController.returnAddPointToRhs(event)
             matchController.afterAddPointToRhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -373,7 +413,13 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.SetFinished(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0, withSideSwitch = false)
+            val event =
+                MatchEvent.SetFinished(
+                    winnerSide = Side.LHS,
+                    lhsSets = 1,
+                    rhsSets = 0,
+                    withSideSwitch = false,
+                )
             matchController.returnAddPointToLhs(event)
             matchController.afterAddPointToLhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -392,7 +438,13 @@ class MatchViewModelTest {
         }
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.SetFinished(winnerSide = Side.LHS, lhsSets = 1, rhsSets = 0, withSideSwitch = true)
+            val event =
+                MatchEvent.SetFinished(
+                    winnerSide = Side.LHS,
+                    lhsSets = 1,
+                    rhsSets = 0,
+                    withSideSwitch = true,
+                )
             matchController.returnAddPointToLhs(event)
             matchController.afterAddPointToLhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -416,7 +468,13 @@ class MatchViewModelTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.SetFinished(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1, withSideSwitch = false)
+            val event =
+                MatchEvent.SetFinished(
+                    winnerSide = Side.RHS,
+                    lhsSets = 0,
+                    rhsSets = 1,
+                    withSideSwitch = false,
+                )
             matchController.returnAddPointToRhs(event)
             matchController.afterAddPointToRhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)
@@ -435,7 +493,13 @@ class MatchViewModelTest {
         }
 
         viewModel.uiEvents.test {
-            val event = MatchEvent.SetFinished(winnerSide = Side.RHS, lhsSets = 0, rhsSets = 1, withSideSwitch = true)
+            val event =
+                MatchEvent.SetFinished(
+                    winnerSide = Side.RHS,
+                    lhsSets = 0,
+                    rhsSets = 1,
+                    withSideSwitch = true,
+                )
             matchController.returnAddPointToRhs(event)
             matchController.afterAddPointToRhs {
                 matchController.returnGetCurrentGameState(gameLoveAll)

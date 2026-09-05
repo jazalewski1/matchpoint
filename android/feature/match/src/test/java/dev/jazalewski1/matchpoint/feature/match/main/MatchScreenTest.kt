@@ -134,60 +134,64 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received lhs point scored without side switch then displays point indication`() = runTest {
-        rule.mainClock.autoAdvance = false
+    fun `when received lhs point scored without side switch then displays point indication`() =
+        runTest {
+            rule.mainClock.autoAdvance = false
 
-        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
-        rule.setContent { SutScreen(events = events) }
+            val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+            rule.setContent { SutScreen(events = events) }
 
-        val event = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = false)
+            val event = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = false)
 
-        events.emitAndWait(event)
-        advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
-        rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
-    }
-
-    @Test
-    fun `when received rhs point scored without side switch then displays point indication`() = runTest {
-        rule.mainClock.autoAdvance = false
-
-        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
-        rule.setContent { SutScreen(events = events) }
-
-        val event = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = false)
-
-        events.emitAndWait(event)
-        advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
-        rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
-    }
+            events.emitAndWait(event)
+            advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
+            rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
+        }
 
     @Test
-    fun `when received lhs point scored with side switch then displays switch indication`() = runTest {
-        rule.mainClock.autoAdvance = false
+    fun `when received rhs point scored without side switch then displays point indication`() =
+        runTest {
+            rule.mainClock.autoAdvance = false
 
-        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
-        rule.setContent { SutScreen(events = events) }
+            val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+            rule.setContent { SutScreen(events = events) }
 
-        val event = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = true)
+            val event = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = false)
 
-        events.emitAndWait(event)
-        advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
-        rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
-    }
+            events.emitAndWait(event)
+            advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
+            rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
+        }
 
     @Test
-    fun `when received rhs point scored with side switch then displays switch indication`() = runTest {
-        rule.mainClock.autoAdvance = false
+    fun `when received lhs point scored with side switch then displays switch indication`() =
+        runTest {
+            rule.mainClock.autoAdvance = false
 
-        val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
-        rule.setContent { SutScreen(events = events) }
+            val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+            rule.setContent { SutScreen(events = events) }
 
-        val event = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = true)
+            val event = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = true)
 
-        events.emitAndWait(event)
-        advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
-        rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
-    }
+            events.emitAndWait(event)
+            advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
+            rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
+        }
+
+    @Test
+    fun `when received rhs point scored with side switch then displays switch indication`() =
+        runTest {
+            rule.mainClock.autoAdvance = false
+
+            val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
+            rule.setContent { SutScreen(events = events) }
+
+            val event = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = true)
+
+            events.emitAndWait(event)
+            advance(milliseconds = POINT_INDICATION_TOTAL_DURATION_MS.toLong() + OVERSHOOT_MS)
+            rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
+        }
 
     @Test
     fun `when received lhs finished game then displays game indication`() = runTest {
