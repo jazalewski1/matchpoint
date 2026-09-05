@@ -37,38 +37,55 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
 
     private fun evaluatePointScored(winner: Player) =
         when (game.addPoint(winner)) {
-            is GameOutcome.PointScored -> Outcome.PointScored(winner = winner)
+            is GameOutcome.PointScored ->
+                Outcome.PointScored(winner = winner, withSideSwitch = shouldSwitchSides(game))
             is GameOutcome.Finished -> evaluateGameFinished(winner = winner)
         }
 
     private fun evaluateGameFinished(winner: Player) =
         when (set.addGame(winner)) {
-            is SetOutcome.None -> Outcome.GameFinished(winner, toTieBreak = false)
-            is SetOutcome.Tiebreak -> Outcome.GameFinished(winner, toTieBreak = true)
+            is SetOutcome.None ->
+                Outcome.GameFinished(
+                    winner,
+                    toTieBreak = false,
+                    withSideSwitch = shouldSwitchSides(set),
+                )
+            is SetOutcome.Tiebreak ->
+                Outcome.GameFinished(
+                    winner,
+                    toTieBreak = true,
+                    withSideSwitch = shouldSwitchSides(set),
+                )
             is SetOutcome.Finished -> evaluateSetFinished(winner = winner)
         }
 
     private fun evaluateSetFinished(winner: Player) =
         when (match.addSet(winner)) {
-            is MatchOutcome.None -> Outcome.SetFinished(winner)
+            is MatchOutcome.None ->
+                Outcome.SetFinished(winner, withSideSwitch = shouldSwitchSides(set))
             is MatchOutcome.Finished -> Outcome.MatchFinished(winner)
         }
 
     private fun toMatchEvent(outcome: Outcome) =
         when (outcome) {
             is Outcome.PointScored ->
-                MatchEvent.PointScored(winnerSide = sideConfig.getSide(outcome.winner))
+                MatchEvent.PointScored(
+                    winnerSide = sideConfig.getSide(outcome.winner),
+                    withSideSwitch = outcome.withSideSwitch,
+                )
             is Outcome.GameFinished ->
                 MatchEvent.GameFinished(
                     winnerSide = sideConfig.getSide(outcome.winner),
                     lhsGames = sideConfig.selectLhs(p1 = set.player1Games, p2 = set.player2Games),
                     rhsGames = sideConfig.selectRhs(p1 = set.player1Games, p2 = set.player2Games),
+                    withSideSwitch = outcome.withSideSwitch,
                 )
             is Outcome.SetFinished ->
                 MatchEvent.SetFinished(
                     winnerSide = sideConfig.getSide(outcome.winner),
                     lhsSets = sideConfig.selectLhs(p1 = match.player1Sets, p2 = match.player2Sets),
                     rhsSets = sideConfig.selectRhs(p1 = match.player1Sets, p2 = match.player2Sets),
+                    withSideSwitch = outcome.withSideSwitch,
                 )
             is Outcome.MatchFinished ->
                 MatchEvent.MatchFinished(
@@ -80,9 +97,9 @@ class MatchControllerImpl(private val numOfSetsToWin: Int) : MatchController {
 
     private fun nextSideConfig(outcome: Outcome) =
         when (outcome) {
-            is Outcome.PointScored if shouldSwitchSides(game) -> sideConfig.switch()
-            is Outcome.GameFinished if shouldSwitchSides(set) -> sideConfig.switch()
-            is Outcome.SetFinished if shouldSwitchSides(set) -> sideConfig.switch()
+            is Outcome.PointScored if outcome.withSideSwitch -> sideConfig.switch()
+            is Outcome.GameFinished if outcome.withSideSwitch -> sideConfig.switch()
+            is Outcome.SetFinished if outcome.withSideSwitch -> sideConfig.switch()
             else -> sideConfig
         }
 
@@ -164,11 +181,15 @@ private fun Game.toState(sideConfig: SideConfig) =
     }
 
 private sealed interface Outcome {
-    data class PointScored(val winner: Player) : Outcome
+    data class PointScored(val winner: Player, val withSideSwitch: Boolean) : Outcome
 
-    data class GameFinished(val winner: Player, val toTieBreak: Boolean) : Outcome
+    data class GameFinished(
+        val winner: Player,
+        val toTieBreak: Boolean,
+        val withSideSwitch: Boolean,
+    ) : Outcome
 
-    data class SetFinished(val winner: Player) : Outcome
+    data class SetFinished(val winner: Player, val withSideSwitch: Boolean) : Outcome
 
     data class MatchFinished(val winner: Player) : Outcome
 }
