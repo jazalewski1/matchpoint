@@ -289,8 +289,8 @@ private fun GameEventIndication(
                     largeText = "GAME",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
                     onClick = { indicationState.dismissDialogIndication() },
-                    backgroundColor = AppColors.Secondary.light,
-                    pulseColor = AppColors.Secondary.dark,
+                    backgroundColor = AppColors.Secondary.dark,
+                    pulseColor = AppColors.Secondary.light,
                 )
 
             is DialogIndicationParams.Set ->
@@ -299,8 +299,8 @@ private fun GameEventIndication(
                     largeText = "SET",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
                     onClick = { indicationState.dismissDialogIndication() },
-                    backgroundColor = AppColors.Quaternary.light,
-                    pulseColor = AppColors.Quaternary.dark,
+                    backgroundColor = AppColors.Quaternary.dark,
+                    pulseColor = AppColors.Quaternary.light,
                 )
 
             is DialogIndicationParams.Match ->
@@ -309,8 +309,8 @@ private fun GameEventIndication(
                     largeText = "MATCH",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
                     onClick = onMatchFinished,
-                    backgroundColor = AppColors.Tertiary.light,
-                    pulseColor = AppColors.Tertiary.dark,
+                    backgroundColor = AppColors.Tertiary.dark,
+                    pulseColor = AppColors.Tertiary.light,
                 )
 
             is DialogIndicationParams.SideSwitch ->
@@ -480,9 +480,9 @@ private fun DialogIndication(
     }
     val colors =
         if (side == Side.LHS) {
-            listOf(animatedColor.value, backgroundColor)
+            arrayOf(0.0f to animatedColor.value, 0.5f to backgroundColor)
         } else {
-            listOf(backgroundColor, animatedColor.value)
+            arrayOf(0.5f to backgroundColor, 1.0f to animatedColor.value)
         }
     Box(
         modifier =
@@ -492,7 +492,7 @@ private fun DialogIndication(
                     indication = null,
                     interactionSource = interactionSource,
                 )
-                .drawBehind { drawRect(brush = Brush.horizontalGradient(colors = colors)) }
+                .drawBehind { drawRect(brush = Brush.horizontalGradient(colorStops = colors)) }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -503,14 +503,14 @@ private fun DialogIndication(
                 text = largeText,
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Black,
-                color = AppColors.Background.fg,
+                color = AppColors.Background.bg,
                 fontSize = 182.sp,
             )
             Text(
                 text = smallText,
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Black,
-                color = AppColors.Background.fg,
+                color = AppColors.Background.bg,
                 fontSize = 92.sp,
             )
         }
