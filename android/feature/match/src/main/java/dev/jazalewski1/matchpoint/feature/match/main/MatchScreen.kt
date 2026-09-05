@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.common.Side
 import dev.jazalewski1.matchpoint.core.ui.theme.AppColors
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
+import dev.jazalewski1.matchpoint.core.ui.theme.monospaceFontFamily
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -175,6 +177,7 @@ private fun ScoreContainer(
         PlayerSection(
             playerName = lhsPlayerName,
             score = lhsScore,
+            side = Side.LHS,
             onClick = onLhsClick,
             contentDescription = "Left Score",
             modifier = Modifier.weight(0.5f).fillMaxHeight(),
@@ -184,6 +187,7 @@ private fun ScoreContainer(
         PlayerSection(
             playerName = rhsPlayerName,
             score = rhsScore,
+            side = Side.RHS,
             onClick = onRhsClick,
             contentDescription = "Right Score",
             modifier = Modifier.weight(0.5f).fillMaxHeight(),
@@ -215,6 +219,7 @@ private fun ScoreContainer(
 private fun PlayerSection(
     playerName: String,
     score: String,
+    side: Side,
     onClick: () -> Unit,
     contentDescription: String,
     backgroundColor: Color,
@@ -222,7 +227,7 @@ private fun PlayerSection(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    Column(
+    Box(
         modifier =
             modifier
                 .clickable(
@@ -236,20 +241,29 @@ private fun PlayerSection(
                         arrayOf(0.0f to AppColors.Background.bg, 0.8f to backgroundColor)
                     drawRect(Brush.verticalGradient(colorStops = colorStops))
                 }
-                .semantics(properties = { this.contentDescription = contentDescription }),
-        horizontalAlignment = Alignment.CenterHorizontally,
+                .semantics(properties = { this.contentDescription = contentDescription })
     ) {
-        Text(
-            text = playerName,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        Box(modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
+            val modifier =
+                if (side == Side.LHS) {
+                    Modifier.align(Alignment.BottomStart).padding(start = 36.dp)
+                } else {
+                    Modifier.align(Alignment.BottomEnd).padding(end = 36.dp)
+                }
+            Text(
+                text = playerName,
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = modifier,
+            )
+        }
         Text(
             text = score,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Black,
+            fontFamily = monospaceFontFamily,
             autoSize = TextAutoSize.StepBased(maxFontSize = 600.sp),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
