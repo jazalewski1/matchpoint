@@ -200,25 +200,17 @@ class MatchViewModelTest {
     fun `notifies about point scored when lhs scores`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        viewModel.uiEvents.test {
-            matchController.returnAddPointToLhs(
-                MatchEvent.PointScored(
-                    winnerSide = Side.LHS,
-                    withSideSwitch = false,
-                )
-            )
-            viewModel.onLhsPressed()
-            val expected = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = false)
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
+        val event = MatchEvent.PointScored(winnerSide = Side.LHS, withSideSwitch = false)
+        val uiEvent = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = false)
 
         viewModel.uiEvents.test {
-            matchController.returnAddPointToLhs(
-                MatchEvent.PointScored(winnerSide = Side.LHS, withSideSwitch = true)
-            )
+            matchController.returnAddPointToLhs(event)
             viewModel.onLhsPressed()
-            val expected = MatchUiEvent.PointScored(winner = Side.LHS, withSideSwitch = true)
-            assertThat(awaitItem()).isEqualTo(expected)
+            assertThat(awaitItem()).isEqualTo(uiEvent)
+
+            matchController.returnAddPointToLhs(event.copy(withSideSwitch = true))
+            viewModel.onLhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent.copy(withSideSwitch = true))
         }
     }
 
@@ -226,25 +218,17 @@ class MatchViewModelTest {
     fun `notifies about point scored when rhs scores`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        viewModel.uiEvents.test {
-            matchController.returnAddPointToRhs(
-                MatchEvent.PointScored(
-                    winnerSide = Side.RHS,
-                    withSideSwitch = false,
-                )
-            )
-            viewModel.onRhsPressed()
-            val expected = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = false)
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
+        val event = MatchEvent.PointScored(winnerSide = Side.RHS, withSideSwitch = false)
+        val uiEvent = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = false)
 
         viewModel.uiEvents.test {
-            matchController.returnAddPointToRhs(
-                MatchEvent.PointScored(winnerSide = Side.RHS, withSideSwitch = true)
-            )
+            matchController.returnAddPointToRhs(event)
             viewModel.onRhsPressed()
-            val expected = MatchUiEvent.PointScored(winner = Side.RHS, withSideSwitch = true)
-            assertThat(awaitItem()).isEqualTo(expected)
+            assertThat(awaitItem()).isEqualTo(uiEvent)
+
+            matchController.returnAddPointToRhs(event.copy(withSideSwitch = true))
+            viewModel.onRhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent.copy(withSideSwitch = true))
         }
     }
 
@@ -302,54 +286,28 @@ class MatchViewModelTest {
     fun `notifies about game finished when lhs wins game`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
+        val event =
+            MatchEvent.GameFinished(
+                winnerSide = Side.LHS,
+                lhsGames = 5,
+                rhsGames = 3,
+                withSideSwitch = false,
+            )
+        val uiEvent =
+            MatchUiEvent.GameFinished(
+                winner = Side.LHS,
+                lhsScore = "5",
+                rhsScore = "3",
+                withSideSwitch = false,
+            )
         viewModel.uiEvents.test {
-            val event =
-                MatchEvent.GameFinished(
-                    winnerSide = Side.LHS,
-                    lhsGames = 5,
-                    rhsGames = 3,
-                    withSideSwitch = false,
-                )
             matchController.returnAddPointToLhs(event)
-            matchController.afterAddPointToLhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
             viewModel.onLhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent)
 
-            val expected =
-                MatchUiEvent.GameFinished(
-                    winner = Side.LHS,
-                    lhsScore = "5",
-                    rhsScore = "3",
-                    withSideSwitch = false,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
-
-        viewModel.uiEvents.test {
-            val event =
-                MatchEvent.GameFinished(
-                    winnerSide = Side.LHS,
-                    lhsGames = 5,
-                    rhsGames = 3,
-                    withSideSwitch = true,
-                )
-            matchController.returnAddPointToLhs(event)
-            matchController.afterAddPointToLhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
+            matchController.returnAddPointToLhs(event.copy(withSideSwitch = true))
             viewModel.onLhsPressed()
-
-            val expected =
-                MatchUiEvent.GameFinished(
-                    winner = Side.LHS,
-                    lhsScore = "5",
-                    rhsScore = "3",
-                    withSideSwitch = true,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
+            assertThat(awaitItem()).isEqualTo(uiEvent.copy(withSideSwitch = true))
         }
     }
 
@@ -357,54 +315,29 @@ class MatchViewModelTest {
     fun `notifies about game finished when rhs wins game`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        viewModel.uiEvents.test {
-            val event =
-                MatchEvent.GameFinished(
-                    winnerSide = Side.RHS,
-                    lhsGames = 3,
-                    rhsGames = 5,
-                    withSideSwitch = false,
-                )
-            matchController.returnAddPointToRhs(event)
-            matchController.afterAddPointToRhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
-            viewModel.onRhsPressed()
-
-            val expected =
-                MatchUiEvent.GameFinished(
-                    winner = Side.RHS,
-                    lhsScore = "3",
-                    rhsScore = "5",
-                    withSideSwitch = false,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
+        val event =
+            MatchEvent.GameFinished(
+                winnerSide = Side.RHS,
+                lhsGames = 3,
+                rhsGames = 5,
+                withSideSwitch = false,
+            )
+        val uiEvent =
+            MatchUiEvent.GameFinished(
+                winner = Side.RHS,
+                lhsScore = "3",
+                rhsScore = "5",
+                withSideSwitch = false,
+            )
 
         viewModel.uiEvents.test {
-            val event =
-                MatchEvent.GameFinished(
-                    winnerSide = Side.RHS,
-                    lhsGames = 3,
-                    rhsGames = 5,
-                    withSideSwitch = true,
-                )
             matchController.returnAddPointToRhs(event)
-            matchController.afterAddPointToRhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
             viewModel.onRhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent)
 
-            val expected =
-                MatchUiEvent.GameFinished(
-                    winner = Side.RHS,
-                    lhsScore = "3",
-                    rhsScore = "5",
-                    withSideSwitch = true,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
+            matchController.returnAddPointToRhs(event.copy(withSideSwitch = true))
+            viewModel.onRhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent.copy(withSideSwitch = true))
         }
     }
 
@@ -412,54 +345,29 @@ class MatchViewModelTest {
     fun `notifies about set finished when lhs wins set`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        viewModel.uiEvents.test {
-            val event =
-                MatchEvent.SetFinished(
-                    winnerSide = Side.LHS,
-                    lhsSets = 1,
-                    rhsSets = 0,
-                    withSideSwitch = false,
-                )
-            matchController.returnAddPointToLhs(event)
-            matchController.afterAddPointToLhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
-            viewModel.onLhsPressed()
-
-            val expected =
-                MatchUiEvent.SetFinished(
-                    winner = Side.LHS,
-                    lhsScore = "1",
-                    rhsScore = "0",
-                    withSideSwitch = false,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
+        val event =
+            MatchEvent.SetFinished(
+                winnerSide = Side.LHS,
+                lhsSets = 1,
+                rhsSets = 0,
+                withSideSwitch = false,
+            )
+        val uiEvent =
+            MatchUiEvent.SetFinished(
+                winner = Side.LHS,
+                lhsScore = "1",
+                rhsScore = "0",
+                withSideSwitch = false,
+            )
 
         viewModel.uiEvents.test {
-            val event =
-                MatchEvent.SetFinished(
-                    winnerSide = Side.LHS,
-                    lhsSets = 1,
-                    rhsSets = 0,
-                    withSideSwitch = true,
-                )
             matchController.returnAddPointToLhs(event)
-            matchController.afterAddPointToLhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
             viewModel.onLhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent)
 
-            val expected =
-                MatchUiEvent.SetFinished(
-                    winner = Side.LHS,
-                    lhsScore = "1",
-                    rhsScore = "0",
-                    withSideSwitch = true,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
+            matchController.returnAddPointToLhs(event.copy(withSideSwitch = true))
+            viewModel.onLhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent.copy(withSideSwitch = true))
         }
     }
 
@@ -467,54 +375,29 @@ class MatchViewModelTest {
     fun `notifies about set finished when rhs wins set`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
-        viewModel.uiEvents.test {
-            val event =
-                MatchEvent.SetFinished(
-                    winnerSide = Side.RHS,
-                    lhsSets = 0,
-                    rhsSets = 1,
-                    withSideSwitch = false,
-                )
-            matchController.returnAddPointToRhs(event)
-            matchController.afterAddPointToRhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
-            viewModel.onRhsPressed()
-
-            val expected =
-                MatchUiEvent.SetFinished(
-                    winner = Side.RHS,
-                    lhsScore = "0",
-                    rhsScore = "1",
-                    withSideSwitch = false,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
-        }
+        val event =
+            MatchEvent.SetFinished(
+                winnerSide = Side.RHS,
+                lhsSets = 0,
+                rhsSets = 1,
+                withSideSwitch = false,
+            )
+        val uiEvent =
+            MatchUiEvent.SetFinished(
+                winner = Side.RHS,
+                lhsScore = "0",
+                rhsScore = "1",
+                withSideSwitch = false,
+            )
 
         viewModel.uiEvents.test {
-            val event =
-                MatchEvent.SetFinished(
-                    winnerSide = Side.RHS,
-                    lhsSets = 0,
-                    rhsSets = 1,
-                    withSideSwitch = true,
-                )
             matchController.returnAddPointToRhs(event)
-            matchController.afterAddPointToRhs {
-                matchController.returnGetCurrentGameState(gameLoveAll)
-            }
-
             viewModel.onRhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent)
 
-            val expected =
-                MatchUiEvent.SetFinished(
-                    winner = Side.RHS,
-                    lhsScore = "0",
-                    rhsScore = "1",
-                    withSideSwitch = true,
-                )
-            assertThat(awaitItem()).isEqualTo(expected)
+            matchController.returnAddPointToRhs(event.copy(withSideSwitch = true))
+            viewModel.onRhsPressed()
+            assertThat(awaitItem()).isEqualTo(uiEvent.copy(withSideSwitch = true))
         }
     }
 
@@ -567,7 +450,7 @@ class MatchViewModelTest {
     }
 
     @Test
-    fun `notifies about set finished when lhs wins match`() = runTest {
+    fun `notifies about match finished when lhs wins match`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         val event = MatchEvent.MatchFinished(winnerSide = Side.LHS, lhsSets = 3, rhsSets = 1)
@@ -590,7 +473,7 @@ class MatchViewModelTest {
     }
 
     @Test
-    fun `notifies about set finished when rhs wins match`() = runTest {
+    fun `notifies about match finished when rhs wins match`() = runTest {
         val viewModel = MatchViewModel(matchControllerFactory, matchRepository, savedStateHandle)
 
         val event = MatchEvent.MatchFinished(winnerSide = Side.RHS, lhsSets = 1, rhsSets = 3)
