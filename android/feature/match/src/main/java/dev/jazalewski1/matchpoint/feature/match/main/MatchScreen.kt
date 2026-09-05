@@ -445,22 +445,12 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
     val easeOut =
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
-    println("start indication")
-    var elapsed = 0
     colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
-    elapsed += INDICATION_PULSE_HALF_DURATION_MS
-    println("elapsed=$elapsed")
     repeat(repetitionsWithoutEntryAndExit) {
         colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeIn)
-        elapsed += INDICATION_PULSE_HALF_DURATION_MS
-        println("elapsed=$elapsed")
         colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
-        elapsed += INDICATION_PULSE_HALF_DURATION_MS
-        println("elapsed=$elapsed")
     }
     colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeIn)
-    elapsed += INDICATION_PULSE_HALF_DURATION_MS
-    println("elapsed=$elapsed, estimated=$POINT_INDICATION_TOTAL_DURATION_MS")
 }
 
 @Composable
