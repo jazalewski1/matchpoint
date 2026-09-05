@@ -61,11 +61,12 @@ import kotlinx.coroutines.launch
 import dev.jazalewski1.matchpoint.feature.match.R
 
 internal const val INDICATION_PULSE_HALF_DURATION_MS = 600
+internal const val INDICATION_PULSE_FULL_DURATION_MS = INDICATION_PULSE_HALF_DURATION_MS * 2
 internal const val DIALOG_INDICATION_PULSE_REPS = 5
-internal const val DIALOG_INDICATION_HALF_PULSE_COUNT = DIALOG_INDICATION_PULSE_REPS * 2
 internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
-    DIALOG_INDICATION_HALF_PULSE_COUNT * INDICATION_PULSE_HALF_DURATION_MS
+    DIALOG_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
 internal const val POINT_INDICATION_PULSE_REPS = 3
+internal const val POINT_INDICATION_TOTAL_DURATION_MS = POINT_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
 
 @Composable
 internal fun MatchScreen(
@@ -363,7 +364,9 @@ private class IndicationState(private val scope: CoroutineScope) {
             val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
             animatePointIndication(colorToAnimate)
         }
-        job?.invokeOnCompletion { startSideSwitchIndication() }
+        if (event.withSideSwitch) {
+            job?.invokeOnCompletion { startSideSwitchIndication() }
+        }
     }
 
     fun process(event: MatchUiEvent.GameFinished) {
@@ -380,7 +383,9 @@ private class IndicationState(private val scope: CoroutineScope) {
             delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
             dialogIndicationParams = null
         }
-        job?.invokeOnCompletion { startSideSwitchIndication() }
+        if (event.withSideSwitch) {
+            job?.invokeOnCompletion { startSideSwitchIndication() }
+        }
     }
 
     fun process(event: MatchUiEvent.SetFinished) {
@@ -397,7 +402,9 @@ private class IndicationState(private val scope: CoroutineScope) {
             delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
             dialogIndicationParams = null
         }
-        job?.invokeOnCompletion { startSideSwitchIndication() }
+        if (event.withSideSwitch) {
+            job?.invokeOnCompletion { startSideSwitchIndication() }
+        }
     }
 
     fun process(event: MatchUiEvent.MatchFinished) {
@@ -441,12 +448,22 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
     val easeOut =
         tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
+    println("start indication")
+    var elapsed = 0
     colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
+    elapsed += INDICATION_PULSE_HALF_DURATION_MS
+    println("elapsed=$elapsed")
     repeat(repetitionsWithoutEntryAndExit) {
         colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeIn)
+        elapsed += INDICATION_PULSE_HALF_DURATION_MS
+        println("elapsed=$elapsed")
         colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
+        elapsed += INDICATION_PULSE_HALF_DURATION_MS
+        println("elapsed=$elapsed")
     }
     colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeIn)
+    elapsed += INDICATION_PULSE_HALF_DURATION_MS
+    println("elapsed=$elapsed, estimated=$POINT_INDICATION_TOTAL_DURATION_MS")
 }
 
 @Composable
@@ -537,6 +554,9 @@ private fun SideSwitchDialogIndication(
                     interactionSource = interactionSource,
                 )
                 .background(color = AppColors.Others.inverseSurface)
+                .semantics(properties = {
+                    contentDescription = "Side Switch Indication"
+                })
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
