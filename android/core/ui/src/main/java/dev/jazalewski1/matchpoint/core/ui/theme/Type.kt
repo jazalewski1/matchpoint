@@ -43,3 +43,5 @@ val AppTypography =
         labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
         labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
     )
+
+val monospaceFontFamily = FontFamily(Font(R.font.inconsolata_black, weight = FontWeight.Black))
