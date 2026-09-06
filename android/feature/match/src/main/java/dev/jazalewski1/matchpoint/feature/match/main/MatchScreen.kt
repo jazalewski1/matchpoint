@@ -527,11 +527,11 @@ private fun SideSwitchDialogIndication(onClick: () -> Unit) {
             targetValue = 1f,
             animationSpec =
                 infiniteRepeatable(
-                    animation = tween(600, easing = EaseInOut),
+                    animation = tween(INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInOut),
                     repeatMode = RepeatMode.Reverse,
                 ),
         )
-    val offset = animationProgress * 120
+    val offset = animationProgress * 80
     Box(
         modifier =
             Modifier.fillMaxSize()
@@ -567,6 +567,7 @@ private fun SideSwitchDialogIndication(onClick: () -> Unit) {
                     modifier = Modifier.size(128.dp).offset(x = -offset.dp),
                     contentDescription = "Arrow Left",
                 )
+                Spacer(Modifier.width(40.dp))
                 Icon(
                     painter = painterResource(R.drawable.arrow_right),
                     tint = AppColors.Others.inverseOnSurface,
