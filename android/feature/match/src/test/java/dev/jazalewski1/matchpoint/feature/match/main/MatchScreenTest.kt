@@ -24,6 +24,11 @@ private const val LHS_SCORE = "40"
 private const val RHS_SCORE = "15"
 
 private const val SWITCH_IND_CONTENT_DESC = "Side Switch Indication"
+private const val GAME_IND_CONTENT_DESC = "Game Indication"
+private const val SET_IND_CONTENT_DESC = "Set Indication"
+private const val MATCH_IND_CONTENT_DESC = "Match Indication"
+private const val LEFT_SCORE_CONTENT_DESC = "Left Score"
+private const val RIGHT_SCORE_CONTENT_DESC = "Right Score"
 
 private const val OVERSHOOT_MS = 1000L
 
@@ -64,13 +69,13 @@ class MatchScreenTest {
         rule.setContent { SutScreen() }
 
         rule
-            .onNodeWithContentDescription("Left Score")
+            .onNodeWithContentDescription(LEFT_SCORE_CONTENT_DESC)
             .assertIsDisplayed()
             .assert(hasText(LHS_SCORE))
             .assertHasClickAction()
 
         rule
-            .onNodeWithContentDescription("Right Score")
+            .onNodeWithContentDescription(RIGHT_SCORE_CONTENT_DESC)
             .assertIsDisplayed()
             .assert(hasText(RHS_SCORE))
             .assertHasClickAction()
@@ -81,13 +86,13 @@ class MatchScreenTest {
         rule.setContent { SutScreen(isTieBreak = true) }
 
         rule
-            .onNodeWithContentDescription("Left Score")
+            .onNodeWithContentDescription(LEFT_SCORE_CONTENT_DESC)
             .assertIsDisplayed()
             .assert(hasText(LHS_SCORE))
             .assertHasClickAction()
 
         rule
-            .onNodeWithContentDescription("Right Score")
+            .onNodeWithContentDescription(RIGHT_SCORE_CONTENT_DESC)
             .assertIsDisplayed()
             .assert(hasText(RHS_SCORE))
             .assertHasClickAction()
@@ -109,7 +114,7 @@ class MatchScreenTest {
         var triggered = false
         rule.setContent { SutScreen(onLhsClick = { triggered = true }) }
 
-        rule.onNodeWithContentDescription("Left Score").performClick()
+        rule.onNodeWithContentDescription(LEFT_SCORE_CONTENT_DESC).performClick()
         assertTrue(triggered)
     }
 
@@ -118,7 +123,7 @@ class MatchScreenTest {
         var triggered = false
         rule.setContent { SutScreen(onRhsClick = { triggered = true }) }
 
-        rule.onNodeWithContentDescription("Right Score").performClick()
+        rule.onNodeWithContentDescription(RIGHT_SCORE_CONTENT_DESC).performClick()
         assertTrue(triggered)
     }
 
@@ -200,24 +205,21 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "30"
-        val sentRhsScore = "15"
         val event =
             MatchUiEvent.GameFinished(
                 winner = Side.LHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "30",
+                rhsScore = "15",
                 withSideSwitch = false,
             )
 
-        rule.onNodeWithText("GAME").assertIsNotDisplayed()
-        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsNotDisplayed()
         events.emitAndWait(event)
+        rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsDisplayed()
         rule.onNodeWithText("GAME").assertIsDisplayed()
         rule.onNodeWithText("30 : 15").assertIsDisplayed()
         advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
-        rule.onNodeWithText("GAME").assertIsNotDisplayed()
-        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
 
@@ -228,24 +230,21 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "15"
-        val sentRhsScore = "30"
         val event =
             MatchUiEvent.GameFinished(
                 winner = Side.RHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "15",
+                rhsScore = "30",
                 withSideSwitch = false,
             )
 
-        rule.onNodeWithText("GAME").assertIsNotDisplayed()
-        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsNotDisplayed()
         events.emitAndWait(event)
+        rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsDisplayed()
         rule.onNodeWithText("GAME").assertIsDisplayed()
         rule.onNodeWithText("15 : 30").assertIsDisplayed()
         advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
-        rule.onNodeWithText("GAME").assertIsNotDisplayed()
-        rule.onNodeWithText("30 : 15").assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
 
@@ -256,13 +255,11 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "15"
-        val sentRhsScore = "30"
         val event =
             MatchUiEvent.GameFinished(
                 winner = Side.LHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "15",
+                rhsScore = "30",
                 withSideSwitch = true,
             )
 
@@ -278,13 +275,11 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "15"
-        val sentRhsScore = "30"
         val event =
             MatchUiEvent.GameFinished(
                 winner = Side.RHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "15",
+                rhsScore = "30",
                 withSideSwitch = true,
             )
 
@@ -300,27 +295,21 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "3"
-        val sentRhsScore = "1"
         val event =
             MatchUiEvent.SetFinished(
                 winner = Side.LHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "3",
+                rhsScore = "1",
                 withSideSwitch = false,
             )
 
-        val header = "SET"
-        val scoreText = "3 : 1"
-
-        rule.onNodeWithText(header).assertIsNotDisplayed()
-        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsNotDisplayed()
         events.emitAndWait(event)
-        rule.onNodeWithText(header).assertIsDisplayed()
-        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsDisplayed()
+        rule.onNodeWithText("SET").assertIsDisplayed()
+        rule.onNodeWithText("3 : 1").assertIsDisplayed()
         advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
-        rule.onNodeWithText(header).assertIsNotDisplayed()
-        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
 
@@ -331,27 +320,21 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "1"
-        val sentRhsScore = "3"
         val event =
             MatchUiEvent.SetFinished(
                 winner = Side.RHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "1",
+                rhsScore = "3",
                 withSideSwitch = false,
             )
 
-        val header = "SET"
-        val scoreText = "1 : 3"
-
-        rule.onNodeWithText(header).assertIsNotDisplayed()
-        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsNotDisplayed()
         events.emitAndWait(event)
-        rule.onNodeWithText(header).assertIsDisplayed()
-        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsDisplayed()
+        rule.onNodeWithText("SET").assertIsDisplayed()
+        rule.onNodeWithText("1 : 3").assertIsDisplayed()
         advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
-        rule.onNodeWithText(header).assertIsNotDisplayed()
-        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
 
@@ -362,13 +345,11 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "3"
-        val sentRhsScore = "1"
         val event =
             MatchUiEvent.SetFinished(
                 winner = Side.LHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "3",
+                rhsScore = "1",
                 withSideSwitch = true,
             )
 
@@ -384,13 +365,11 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "3"
-        val sentRhsScore = "1"
         val event =
             MatchUiEvent.SetFinished(
                 winner = Side.RHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "3",
+                rhsScore = "1",
                 withSideSwitch = true,
             )
 
@@ -423,26 +402,18 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "3"
-        val sentRhsScore = "1"
         val event =
             MatchUiEvent.MatchFinished(
                 winner = Side.LHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "3",
+                rhsScore = "1",
             )
 
-        val header = "MATCH"
-        val scoreText = "3 : 1"
-
-        rule.onNodeWithText(header).assertIsNotDisplayed()
-        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(MATCH_IND_CONTENT_DESC).assertIsNotDisplayed()
         events.emitAndWait(event)
-        rule.onNodeWithText(header).assertIsDisplayed()
-        rule.onNodeWithText(scoreText).assertIsDisplayed()
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
-        rule.onNodeWithText(header).assertIsDisplayed()
-        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        rule.onNodeWithContentDescription(MATCH_IND_CONTENT_DESC).assertIsDisplayed()
+        rule.onNodeWithText("MATCH").assertIsDisplayed()
+        rule.onNodeWithText("3 : 1").assertIsDisplayed()
     }
 
     @Test
@@ -452,26 +423,18 @@ class MatchScreenTest {
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
         rule.setContent { SutScreen(events = events) }
 
-        val sentLhsScore = "1"
-        val sentRhsScore = "3"
         val event =
             MatchUiEvent.MatchFinished(
                 winner = Side.RHS,
-                lhsScore = sentLhsScore,
-                rhsScore = sentRhsScore,
+                lhsScore = "1",
+                rhsScore = "3",
             )
 
-        val header = "MATCH"
-        val scoreText = "1 : 3"
-
-        rule.onNodeWithText(header).assertIsNotDisplayed()
-        rule.onNodeWithText(scoreText).assertIsNotDisplayed()
+        rule.onNodeWithContentDescription(MATCH_IND_CONTENT_DESC).assertIsNotDisplayed()
         events.emitAndWait(event)
-        rule.onNodeWithText(header).assertIsDisplayed()
-        rule.onNodeWithText(scoreText).assertIsDisplayed()
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
-        rule.onNodeWithText(header).assertIsDisplayed()
-        rule.onNodeWithText(scoreText).assertIsDisplayed()
+        rule.onNodeWithContentDescription(MATCH_IND_CONTENT_DESC).assertIsDisplayed()
+        rule.onNodeWithText("MATCH").assertIsDisplayed()
+        rule.onNodeWithText("1 : 3").assertIsDisplayed()
     }
 
     @Test
@@ -490,8 +453,7 @@ class MatchScreenTest {
             )
 
         events.emitAndWait(event)
-        rule.onNodeWithText("MATCH").performClick()
-
+        rule.onNodeWithContentDescription(MATCH_IND_CONTENT_DESC).performClick()
         assertTrue(triggered)
     }
 

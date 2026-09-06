@@ -187,8 +187,7 @@ private fun ScoreContainer(
             score = lhsScore,
             side = Side.LHS,
             onClick = onLhsClick,
-            contentDescription = "Left Score",
-            modifier = Modifier.weight(0.5f).fillMaxHeight(),
+            modifier = Modifier.weight(0.5f).fillMaxHeight().contentDesc("Left Score"),
             backgroundColor = indicationState.lhsColor.value,
         )
         VerticalDivider(thickness = 2.dp)
@@ -197,8 +196,7 @@ private fun ScoreContainer(
             score = rhsScore,
             side = Side.RHS,
             onClick = onRhsClick,
-            contentDescription = "Right Score",
-            modifier = Modifier.weight(0.5f).fillMaxHeight(),
+            modifier = Modifier.weight(0.5f).fillMaxHeight().contentDesc("Right Score"),
             backgroundColor = indicationState.rhsColor.value,
         )
     }
@@ -229,7 +227,6 @@ private fun PlayerSection(
     score: String,
     side: Side,
     onClick: () -> Unit,
-    contentDescription: String,
     backgroundColor: Color,
     modifier: Modifier = Modifier,
 ) {
@@ -249,7 +246,6 @@ private fun PlayerSection(
                         arrayOf(0.0f to AppColors.Background.bg, 0.8f to backgroundColor)
                     drawRect(Brush.verticalGradient(colorStops = colorStops))
                 }
-                .semantics(properties = { this.contentDescription = contentDescription })
     ) {
         Box(modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
             val modifier =
@@ -291,6 +287,7 @@ private fun GameEventIndication(
                     onClick = { indicationState.dismissDialogIndication() },
                     backgroundColor = AppColors.Secondary.dark,
                     pulseColor = AppColors.Secondary.light,
+                    modifier = Modifier.contentDesc("Game Indication"),
                 )
 
             is DialogIndicationParams.Set ->
@@ -301,6 +298,7 @@ private fun GameEventIndication(
                     onClick = { indicationState.dismissDialogIndication() },
                     backgroundColor = AppColors.Quaternary.dark,
                     pulseColor = AppColors.Quaternary.light,
+                    modifier = Modifier.contentDesc("Set Indication"),
                 )
 
             is DialogIndicationParams.Match ->
@@ -311,6 +309,7 @@ private fun GameEventIndication(
                     onClick = onMatchFinished,
                     backgroundColor = AppColors.Tertiary.dark,
                     pulseColor = AppColors.Tertiary.light,
+                    modifier = Modifier.contentDesc("Match Indication"),
                 )
 
             is DialogIndicationParams.SideSwitch ->
@@ -461,6 +460,7 @@ private fun DialogIndication(
     smallText: String,
     backgroundColor: Color,
     pulseColor: Color,
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val animatedColor = remember { Animatable(backgroundColor) }
@@ -486,7 +486,8 @@ private fun DialogIndication(
         }
     Box(
         modifier =
-            Modifier.fillMaxSize()
+            modifier
+                .fillMaxSize()
                 .clickable(
                     onClick = onClick,
                     indication = null,
@@ -541,11 +542,7 @@ private fun SideSwitchDialogIndication(onClick: () -> Unit) {
                     interactionSource = interactionSource,
                 )
                 .background(color = AppColors.Others.inverseSurface)
-                .semantics(
-                    properties = {
-                        contentDescription = "Side Switch Indication"
-                    }
-                )
+                .contentDesc("Side Switch Indication")
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -565,19 +562,21 @@ private fun SideSwitchDialogIndication(onClick: () -> Unit) {
                     painter = painterResource(R.drawable.arrow_left),
                     tint = AppColors.Others.inverseOnSurface,
                     modifier = Modifier.size(128.dp).offset(x = -offset.dp),
-                    contentDescription = "Arrow Left",
+                    contentDescription = null,
                 )
                 Spacer(Modifier.width(40.dp))
                 Icon(
                     painter = painterResource(R.drawable.arrow_right),
                     tint = AppColors.Others.inverseOnSurface,
                     modifier = Modifier.size(128.dp).offset(x = offset.dp),
-                    contentDescription = "Arrow Right",
+                    contentDescription = null,
                 )
             }
         }
     }
 }
+
+private fun Modifier.contentDesc(string: String) = this.semantics { contentDescription = string }
 
 @Preview(
     showBackground = true,
