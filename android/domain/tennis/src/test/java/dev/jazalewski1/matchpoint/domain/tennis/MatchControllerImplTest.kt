@@ -5,7 +5,52 @@ import dev.jazalewski1.matchpoint.core.common.Side
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
+private val lhs = Side.LHS
+private val rhs = Side.RHS
+
 class MatchControllerImplTest {
+    private fun MatchController.scorePointsForLhs(numOfPoints: Int) {
+        repeat(numOfPoints) { addPointToLhs() }
+    }
+
+    private fun MatchController.scorePointsForRhs(numOfPoints: Int) {
+        repeat(numOfPoints) { addPointToRhs() }
+    }
+
+    private fun MatchController.winPoints(vararg sides: Side) {
+        sides.forEach { side -> if (side == Side.LHS) addPointToLhs() else addPointToRhs() }
+    }
+
+    private fun MatchController.winGameForLhs() = scorePointsForLhs(numOfPoints = 4)
+
+    private fun MatchController.winGameForRhs() = scorePointsForRhs(numOfPoints = 4)
+
+    private fun MatchController.winGames(vararg sides: Side) {
+        sides.forEach { side -> if (side == Side.LHS) winGameForLhs() else winGameForRhs() }
+    }
+
+    private fun MatchController.winSetForPlayerStartingOnLhs() =
+        winGames(lhs, rhs, rhs, lhs, lhs, rhs)
+
+    private fun MatchController.winSetForPlayerStartingOnRhs() =
+        winGames(rhs, lhs, lhs, rhs, rhs, lhs)
+
+    private fun MatchController.simulateDeuce() {
+        repeat(3) { winPoints(lhs, rhs) }
+    }
+
+    private fun MatchController.simulateTieBreak() {
+        repeat(3) { winGames(lhs, lhs, rhs, rhs) }
+    }
+
+    private fun assertPlayer1OnLhs(controller: MatchController) {
+        assertThat(controller.getSideConfig().playerOnLhs).isEqualTo(Player.ONE)
+    }
+
+    private fun assertPlayer2OnLhs(controller: MatchController) {
+        assertThat(controller.getSideConfig().playerOnLhs).isEqualTo(Player.TWO)
+    }
+
     @Test
     fun `has love all at beginning`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
@@ -40,8 +85,7 @@ class MatchControllerImplTest {
     fun `lhs wins game`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        repeat(2) { controller.addPointToRhs() }
-        repeat(3) { controller.addPointToLhs() }
+        controller.winPoints(rhs, rhs, lhs, lhs, lhs)
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -59,8 +103,7 @@ class MatchControllerImplTest {
     fun `rhs wins game`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        repeat(2) { controller.addPointToLhs() }
-        repeat(3) { controller.addPointToRhs() }
+        controller.winPoints(lhs, lhs, rhs, rhs, rhs)
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -78,15 +121,13 @@ class MatchControllerImplTest {
     fun `returns regular main game state after switching sides`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        repeat(2) { controller.addPointToLhs() }
-        repeat(3) { controller.addPointToRhs() }
+        controller.winPoints(lhs, lhs, rhs, rhs, rhs)
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.THIRTY, rhsPoints = Points.FORTY))
 
         controller.addPointToRhs()
 
-        repeat(2) { controller.addPointToLhs() }
-        repeat(3) { controller.addPointToRhs() }
+        controller.winPoints(lhs, lhs, rhs, rhs, rhs)
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.THIRTY, rhsPoints = Points.FORTY))
     }
@@ -95,40 +136,33 @@ class MatchControllerImplTest {
     fun `returns regular advantage game state after switching sides`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        advanceToDeuce(controller)
+        controller.simulateDeuce()
         controller.addPointToLhs()
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Advantage(Side.LHS))
 
-        controller.addPointToRhs()
-        controller.addPointToRhs()
+        controller.winPoints(rhs, rhs)
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Advantage(Side.RHS))
 
         controller.addPointToRhs()
         // switched sides
 
-        advanceToDeuce(controller)
+        controller.simulateDeuce()
         controller.addPointToLhs()
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Advantage(Side.LHS))
 
-        controller.addPointToRhs()
-        controller.addPointToRhs()
+        controller.winPoints(rhs, rhs)
         assertThat(controller.getCurrentGameState())
             .isEqualTo(GameState.Regular.Advantage(Side.RHS))
-    }
-
-    private fun advanceToDeuce(controller: MatchControllerImpl) {
-        repeat(3) { controller.addPointToLhs() }
-        repeat(3) { controller.addPointToRhs() }
     }
 
     @Test
     fun `game is deuce`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        advanceToDeuce(controller)
+        controller.simulateDeuce()
 
         assertThat(controller.getCurrentGameState()).isEqualTo(GameState.Regular.Deuce)
     }
@@ -137,7 +171,7 @@ class MatchControllerImplTest {
     fun `advantage for lhs`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        advanceToDeuce(controller)
+        controller.simulateDeuce()
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -150,7 +184,7 @@ class MatchControllerImplTest {
     fun `advantage for rhs`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        advanceToDeuce(controller)
+        controller.simulateDeuce()
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -159,32 +193,12 @@ class MatchControllerImplTest {
         assertThat(controller.getCurrentGameState()).isEqualTo(expected)
     }
 
-    private fun scorePointsForLhs(controller: MatchController, numOfPoints: Int) {
-        repeat(numOfPoints) { controller.addPointToLhs() }
-    }
-
-    private fun scorePointsForRhs(controller: MatchController, numOfPoints: Int) {
-        repeat(numOfPoints) { controller.addPointToRhs() }
-    }
-
-    private fun winGameForLhs(controller: MatchController) {
-        scorePointsForLhs(controller, numOfPoints = 4)
-    }
-
-    private fun winGameForRhs(controller: MatchController) {
-        scorePointsForRhs(controller, numOfPoints = 4)
-    }
-
     @Test
     fun `returns set finished with lhs winner`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 3)
+        controller.winGames(rhs, lhs, lhs, rhs, rhs)
+        controller.scorePointsForLhs(numOfPoints = 3)
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -202,12 +216,8 @@ class MatchControllerImplTest {
     fun `returns set finished with rhs winner`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        scorePointsForRhs(controller, numOfPoints = 3)
+        controller.winGames(lhs, rhs, rhs, lhs, lhs)
+        controller.scorePointsForRhs(numOfPoints = 3)
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -225,13 +235,8 @@ class MatchControllerImplTest {
     fun `returns set finished with lhs winner after odd number of games`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 3)
+        controller.winGames(lhs, lhs, lhs, rhs, rhs, lhs)
+        controller.scorePointsForLhs(numOfPoints = 3)
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -249,13 +254,8 @@ class MatchControllerImplTest {
     fun `returns set finished with rhs winner after odd number of games`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        scorePointsForRhs(controller, numOfPoints = 3)
+        controller.winGames(rhs, rhs, rhs, lhs, lhs, rhs)
+        controller.scorePointsForRhs(numOfPoints = 3)
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -273,18 +273,8 @@ class MatchControllerImplTest {
     fun `player1 ties to tiebreak`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 3)
+        controller.winGames(rhs, rhs, lhs, lhs, rhs, rhs, lhs, lhs, rhs, rhs, lhs)
+        controller.scorePointsForLhs(numOfPoints = 3)
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -305,18 +295,8 @@ class MatchControllerImplTest {
     fun `player2 ties to tiebreak`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        scorePointsForRhs(controller, numOfPoints = 3)
+        controller.winGames(lhs, lhs, rhs, rhs, lhs, lhs, rhs, rhs, lhs, lhs, rhs)
+        controller.scorePointsForRhs(numOfPoints = 3)
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -333,21 +313,12 @@ class MatchControllerImplTest {
             .isEqualTo(GameState.TieBreak(lhsPoints = 0, rhsPoints = 0))
     }
 
-    private fun advanceToTieBreak(controller: MatchController) {
-        repeat(3) {
-            winGameForLhs(controller)
-            winGameForLhs(controller)
-            winGameForRhs(controller)
-            winGameForRhs(controller)
-        }
-    }
-
     @Test
     fun `player1 wins tiebreak`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        advanceToTieBreak(controller)
-        scorePointsForLhs(controller, numOfPoints = 6)
+        controller.simulateTieBreak()
+        controller.scorePointsForLhs(numOfPoints = 6)
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -367,8 +338,8 @@ class MatchControllerImplTest {
     fun `player2 wins tiebreak`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
-        advanceToTieBreak(controller)
-        scorePointsForRhs(controller, numOfPoints = 6)
+        controller.simulateTieBreak()
+        controller.scorePointsForRhs(numOfPoints = 6)
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -384,38 +355,16 @@ class MatchControllerImplTest {
             .isEqualTo(GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.LOVE))
     }
 
-    private fun winSetForPlayerStartingOnLhs(controller: MatchController) {
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-    }
-
-    private fun winSetForPlayerStartingOnRhs(controller: MatchController) {
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-    }
-
     @Test
     fun `player1 wins match with required number of sets`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 4)
 
         repeat(6) {
-            winSetForPlayerStartingOnLhs(controller)
+            controller.winSetForPlayerStartingOnLhs()
         }
 
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        scorePointsForRhs(controller, numOfPoints = 3)
+        controller.winGames(lhs, rhs, rhs, lhs, lhs)
+        controller.scorePointsForRhs(numOfPoints = 3)
 
         val event = controller.addPointToRhs()
         assertThat(event)
@@ -429,15 +378,11 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl(numOfSetsToWin = 4)
 
         repeat(6) {
-            winSetForPlayerStartingOnRhs(controller)
+            controller.winSetForPlayerStartingOnRhs()
         }
 
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 3)
+        controller.winGames(rhs, lhs, lhs, rhs, rhs)
+        controller.scorePointsForLhs(numOfPoints = 3)
 
         val event = controller.addPointToLhs()
         assertThat(event)
@@ -450,7 +395,7 @@ class MatchControllerImplTest {
     fun `finished match does not accept points`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 1)
 
-        winSetForPlayerStartingOnLhs(controller)
+        controller.winSetForPlayerStartingOnLhs()
 
         val lastGameState =
             GameState.Regular.Main(lhsPoints = Points.LOVE, rhsPoints = Points.FORTY)
@@ -467,31 +412,15 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl(numOfSetsToWin = 3)
 
         // set 1
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
+        controller.winGames(lhs, lhs, rhs, rhs, lhs, lhs, rhs, rhs, lhs, rhs)
 
         // set 2
-        advanceToTieBreak(controller)
-        scorePointsForRhs(controller, numOfPoints = 6)
-        scorePointsForLhs(controller, numOfPoints = 1)
+        controller.simulateTieBreak()
+        controller.scorePointsForRhs(numOfPoints = 6)
+        controller.scorePointsForLhs(numOfPoints = 1)
 
         // set 3
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForRhs(controller)
-        winGameForLhs(controller)
-        winGameForLhs(controller)
-        winGameForRhs(controller)
+        controller.winGames(lhs, lhs, rhs, rhs, rhs, lhs, lhs, rhs)
 
         val expected =
             MatchHistory(
@@ -522,38 +451,28 @@ class MatchControllerImplTest {
         assertThat(controller.getHistory()).isEqualTo(expected)
     }
 
-    private fun assertPlayer1OnLhs(controller: MatchController) {
-        assertThat(controller.getSideConfig().playerOnLhs).isEqualTo(Player.ONE)
-    }
-
-    private fun assertPlayer2OnLhs(controller: MatchController) {
-        assertThat(controller.getSideConfig().playerOnLhs).isEqualTo(Player.TWO)
-    }
-
     @Test
     fun `switches sides after every odd game`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 10)
 
         assertPlayer1OnLhs(controller)
 
-        winGameForLhs(controller)
+        controller.winGameForLhs()
         assertPlayer2OnLhs(controller)
 
-        winGameForRhs(controller)
+        controller.winGameForRhs()
         assertPlayer2OnLhs(controller)
 
-        winGameForLhs(controller)
+        controller.winGameForLhs()
         assertPlayer1OnLhs(controller)
 
-        winGameForRhs(controller)
+        controller.winGameForRhs()
         assertPlayer1OnLhs(controller)
 
-        winGameForRhs(controller)
-        winGameForLhs(controller)
+        controller.winGames(rhs, lhs)
         assertPlayer2OnLhs(controller)
 
-        winGameForLhs(controller)
-        winGameForRhs(controller)
+        controller.winGames(lhs, rhs)
         assertPlayer1OnLhs(controller)
     }
 
@@ -561,18 +480,16 @@ class MatchControllerImplTest {
     fun `switches sides at the end of set if number of games is odd`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 10)
         // P1:0 - P2:0
-        winGameForRhs(controller) // P2:1 - P1:0 (switched)
-        winGameForRhs(controller) // P2:1 - P1:1
-        winGameForRhs(controller) // P1:2 - P2:1 (switched)
-        winGameForLhs(controller) // P1:3 - P2:1
-        winGameForLhs(controller) // P2:1 - P1:4 (switched)
-        winGameForRhs(controller) // P2:1 - P1:5
+        controller.winGames(rhs, rhs, rhs, lhs, lhs, rhs)
+        // P2:1 - P1:5 (switched sides 3 times)
         assertPlayer2OnLhs(controller)
-        winGameForRhs(controller) // P1:6 - P2:1 (switched)
+        controller.winGameForRhs()
+        // P1:6 - P2:1 (switched)
         assertPlayer1OnLhs(controller)
         // set
         // P1:0 - P2:0
-        winGameForLhs(controller) // P2:0 - P1:1 (switched)
+        controller.winGameForLhs()
+        // P2:0 - P1:1 (switched)
         assertPlayer2OnLhs(controller)
     }
 
@@ -581,17 +498,15 @@ class MatchControllerImplTest {
         val controller = MatchControllerImpl(numOfSetsToWin = 10)
 
         // P1:0 - P2:0
-        winGameForLhs(controller) // P2:0 - P1:1 (switched)
-        winGameForRhs(controller) // P2:0 - P1:2
-        winGameForRhs(controller) // P1:3 - P2:0 (switched)
-        winGameForLhs(controller) // P1:4 - P2:0
-        winGameForLhs(controller) // P2:0 - P1:5 (switched)
+        controller.winGames(lhs, rhs, rhs, lhs, lhs)
+        // P2:0 - P1:5 (switched sides 2 times)
         assertPlayer2OnLhs(controller)
-        winGameForRhs(controller) // P2:0 - P1:6
+        controller.winGameForRhs() // P2:0 - P1:6
         assertPlayer2OnLhs(controller)
         // set
         // P2:0 - P1:0
-        winGameForLhs(controller) // P1:0 - P2:1 (switched)
+        controller.winGameForLhs()
+        // P1:0 - P2:1 (switched)
         assertPlayer1OnLhs(controller)
     }
 
@@ -599,25 +514,18 @@ class MatchControllerImplTest {
     fun `switches sides after every 6th point in a tiebreak`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 10)
 
-        advanceToTieBreak(controller)
+        controller.simulateTieBreak()
 
         assertPlayer1OnLhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 1)
+        controller.scorePointsForLhs(numOfPoints = 1)
         assertPlayer1OnLhs(controller)
-        scorePointsForRhs(controller, numOfPoints = 1)
+        controller.scorePointsForRhs(numOfPoints = 1)
         assertPlayer1OnLhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 2)
-        scorePointsForRhs(controller, numOfPoints = 2)
+        controller.winPoints(lhs, lhs, rhs, rhs)
         assertPlayer2OnLhs(controller)
-        repeat(3) {
-            scorePointsForLhs(controller, numOfPoints = 1)
-            scorePointsForRhs(controller, numOfPoints = 1)
-        }
+        repeat(3) { controller.winPoints(lhs, rhs) }
         assertPlayer1OnLhs(controller)
-        repeat(3) {
-            scorePointsForLhs(controller, numOfPoints = 1)
-            scorePointsForRhs(controller, numOfPoints = 1)
-        }
+        repeat(3) { controller.winPoints(lhs, rhs) }
         assertPlayer2OnLhs(controller)
     }
 
@@ -625,12 +533,12 @@ class MatchControllerImplTest {
     fun `switches sides after tiebreak`() {
         val controller = MatchControllerImpl(numOfSetsToWin = 10)
 
-        advanceToTieBreak(controller)
+        controller.simulateTieBreak()
 
         assertPlayer1OnLhs(controller)
-        scorePointsForLhs(controller, numOfPoints = 6)
+        controller.scorePointsForLhs(numOfPoints = 6)
         assertPlayer2OnLhs(controller)
-        scorePointsForRhs(controller, numOfPoints = 1)
+        controller.scorePointsForRhs(numOfPoints = 1)
         assertPlayer1OnLhs(controller)
     }
 }
