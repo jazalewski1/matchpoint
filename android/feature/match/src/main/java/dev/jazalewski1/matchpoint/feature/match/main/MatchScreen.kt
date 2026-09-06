@@ -37,19 +37,14 @@ import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.monospaceFontFamily
 import dev.jazalewski1.matchpoint.feature.match.main.detail.HorizontalPreview
 import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_PULSE_HALF_DURATION_MS
-import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_TOTAL_DURATION_MS
 import dev.jazalewski1.matchpoint.feature.match.main.detail.Indication
-import dev.jazalewski1.matchpoint.feature.match.main.detail.POINT_INDICATION_TOTAL_DURATION_MS
+import dev.jazalewski1.matchpoint.feature.match.main.detail.IndicationConfig
 import dev.jazalewski1.matchpoint.feature.match.main.detail.SwitchIndication
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import dev.jazalewski1.matchpoint.feature.match.main.detail.rememberIndicationState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 
 @Composable
 internal fun MatchScreen(
@@ -337,116 +332,6 @@ private fun GameEventIndication(
 
         is IndicationConfig.Major.SideSwitch -> SwitchIndication(onClick = onDismissal)
     }
-}
-
-private sealed interface IndicationConfig {
-    data class Point(val side: Side) : IndicationConfig
-
-    sealed interface Major : IndicationConfig {
-        data class Game(
-            val side: Side,
-            val lhsScore: String,
-            val rhsScore: String,
-        ) : Major
-
-        data class Set(
-            val side: Side,
-            val lhsScore: String,
-            val rhsScore: String,
-        ) : Major
-
-        data class Match(
-            val side: Side,
-            val lhsScore: String,
-            val rhsScore: String,
-        ) : Major
-
-        data object SideSwitch : Major
-    }
-}
-
-private class IndicationState(private val scope: CoroutineScope) {
-    private var job: Job? = null
-    var indicationConfig by mutableStateOf<IndicationConfig?>(null)
-        private set
-
-    fun process(event: MatchUiEvent.PointScored) {
-        job?.cancel()
-        job = scope.launch {
-            indicationConfig = IndicationConfig.Point(event.winner)
-            delay(POINT_INDICATION_TOTAL_DURATION_MS.milliseconds)
-            indicationConfig = null
-        }
-        if (event.withSideSwitch) {
-            job?.invokeOnCompletion { startSideSwitchIndication() }
-        }
-    }
-
-    fun process(event: MatchUiEvent.GameFinished) {
-        job?.cancel()
-        job = scope.launch {
-            indicationConfig =
-                IndicationConfig.Major.Game(
-                    side = event.winner,
-                    lhsScore = event.lhsScore,
-                    rhsScore = event.rhsScore,
-                )
-            delay(INDICATION_TOTAL_DURATION_MS.milliseconds)
-            indicationConfig = null
-        }
-        if (event.withSideSwitch) {
-            job?.invokeOnCompletion { startSideSwitchIndication() }
-        }
-    }
-
-    fun process(event: MatchUiEvent.SetFinished) {
-        job?.cancel()
-        job = scope.launch {
-            indicationConfig =
-                IndicationConfig.Major.Set(
-                    side = event.winner,
-                    lhsScore = event.lhsScore,
-                    rhsScore = event.rhsScore,
-                )
-            delay(INDICATION_TOTAL_DURATION_MS.milliseconds)
-            indicationConfig = null
-        }
-        if (event.withSideSwitch) {
-            job?.invokeOnCompletion { startSideSwitchIndication() }
-        }
-    }
-
-    fun process(event: MatchUiEvent.MatchFinished) {
-        job?.cancel()
-        job = scope.launch {
-            indicationConfig =
-                IndicationConfig.Major.Match(
-                    side = event.winner,
-                    lhsScore = event.lhsScore,
-                    rhsScore = event.rhsScore,
-                )
-        }
-    }
-
-    fun dismissIndication() {
-        if (indicationConfig == null) {
-            return
-        }
-        job?.cancel()
-        indicationConfig = null
-    }
-
-    private fun startSideSwitchIndication() {
-        job = scope.launch {
-            indicationConfig = IndicationConfig.Major.SideSwitch
-        }
-    }
-}
-
-@Composable
-private fun rememberIndicationState(): IndicationState {
-    val scope = rememberCoroutineScope()
-    return remember { IndicationState(scope) }
 }
 
 @Composable
