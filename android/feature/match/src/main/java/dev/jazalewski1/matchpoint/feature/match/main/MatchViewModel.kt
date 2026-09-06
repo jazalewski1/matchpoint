@@ -67,7 +67,7 @@ constructor(
                         player2Name = player2Name,
                     )
             )
-        _navigationEvents.trySend(MatchNavigationEvent.MatchFinished(matchId = matchId))
+        _navigationEvents.trySend(MatchNavigationEvent.Finish(matchId = matchId))
     }
 
     private fun process(side: Side) {
