@@ -59,9 +59,9 @@ import kotlinx.coroutines.launch
 
 internal const val INDICATION_PULSE_HALF_DURATION_MS = 400
 internal const val INDICATION_PULSE_FULL_DURATION_MS = INDICATION_PULSE_HALF_DURATION_MS * 2
-internal const val DIALOG_INDICATION_PULSE_REPS = 5
-internal const val DIALOG_INDICATION_TOTAL_DURATION_MS =
-    DIALOG_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
+internal const val INDICATION_PULSE_REPS = 5
+internal const val INDICATION_TOTAL_DURATION_MS =
+    INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
 internal const val POINT_INDICATION_PULSE_REPS = 3
 internal const val POINT_INDICATION_TOTAL_DURATION_MS =
     POINT_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
@@ -277,32 +277,32 @@ private fun GameEventIndication(
     indicationState: IndicationState,
     onMatchFinished: () -> Unit,
 ) {
-    indicationState.dialogIndicationParams?.let {
+    indicationState.indicationConfig?.let {
         when (it) {
-            is DialogIndicationParams.Game ->
-                DialogIndication(
+            is IndicationConfig.Game ->
+                Indication(
                     side = it.side,
                     largeText = "GAME",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
-                    onClick = { indicationState.dismissDialogIndication() },
+                    onClick = { indicationState.dismissIndication() },
                     backgroundColor = AppColors.Secondary.dark,
                     pulseColor = AppColors.Secondary.light,
                     modifier = Modifier.contentDesc("Game Indication"),
                 )
 
-            is DialogIndicationParams.Set ->
-                DialogIndication(
+            is IndicationConfig.Set ->
+                Indication(
                     side = it.side,
                     largeText = "SET",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
-                    onClick = { indicationState.dismissDialogIndication() },
+                    onClick = { indicationState.dismissIndication() },
                     backgroundColor = AppColors.Quaternary.dark,
                     pulseColor = AppColors.Quaternary.light,
                     modifier = Modifier.contentDesc("Set Indication"),
                 )
 
-            is DialogIndicationParams.Match ->
-                DialogIndication(
+            is IndicationConfig.Match ->
+                Indication(
                     side = it.side,
                     largeText = "MATCH",
                     smallText = "${it.lhsScore} : ${it.rhsScore}",
@@ -312,32 +312,32 @@ private fun GameEventIndication(
                     modifier = Modifier.contentDesc("Match Indication"),
                 )
 
-            is DialogIndicationParams.SideSwitch ->
-                SideSwitchDialogIndication(onClick = { indicationState.dismissDialogIndication() })
+            is IndicationConfig.SideSwitch ->
+                SwitchIndication(onClick = { indicationState.dismissIndication() })
         }
     }
 }
 
-private sealed interface DialogIndicationParams {
+private sealed interface IndicationConfig {
     data class Game(
         val side: Side,
         val lhsScore: String,
         val rhsScore: String,
-    ) : DialogIndicationParams
+    ) : IndicationConfig
 
     data class Set(
         val side: Side,
         val lhsScore: String,
         val rhsScore: String,
-    ) : DialogIndicationParams
+    ) : IndicationConfig
 
     data class Match(
         val side: Side,
         val lhsScore: String,
         val rhsScore: String,
-    ) : DialogIndicationParams
+    ) : IndicationConfig
 
-    data object SideSwitch : DialogIndicationParams
+    data object SideSwitch : IndicationConfig
 }
 
 private class IndicationState(private val scope: CoroutineScope) {
@@ -348,7 +348,7 @@ private class IndicationState(private val scope: CoroutineScope) {
     var rhsColor = Animatable(AppColors.Background.bg)
         private set
 
-    var dialogIndicationParams by mutableStateOf<DialogIndicationParams?>(null)
+    var indicationConfig by mutableStateOf<IndicationConfig?>(null)
         private set
 
     fun process(event: MatchUiEvent.PointScored) {
@@ -356,7 +356,7 @@ private class IndicationState(private val scope: CoroutineScope) {
         job = scope.launch {
             lhsColor.snapTo(AppColors.Background.bg)
             rhsColor.snapTo(AppColors.Background.bg)
-            dialogIndicationParams = null
+            indicationConfig = null
             val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
             animatePointIndication(colorToAnimate)
         }
@@ -370,14 +370,14 @@ private class IndicationState(private val scope: CoroutineScope) {
         job = scope.launch {
             lhsColor.snapTo(AppColors.Background.bg)
             rhsColor.snapTo(AppColors.Background.bg)
-            dialogIndicationParams =
-                DialogIndicationParams.Game(
+            indicationConfig =
+                IndicationConfig.Game(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
                 )
-            delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
-            dialogIndicationParams = null
+            delay(INDICATION_TOTAL_DURATION_MS.milliseconds)
+            indicationConfig = null
         }
         if (event.withSideSwitch) {
             job?.invokeOnCompletion { startSideSwitchIndication() }
@@ -389,14 +389,14 @@ private class IndicationState(private val scope: CoroutineScope) {
         job = scope.launch {
             lhsColor.snapTo(AppColors.Background.bg)
             rhsColor.snapTo(AppColors.Background.bg)
-            dialogIndicationParams =
-                DialogIndicationParams.Set(
+            indicationConfig =
+                IndicationConfig.Set(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
                 )
-            delay(DIALOG_INDICATION_TOTAL_DURATION_MS.milliseconds)
-            dialogIndicationParams = null
+            delay(INDICATION_TOTAL_DURATION_MS.milliseconds)
+            indicationConfig = null
         }
         if (event.withSideSwitch) {
             job?.invokeOnCompletion { startSideSwitchIndication() }
@@ -408,8 +408,8 @@ private class IndicationState(private val scope: CoroutineScope) {
         job = scope.launch {
             lhsColor.snapTo(AppColors.Background.bg)
             rhsColor.snapTo(AppColors.Background.bg)
-            dialogIndicationParams =
-                DialogIndicationParams.Match(
+            indicationConfig =
+                IndicationConfig.Match(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
@@ -417,17 +417,17 @@ private class IndicationState(private val scope: CoroutineScope) {
         }
     }
 
-    fun dismissDialogIndication() {
-        if (dialogIndicationParams == null) {
+    fun dismissIndication() {
+        if (indicationConfig == null) {
             return
         }
         job?.cancel()
-        dialogIndicationParams = null
+        indicationConfig = null
     }
 
     private fun startSideSwitchIndication() {
         job = scope.launch {
-            dialogIndicationParams = DialogIndicationParams.SideSwitch
+            indicationConfig = IndicationConfig.SideSwitch
         }
     }
 }
@@ -453,7 +453,7 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
 }
 
 @Composable
-private fun DialogIndication(
+private fun Indication(
     side: Side,
     onClick: () -> Unit,
     largeText: String,
@@ -519,7 +519,7 @@ private fun DialogIndication(
 }
 
 @Composable
-private fun SideSwitchDialogIndication(onClick: () -> Unit) {
+private fun SwitchIndication(onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val transition = rememberInfiniteTransition()
     val animationProgress by
@@ -630,7 +630,7 @@ private fun PreviewWithTieBreak() {
 @Composable
 private fun LhsGameIndicationPreview() {
     AppTheme {
-        DialogIndication(
+        Indication(
             side = Side.LHS,
             largeText = "GAME",
             smallText = "6 : 4",
@@ -645,7 +645,7 @@ private fun LhsGameIndicationPreview() {
 @Composable
 private fun RhsGameIndicationPreview() {
     AppTheme {
-        DialogIndication(
+        Indication(
             side = Side.RHS,
             largeText = "GAME",
             smallText = "6 : 4",
@@ -658,8 +658,8 @@ private fun RhsGameIndicationPreview() {
 
 @HorizontalPreview
 @Composable
-private fun SideSwitchIndicationPreview() {
+private fun SwitchIndicationPreview() {
     AppTheme {
-        SideSwitchDialogIndication(onClick = {})
+        SwitchIndication(onClick = {})
     }
 }

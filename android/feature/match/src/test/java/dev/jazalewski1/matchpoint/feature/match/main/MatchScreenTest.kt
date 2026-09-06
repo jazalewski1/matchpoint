@@ -214,7 +214,7 @@ class MatchScreenTest {
         rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsDisplayed()
         rule.onNodeWithText("GAME").assertIsDisplayed()
         rule.onNodeWithText("30 : 15").assertIsDisplayed()
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
@@ -239,7 +239,7 @@ class MatchScreenTest {
         rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsDisplayed()
         rule.onNodeWithText("GAME").assertIsDisplayed()
         rule.onNodeWithText("15 : 30").assertIsDisplayed()
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(GAME_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
@@ -260,7 +260,7 @@ class MatchScreenTest {
             )
 
         events.emitAndWait(event)
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
     }
 
@@ -280,7 +280,7 @@ class MatchScreenTest {
             )
 
         events.emitAndWait(event)
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
     }
 
@@ -304,7 +304,7 @@ class MatchScreenTest {
         rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsDisplayed()
         rule.onNodeWithText("SET").assertIsDisplayed()
         rule.onNodeWithText("3 : 1").assertIsDisplayed()
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
@@ -329,7 +329,7 @@ class MatchScreenTest {
         rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsDisplayed()
         rule.onNodeWithText("SET").assertIsDisplayed()
         rule.onNodeWithText("1 : 3").assertIsDisplayed()
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(SET_IND_CONTENT_DESC).assertIsNotDisplayed()
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsNotDisplayed()
     }
@@ -350,7 +350,7 @@ class MatchScreenTest {
             )
 
         events.emitAndWait(event)
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
     }
 
@@ -370,7 +370,7 @@ class MatchScreenTest {
             )
 
         events.emitAndWait(event)
-        advance(milliseconds = DIALOG_INDICATION_TOTAL_DURATION_MS.toLong())
+        advance(milliseconds = INDICATION_TOTAL_DURATION_MS.toLong())
         rule.onNodeWithContentDescription(SWITCH_IND_CONTENT_DESC).assertIsDisplayed()
     }
 
