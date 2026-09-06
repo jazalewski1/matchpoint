@@ -5,6 +5,8 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.jazalewski1.matchpoint.core.common.Side
+import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_TOTAL_DURATION_MS
+import dev.jazalewski1.matchpoint.feature.match.main.detail.POINT_INDICATION_TOTAL_DURATION_MS
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -509,7 +511,7 @@ class MatchScreenTest {
         }
 
         val matchId = 5L
-        navigationEventsChannel.send(MatchNavigationEvent.MatchFinished(matchId = matchId))
+        navigationEventsChannel.send(MatchNavigationEvent.Finish(matchId = matchId))
         rule.awaitIdle()
         assertEquals(matchId, triggeredMatchId)
     }

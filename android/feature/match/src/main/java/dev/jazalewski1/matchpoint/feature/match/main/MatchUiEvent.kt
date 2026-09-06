@@ -27,5 +27,5 @@ internal sealed interface MatchUiEvent {
 }
 
 internal sealed interface MatchNavigationEvent {
-    data class MatchFinished(val matchId: Long) : MatchNavigationEvent
+    data class Finish(val matchId: Long) : MatchNavigationEvent
 }

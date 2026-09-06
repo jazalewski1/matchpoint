@@ -5,19 +5,12 @@ import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.EaseOutQuad
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.*
@@ -29,12 +22,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -43,10 +32,16 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jazalewski1.matchpoint.core.common.Side
+import dev.jazalewski1.matchpoint.core.ui.common.contentDesc
 import dev.jazalewski1.matchpoint.core.ui.theme.AppColors
 import dev.jazalewski1.matchpoint.core.ui.theme.AppTheme
 import dev.jazalewski1.matchpoint.core.ui.theme.monospaceFontFamily
-import dev.jazalewski1.matchpoint.feature.match.R
+import dev.jazalewski1.matchpoint.feature.match.main.detail.HorizontalPreview
+import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_PULSE_HALF_DURATION_MS
+import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_TOTAL_DURATION_MS
+import dev.jazalewski1.matchpoint.feature.match.main.detail.Indication
+import dev.jazalewski1.matchpoint.feature.match.main.detail.POINT_INDICATION_PULSE_REPS
+import dev.jazalewski1.matchpoint.feature.match.main.detail.SwitchIndication
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -56,15 +51,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-
-internal const val INDICATION_PULSE_HALF_DURATION_MS = 400
-internal const val INDICATION_PULSE_FULL_DURATION_MS = INDICATION_PULSE_HALF_DURATION_MS * 2
-internal const val INDICATION_PULSE_REPS = 5
-internal const val INDICATION_TOTAL_DURATION_MS =
-    INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
-internal const val POINT_INDICATION_PULSE_REPS = 3
-internal const val POINT_INDICATION_TOTAL_DURATION_MS =
-    POINT_INDICATION_PULSE_REPS * INDICATION_PULSE_FULL_DURATION_MS
 
 @Composable
 internal fun MatchScreen(
@@ -107,7 +93,7 @@ internal fun MatchScreen(
     LaunchedEffect(Unit) {
         navigationEvents.collect { event ->
             when (event) {
-                is MatchNavigationEvent.MatchFinished -> onExit(event.matchId)
+                is MatchNavigationEvent.Finish -> onExit(event.matchId)
             }
         }
     }
@@ -453,138 +439,6 @@ private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, Ani
 }
 
 @Composable
-private fun Indication(
-    side: Side,
-    onClick: () -> Unit,
-    largeText: String,
-    smallText: String,
-    backgroundColor: Color,
-    pulseColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val animatedColor = remember { Animatable(backgroundColor) }
-    LaunchedEffect(Unit) {
-        animatedColor.animateTo(
-            targetValue = pulseColor,
-            animationSpec =
-                infiniteRepeatable(
-                    animation =
-                        tween(
-                            durationMillis = INDICATION_PULSE_HALF_DURATION_MS,
-                            easing = EaseOutQuad,
-                        ),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-        )
-    }
-    val colors =
-        if (side == Side.LHS) {
-            arrayOf(0.0f to animatedColor.value, 0.5f to backgroundColor)
-        } else {
-            arrayOf(0.5f to backgroundColor, 1.0f to animatedColor.value)
-        }
-    Box(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .clickable(
-                    onClick = onClick,
-                    indication = null,
-                    interactionSource = interactionSource,
-                )
-                .drawBehind { drawRect(brush = Brush.horizontalGradient(colorStops = colors)) }
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Text(
-                text = largeText,
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = AppColors.Background.bg,
-                fontSize = 182.sp,
-            )
-            Text(
-                text = smallText,
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = AppColors.Background.bg,
-                fontSize = 92.sp,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SwitchIndication(onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val transition = rememberInfiniteTransition()
-    val animationProgress by
-        transition.animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec =
-                infiniteRepeatable(
-                    animation = tween(INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInOut),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-        )
-    val offset = animationProgress * 80
-    Box(
-        modifier =
-            Modifier.fillMaxSize()
-                .clickable(
-                    onClick = onClick,
-                    indication = null,
-                    interactionSource = interactionSource,
-                )
-                .background(color = AppColors.Others.inverseSurface)
-                .contentDesc("Side Switch Indication")
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Text(
-                text = "SWITCH SIDES",
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Black,
-                color = AppColors.Others.inverseOnSurface,
-                fontSize = 108.sp,
-            )
-            Spacer(Modifier.height(32.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_left),
-                    tint = AppColors.Others.inverseOnSurface,
-                    modifier = Modifier.size(128.dp).offset(x = -offset.dp),
-                    contentDescription = null,
-                )
-                Spacer(Modifier.width(40.dp))
-                Icon(
-                    painter = painterResource(R.drawable.arrow_right),
-                    tint = AppColors.Others.inverseOnSurface,
-                    modifier = Modifier.size(128.dp).offset(x = offset.dp),
-                    contentDescription = null,
-                )
-            }
-        }
-    }
-}
-
-private fun Modifier.contentDesc(string: String) = this.semantics { contentDescription = string }
-
-@Preview(
-    showBackground = true,
-    device = "spec:width=891dp,height=411dp,dpi=420,orientation=landscape",
-)
-annotation class HorizontalPreview
-
-@Composable
 private fun ScreenPreviewBase(
     lhsPlayerName: String = "Federer",
     rhsPlayerName: String = "Nadal",
@@ -623,43 +477,5 @@ private fun PreviewWithTieBreak() {
             rhsScore = "3",
             isTieBreak = true,
         )
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun LhsGameIndicationPreview() {
-    AppTheme {
-        Indication(
-            side = Side.LHS,
-            largeText = "GAME",
-            smallText = "6 : 4",
-            onClick = {},
-            backgroundColor = AppColors.Secondary.light,
-            pulseColor = AppColors.Secondary.mid,
-        )
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun RhsGameIndicationPreview() {
-    AppTheme {
-        Indication(
-            side = Side.RHS,
-            largeText = "GAME",
-            smallText = "6 : 4",
-            onClick = {},
-            backgroundColor = AppColors.Secondary.light,
-            pulseColor = AppColors.Secondary.mid,
-        )
-    }
-}
-
-@HorizontalPreview
-@Composable
-private fun SwitchIndicationPreview() {
-    AppTheme {
-        SwitchIndication(onClick = {})
     }
 }

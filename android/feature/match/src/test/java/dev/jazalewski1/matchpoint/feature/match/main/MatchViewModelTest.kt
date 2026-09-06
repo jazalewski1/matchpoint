@@ -611,7 +611,7 @@ class MatchViewModelTest {
 
         viewModel.navigationEvents.test {
             viewModel.onFinished()
-            assertThat(awaitItem()).isEqualTo(MatchNavigationEvent.MatchFinished(matchId = 0))
+            assertThat(awaitItem()).isEqualTo(MatchNavigationEvent.Finish(matchId = 0))
         }
     }
 }
