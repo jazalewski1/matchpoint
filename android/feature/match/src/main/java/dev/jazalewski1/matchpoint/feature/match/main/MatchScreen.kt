@@ -109,7 +109,7 @@ internal fun MatchScreen(
         rhsPlayerName = rhsPlayerName,
         lhsScore = lhsScore,
         rhsScore = rhsScore,
-        indicatingSide = (indicationState.indicationConfig as? IndicationConfig.Point)?.side,
+        indication = indicationState.indicationConfig?.toKeyedPointIndication(),
         isTieBreak = isTieBreak,
         onLhsClick = onLhsClick,
         onRhsClick = onRhsClick,
@@ -151,13 +151,22 @@ private fun HideSystemBars() {
     }
 }
 
+private data class KeyedPointIndication(val side: Side, private val key: Long = nextKey++) {
+    companion object {
+        private var nextKey = 0L
+    }
+}
+
+private fun IndicationConfig.toKeyedPointIndication() =
+    (this as? IndicationConfig.Point)?.let { KeyedPointIndication(side = it.side) }
+
 @Composable
 private fun ScoreContainer(
     lhsPlayerName: String,
     rhsPlayerName: String,
     lhsScore: String,
     rhsScore: String,
-    indicatingSide: Side?,
+    indication: KeyedPointIndication?,
     isTieBreak: Boolean,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
@@ -165,10 +174,14 @@ private fun ScoreContainer(
     val defaultColor = AppColors.Background.bg
     val lhsBackgroundColor = remember { Animatable(defaultColor) }
     val rhsBackgroundColor = remember { Animatable(defaultColor) }
-    LaunchedEffect(indicatingSide) {
-        when (indicatingSide) {
+    LaunchedEffect(indication) {
+        lhsBackgroundColor.snapTo(defaultColor)
+        rhsBackgroundColor.snapTo(defaultColor)
+        if (indication == null) {
+            return@LaunchedEffect
+        }
+        when (indication.side) {
             Side.LHS -> {
-                rhsBackgroundColor.snapTo(defaultColor)
                 lhsBackgroundColor.animateTo(
                     targetValue = AppColors.Secondary.mid,
                     animationSpec =
@@ -179,7 +192,6 @@ private fun ScoreContainer(
                 )
             }
             Side.RHS -> {
-                lhsBackgroundColor.snapTo(defaultColor)
                 rhsBackgroundColor.animateTo(
                     targetValue = AppColors.Secondary.mid,
                     animationSpec =
@@ -188,10 +200,6 @@ private fun ScoreContainer(
                             repeatMode = RepeatMode.Reverse,
                         ),
                 )
-            }
-            null -> {
-                lhsBackgroundColor.snapTo(defaultColor)
-                rhsBackgroundColor.snapTo(defaultColor)
             }
         }
     }
