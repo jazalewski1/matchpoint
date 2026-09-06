@@ -4,9 +4,8 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.EaseInQuad
-import androidx.compose.animation.core.EaseOutQuad
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -40,7 +39,7 @@ import dev.jazalewski1.matchpoint.feature.match.main.detail.HorizontalPreview
 import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_PULSE_HALF_DURATION_MS
 import dev.jazalewski1.matchpoint.feature.match.main.detail.INDICATION_TOTAL_DURATION_MS
 import dev.jazalewski1.matchpoint.feature.match.main.detail.Indication
-import dev.jazalewski1.matchpoint.feature.match.main.detail.POINT_INDICATION_PULSE_REPS
+import dev.jazalewski1.matchpoint.feature.match.main.detail.POINT_INDICATION_TOTAL_DURATION_MS
 import dev.jazalewski1.matchpoint.feature.match.main.detail.SwitchIndication
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
@@ -115,14 +114,15 @@ internal fun MatchScreen(
         rhsPlayerName = rhsPlayerName,
         lhsScore = lhsScore,
         rhsScore = rhsScore,
-        indicationState = indicationState,
+        indicatingSide = (indicationState.indicationConfig as? IndicationConfig.Point)?.side,
         isTieBreak = isTieBreak,
         onLhsClick = onLhsClick,
         onRhsClick = onRhsClick,
     )
 
     GameEventIndication(
-        indicationState = indicationState,
+        config = indicationState.indicationConfig as? IndicationConfig.Major,
+        onDismissal = indicationState::dismissIndication,
         onMatchFinished = onMatchFinished,
     )
 }
@@ -162,11 +162,45 @@ private fun ScoreContainer(
     rhsPlayerName: String,
     lhsScore: String,
     rhsScore: String,
-    indicationState: IndicationState,
+    indicatingSide: Side?,
     isTieBreak: Boolean,
     onLhsClick: () -> Unit,
     onRhsClick: () -> Unit,
 ) {
+    val defaultColor = AppColors.Background.bg
+    val lhsBackgroundColor = remember { Animatable(defaultColor) }
+    val rhsBackgroundColor = remember { Animatable(defaultColor) }
+    LaunchedEffect(indicatingSide) {
+        when (indicatingSide) {
+            Side.LHS -> {
+                rhsBackgroundColor.snapTo(defaultColor)
+                lhsBackgroundColor.animateTo(
+                    targetValue = AppColors.Secondary.mid,
+                    animationSpec =
+                        infiniteRepeatable(
+                            tween(INDICATION_PULSE_HALF_DURATION_MS),
+                            repeatMode = RepeatMode.Reverse,
+                        ),
+                )
+            }
+            Side.RHS -> {
+                lhsBackgroundColor.snapTo(defaultColor)
+                rhsBackgroundColor.animateTo(
+                    targetValue = AppColors.Secondary.mid,
+                    animationSpec =
+                        infiniteRepeatable(
+                            tween(INDICATION_PULSE_HALF_DURATION_MS),
+                            repeatMode = RepeatMode.Reverse,
+                        ),
+                )
+            }
+            null -> {
+                lhsBackgroundColor.snapTo(defaultColor)
+                rhsBackgroundColor.snapTo(defaultColor)
+            }
+        }
+    }
+
     Row(modifier = Modifier.fillMaxWidth()) {
         PlayerSection(
             playerName = lhsPlayerName,
@@ -174,7 +208,7 @@ private fun ScoreContainer(
             side = Side.LHS,
             onClick = onLhsClick,
             modifier = Modifier.weight(0.5f).fillMaxHeight().contentDesc("Left Score"),
-            backgroundColor = indicationState.lhsColor.value,
+            backgroundColor = lhsBackgroundColor.value,
         )
         VerticalDivider(thickness = 2.dp)
         PlayerSection(
@@ -183,7 +217,7 @@ private fun ScoreContainer(
             side = Side.RHS,
             onClick = onRhsClick,
             modifier = Modifier.weight(0.5f).fillMaxHeight().contentDesc("Right Score"),
-            backgroundColor = indicationState.rhsColor.value,
+            backgroundColor = rhsBackgroundColor.value,
         )
     }
     if (isTieBreak) {
@@ -260,91 +294,88 @@ private fun PlayerSection(
 
 @Composable
 private fun GameEventIndication(
-    indicationState: IndicationState,
+    config: IndicationConfig.Major?,
+    onDismissal: () -> Unit,
     onMatchFinished: () -> Unit,
 ) {
-    indicationState.indicationConfig?.let {
-        when (it) {
-            is IndicationConfig.Game ->
-                Indication(
-                    side = it.side,
-                    largeText = "GAME",
-                    smallText = "${it.lhsScore} : ${it.rhsScore}",
-                    onClick = { indicationState.dismissIndication() },
-                    backgroundColor = AppColors.Secondary.dark,
-                    pulseColor = AppColors.Secondary.light,
-                    modifier = Modifier.contentDesc("Game Indication"),
-                )
+    if (config == null) {
+        return
+    }
+    when (config) {
+        is IndicationConfig.Major.Game ->
+            Indication(
+                side = config.side,
+                largeText = "GAME",
+                smallText = "${config.lhsScore} : ${config.rhsScore}",
+                onClick = onDismissal,
+                backgroundColor = AppColors.Secondary.dark,
+                pulseColor = AppColors.Secondary.light,
+                modifier = Modifier.contentDesc("Game Indication"),
+            )
 
-            is IndicationConfig.Set ->
-                Indication(
-                    side = it.side,
-                    largeText = "SET",
-                    smallText = "${it.lhsScore} : ${it.rhsScore}",
-                    onClick = { indicationState.dismissIndication() },
-                    backgroundColor = AppColors.Quaternary.dark,
-                    pulseColor = AppColors.Quaternary.light,
-                    modifier = Modifier.contentDesc("Set Indication"),
-                )
+        is IndicationConfig.Major.Set ->
+            Indication(
+                side = config.side,
+                largeText = "SET",
+                smallText = "${config.lhsScore} : ${config.rhsScore}",
+                onClick = onDismissal,
+                backgroundColor = AppColors.Quaternary.dark,
+                pulseColor = AppColors.Quaternary.light,
+                modifier = Modifier.contentDesc("Set Indication"),
+            )
 
-            is IndicationConfig.Match ->
-                Indication(
-                    side = it.side,
-                    largeText = "MATCH",
-                    smallText = "${it.lhsScore} : ${it.rhsScore}",
-                    onClick = onMatchFinished,
-                    backgroundColor = AppColors.Tertiary.dark,
-                    pulseColor = AppColors.Tertiary.light,
-                    modifier = Modifier.contentDesc("Match Indication"),
-                )
+        is IndicationConfig.Major.Match ->
+            Indication(
+                side = config.side,
+                largeText = "MATCH",
+                smallText = "${config.lhsScore} : ${config.rhsScore}",
+                onClick = onMatchFinished,
+                backgroundColor = AppColors.Tertiary.dark,
+                pulseColor = AppColors.Tertiary.light,
+                modifier = Modifier.contentDesc("Match Indication"),
+            )
 
-            is IndicationConfig.SideSwitch ->
-                SwitchIndication(onClick = { indicationState.dismissIndication() })
-        }
+        is IndicationConfig.Major.SideSwitch -> SwitchIndication(onClick = onDismissal)
     }
 }
 
 private sealed interface IndicationConfig {
-    data class Game(
-        val side: Side,
-        val lhsScore: String,
-        val rhsScore: String,
-    ) : IndicationConfig
+    data class Point(val side: Side) : IndicationConfig
 
-    data class Set(
-        val side: Side,
-        val lhsScore: String,
-        val rhsScore: String,
-    ) : IndicationConfig
+    sealed interface Major : IndicationConfig {
+        data class Game(
+            val side: Side,
+            val lhsScore: String,
+            val rhsScore: String,
+        ) : Major
 
-    data class Match(
-        val side: Side,
-        val lhsScore: String,
-        val rhsScore: String,
-    ) : IndicationConfig
+        data class Set(
+            val side: Side,
+            val lhsScore: String,
+            val rhsScore: String,
+        ) : Major
 
-    data object SideSwitch : IndicationConfig
+        data class Match(
+            val side: Side,
+            val lhsScore: String,
+            val rhsScore: String,
+        ) : Major
+
+        data object SideSwitch : Major
+    }
 }
 
 private class IndicationState(private val scope: CoroutineScope) {
     private var job: Job? = null
-    var lhsColor = Animatable(AppColors.Background.bg)
-        private set
-
-    var rhsColor = Animatable(AppColors.Background.bg)
-        private set
-
     var indicationConfig by mutableStateOf<IndicationConfig?>(null)
         private set
 
     fun process(event: MatchUiEvent.PointScored) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(AppColors.Background.bg)
-            rhsColor.snapTo(AppColors.Background.bg)
+            indicationConfig = IndicationConfig.Point(event.winner)
+            delay(POINT_INDICATION_TOTAL_DURATION_MS.milliseconds)
             indicationConfig = null
-            val colorToAnimate = if (event.winner == Side.LHS) lhsColor else rhsColor
-            animatePointIndication(colorToAnimate)
         }
         if (event.withSideSwitch) {
             job?.invokeOnCompletion { startSideSwitchIndication() }
@@ -354,10 +385,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.GameFinished) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(AppColors.Background.bg)
-            rhsColor.snapTo(AppColors.Background.bg)
             indicationConfig =
-                IndicationConfig.Game(
+                IndicationConfig.Major.Game(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
@@ -373,10 +402,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.SetFinished) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(AppColors.Background.bg)
-            rhsColor.snapTo(AppColors.Background.bg)
             indicationConfig =
-                IndicationConfig.Set(
+                IndicationConfig.Major.Set(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
@@ -392,10 +419,8 @@ private class IndicationState(private val scope: CoroutineScope) {
     fun process(event: MatchUiEvent.MatchFinished) {
         job?.cancel()
         job = scope.launch {
-            lhsColor.snapTo(AppColors.Background.bg)
-            rhsColor.snapTo(AppColors.Background.bg)
             indicationConfig =
-                IndicationConfig.Match(
+                IndicationConfig.Major.Match(
                     side = event.winner,
                     lhsScore = event.lhsScore,
                     rhsScore = event.rhsScore,
@@ -413,7 +438,7 @@ private class IndicationState(private val scope: CoroutineScope) {
 
     private fun startSideSwitchIndication() {
         job = scope.launch {
-            indicationConfig = IndicationConfig.SideSwitch
+            indicationConfig = IndicationConfig.Major.SideSwitch
         }
     }
 }
@@ -422,20 +447,6 @@ private class IndicationState(private val scope: CoroutineScope) {
 private fun rememberIndicationState(): IndicationState {
     val scope = rememberCoroutineScope()
     return remember { IndicationState(scope) }
-}
-
-private suspend fun animatePointIndication(colorToAnimate: Animatable<Color, AnimationVector4D>) {
-    val repetitionsWithoutEntryAndExit = POINT_INDICATION_PULSE_REPS - 1
-    val easeIn =
-        tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseInQuad)
-    val easeOut =
-        tween<Color>(durationMillis = INDICATION_PULSE_HALF_DURATION_MS, easing = EaseOutQuad)
-    colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
-    repeat(repetitionsWithoutEntryAndExit) {
-        colorToAnimate.animateTo(targetValue = AppColors.Secondary.light, animationSpec = easeIn)
-        colorToAnimate.animateTo(targetValue = AppColors.Secondary.mid, animationSpec = easeOut)
-    }
-    colorToAnimate.animateTo(targetValue = AppColors.Background.bg, animationSpec = easeIn)
 }
 
 @Composable
