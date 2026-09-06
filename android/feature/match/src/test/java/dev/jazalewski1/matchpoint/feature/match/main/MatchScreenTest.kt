@@ -110,7 +110,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when lhs point is clicked then it is increased`() {
+    fun `registers click on lhs score`() {
         var triggered = false
         rule.setContent { SutScreen(onLhsClick = { triggered = true }) }
 
@@ -119,7 +119,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when rhs point is clicked then it is increased`() {
+    fun `registers click on rhs score`() {
         var triggered = false
         rule.setContent { SutScreen(onRhsClick = { triggered = true }) }
 
@@ -139,7 +139,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received lhs point scored without side switch then displays point indication`() =
+    fun `displays lhs point indication without switch`() =
         runTest {
             rule.mainClock.autoAdvance = false
 
@@ -154,7 +154,7 @@ class MatchScreenTest {
         }
 
     @Test
-    fun `when received rhs point scored without side switch then displays point indication`() =
+    fun `displays rhs point indication without switch`() =
         runTest {
             rule.mainClock.autoAdvance = false
 
@@ -169,7 +169,7 @@ class MatchScreenTest {
         }
 
     @Test
-    fun `when received lhs point scored with side switch then displays switch indication`() =
+    fun `displays lhs point indication with switch`() =
         runTest {
             rule.mainClock.autoAdvance = false
 
@@ -184,7 +184,7 @@ class MatchScreenTest {
         }
 
     @Test
-    fun `when received rhs point scored with side switch then displays switch indication`() =
+    fun `displays rhs point indication with switch`() =
         runTest {
             rule.mainClock.autoAdvance = false
 
@@ -199,7 +199,7 @@ class MatchScreenTest {
         }
 
     @Test
-    fun `when received lhs finished game then displays game indication`() = runTest {
+    fun `displays lhs game indication without switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -224,7 +224,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received rhs finished game then displays game indication`() = runTest {
+    fun `displays rhs game indication without switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -249,7 +249,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `displays switch indication after lhs game finished`() = runTest {
+    fun `displays lhs game indication with switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -269,7 +269,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `displays switch indication after rhs game finished`() = runTest {
+    fun `displays rhs game indication with switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -289,7 +289,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received lhs finished set then displays set indication`() = runTest {
+    fun `displays lhs set indication without switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -314,7 +314,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received rhs finished set then displays set indication`() = runTest {
+    fun `displays rhs set indication without switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -339,7 +339,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `displays switch indication after lhs set finished`() = runTest {
+    fun `displays lhs set indication with switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -359,7 +359,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `displays switch indication after rhs set finished`() = runTest {
+    fun `displays rhs set indication with switch`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -379,7 +379,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when clicking side switch indication then it hides`() = runTest {
+    fun `hides switch indication on click`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -396,7 +396,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received lhs finished match then displays match indication`() = runTest {
+    fun `displays lhs match indication`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -417,7 +417,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received rhs finished match then displays match indication`() = runTest {
+    fun `displays rhs match indication`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -438,7 +438,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when clicked on match indication then triggers match finished`() = runTest {
+    fun `finishes on match indication click`() = runTest {
         rule.mainClock.autoAdvance = false
 
         val events = MutableSharedFlow<MatchUiEvent>(extraBufferCapacity = 1)
@@ -458,7 +458,7 @@ class MatchScreenTest {
     }
 
     @Test
-    fun `when received navigation match finished then triggers on exit`() = runTest {
+    fun `exits on navigation match finished`() = runTest {
         var triggeredMatchId: Long? = null
         val navigationEventsChannel = Channel<MatchNavigationEvent>()
         rule.setContent {
